@@ -42,7 +42,7 @@ public interface CartItemRepository extends JpaRepository<CartItem, Long> {
 
     @Query("""
             SELECT COUNT(cartItem)
-            FROM CartItem cartIte m
+            FROM CartItem cartItem
             WHERE cartItem.user.username = :username
             """)
     int countByUsername(@Param("username") String username);

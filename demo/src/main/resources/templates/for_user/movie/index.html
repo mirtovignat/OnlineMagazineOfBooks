@@ -5,7 +5,7 @@
     <title>Фильмы</title>
     <link rel="icon" type="image/x-icon" th:href="@{/favicon.ico}">
     <style>
-        /* все стили остаются без изменений (ваши исходные) */
+        /* все ваши стили без изменений */
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; background: #f8fafc; color: #0f172a; line-height: 1.5; }
         header { display: flex; justify-content: space-between; align-items: center; padding: 1rem 2rem; background: white; box-shadow: 0 2px 10px rgba(0,0,0,0.05); flex-wrap: wrap; gap: 1rem; }
@@ -179,14 +179,11 @@
     </div>
 </header>
 <main>
-    <div th:if="${successMessage}" class="flash-message success" th:text="${successMessage}"></div>
-    <div th:if="${notAuthorizedUserExceptionMessage}" class="flash-message error" th:text="${notAuthorizedUserExceptionMessage}"></div>
-    <div th:if="${insufficientFundsExceptionMessage}" class="flash-message error" th:text="${insufficientFundsExceptionMessage}"></div>
-    <div th:if="${validationError}" class="flash-message error" th:text="${validationError}"></div>
     <div class="movies-grid" th:if="${cardsPage != null and !cardsPage.empty}">
         <div class="movie-card" th:each="movie : ${cardsPage.content}">
             <a th:href="@{/user/movies/{title}(title=${movie.title})}" class="movie-poster-link">
-                <img th:src="@{/images/posters/{poster}(poster=${movie.title+'.jpg'})}" alt="Poster" class="movie-poster" src="">
+                <img th:src="@{/images/posters/{poster}(poster=${movie.title+'.jpg'})}" alt="Poster"
+                     class="movie-poster" src="">
             </a>
             <div class="movie-card-content">
                 <h3 th:text="${movie.title}">Название</h3>
@@ -332,39 +329,28 @@
         const method = action === 'add' ? 'POST' : 'GET';
         fetch(url, { method: method, redirect: 'manual' })
             .then(response => {
-                if (response.status === 302 || response.ok) {
+                if (response.type === 'opaqueredirect' || response.status === 302) {
                     const newAction = action === 'add' ? 'remove' : 'add';
                     button.setAttribute('data-action', newAction);
                     const span = button.querySelector('span');
                     span.textContent = newAction === 'add' ? '♡' : '♥';
                     button.classList.toggle('active');
-                    showFlashMessage(action === 'add' ? 'Добавлено в избранное' : 'Удалено из избранного', 'success');
-                    updateFavouritesCount();
-                } else {
-                    throw new Error('Failed to toggle favourite');
-                }
-            })
-            .catch(error => {
-                console.error('Error toggling favourite:', error);
-                showFlashMessage('Ошибка при изменении избранного', 'error');
-            })
-            .finally(() => { button.disabled = false; });
-    }
-    function updateFavouritesCount() {
-        fetch('/user/favourites/count')
-            .then(response => response.json())
-            .then(data => {
-                const favCountElement = document.querySelector('.favourites-btn .count-badge');
-                if (favCountElement) {
-                    if (data.count > 0) {
-                        favCountElement.textContent = data.count;
-                        favCountElement.style.display = 'flex';
+                    const badge = document.querySelector('.favourites-btn .count-badge');
+                    let current = parseInt(badge.textContent) || 0;
+                    if (action === 'add') current++; else current--;
+                    if (current > 0) {
+                        badge.textContent = current;
+                        badge.style.display = 'flex';
                     } else {
-                        favCountElement.style.display = 'none';
+                        badge.style.display = 'none';
                     }
+                    showFlashMessage(action === 'add' ? 'Добавлено в избранное' : 'Удалено из избранного', 'success');
+                } else {
+                    throw new Error();
                 }
             })
-            .catch(error => console.error('Error fetching favourites count:', error));
+            .catch(() => showFlashMessage('Ошибка', 'error'))
+            .finally(() => button.disabled = false);
     }
     function addToCart(button) {
         const movieTitle = button.getAttribute('data-movie-title');
@@ -372,52 +358,33 @@
         button.disabled = true;
         fetch('/user/cart/add/' + encodeURIComponent(movieTitle), { method: 'POST', redirect: 'manual' })
             .then(response => {
-                if (response.status === 302 || response.ok) {
+                if (response.type === 'opaqueredirect' || response.status === 302) {
+                    const badge = document.querySelector('.cart-btn .count-badge');
+                    let current = parseInt(badge.textContent) || 0;
+                    current++;
+                    badge.textContent = current;
+                    badge.style.display = 'flex';
                     showFlashMessage('Фильм добавлен в корзину', 'success');
-                    updateCartCount();
                     button.outerHTML = '<button class="cart-button in-cart-btn-details" onclick="window.location.href=\'/user/cart\'">В корзине<br/><span class="go-to-cart">Перейти</span></button>';
                 } else {
-                    throw new Error('Failed to add to cart');
+                    throw new Error();
                 }
             })
-            .catch(error => {
-                console.error('Error adding to cart:', error);
-                showFlashMessage('Ошибка при добавлении в корзину', 'error');
-            })
-            .finally(() => { button.disabled = false; });
-    }
-    function updateCartCount() {
-        fetch('/user/cart/count')
-            .then(response => response.text())
-            .then(count => {
-                const cartBadge = document.querySelector('.cart-btn .count-badge');
-                if (cartBadge) {
-                    const newCount = parseInt(count, 10) || 0;
-                    cartBadge.textContent = newCount;
-                    cartBadge.style.display = newCount > 0 ? 'flex' : 'none';
-                }
-            })
-            .catch(error => console.error('Error fetching cart count:', error));
+            .catch(() => showFlashMessage('Ошибка при добавлении', 'error'))
+            .finally(() => button.disabled = false);
     }
     function showFlashMessage(message, type) {
-        const existingMessages = document.querySelectorAll('.flash-message');
-        existingMessages.forEach(msg => msg.remove());
-        const flashMessage = document.createElement('div');
-        flashMessage.className = `flash-message ${type}`;
-        flashMessage.innerHTML = `<span>${message}</span>`;
-        document.body.appendChild(flashMessage);
+        document.querySelectorAll('.flash-message').forEach(msg => msg.remove());
+        const flash = document.createElement('div');
+        flash.className = `flash-message ${type}`;
+        flash.innerHTML = `<span>${message}</span>`;
+        document.body.appendChild(flash);
         setTimeout(() => {
-            flashMessage.style.animation = 'fadeOut 0.3s ease forwards';
-            setTimeout(() => { if (flashMessage.parentNode) flashMessage.remove(); }, 300);
+            flash.style.animation = 'fadeOut 0.3s ease forwards';
+            setTimeout(() => flash.remove(), 300);
         }, 3000);
     }
     document.addEventListener('DOMContentLoaded', function() {
-        document.querySelectorAll('.flash-message').forEach(msg => {
-            setTimeout(() => {
-                msg.style.animation = 'fadeOut 0.3s ease forwards';
-                setTimeout(() => msg.remove(), 300);
-            }, 3000);
-        });
         document.getElementById('buyModal').addEventListener('click', function(e) { if (e.target === this) hideBuyModal(); });
         document.getElementById('ratingModal').addEventListener('click', function(e) { if (e.target === this) hideRatingModal(); });
     });
