@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="ru">
+<head>
+    <meta charset="UTF-8"/>
+    <title>Настройки профиля</title>
+    <link rel="icon" type="image/x-icon" th:href="@{/favicon.ico}">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+            background: #f8fafc;
+            color: #0f172a;
+            line-height: 1.5;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 2rem;
+            background: white;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .logo-link a {
+            text-decoration: none;
+            color: inherit;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+
+        .logo-link img {
+            width: 28px;
+            height: 28px;
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .action-button {
+            position: relative;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: white;
+            border: 1px solid #e2e8f0;
+            color: #475569;
+            font-size: 1.5rem;
+            text-decoration: none;
+            transition: all 0.2s;
+        }
+
+        .action-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.05);
+            border-color: #94a3b8;
+        }
+
+        .favourites-btn:hover {
+            color: #e11d48;
+            border-color: #e11d48;
+        }
+
+        .cart-btn:hover {
+            color: #2563eb;
+            border-color: #2563eb;
+        }
+
+        .count-badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background: #e11d48;
+            color: white;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            font-size: 0.7rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+
+        .user-menu {
+            position: relative;
+            display: inline-block;
+        }
+
+        .user-menu-toggle {
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            padding: 8px 12px;
+            background: #f5f5f5;
+            border-radius: 20px;
+            transition: all 0.3s ease;
+            border: 1px solid #ddd;
+        }
+
+        .user-menu-toggle:hover {
+            background: #e9e9e9;
+        }
+
+        .user-icon {
+            width: 24px;
+            height: 24px;
+            margin-right: 8px;
+            border-radius: 50%;
+        }
+
+        .toggle-icon {
+            font-size: 14px;
+            color: #666;
+            transition: transform 0.3s ease;
+        }
+
+        .user-menu.show .toggle-icon {
+            transform: rotate(180deg);
+        }
+
+        .user-dropdown {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            min-width: 180px;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-10px);
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+
+        .user-menu.show .user-dropdown {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(8px);
+        }
+
+        .user-dropdown a {
+            display: block;
+            padding: 12px 16px;
+            text-decoration: none;
+            color: #333;
+            border-bottom: 1px solid #f0f0f0;
+            transition: background 0.2s ease;
+        }
+
+        .user-dropdown a:last-child {
+            border-bottom: none;
+        }
+
+        .user-dropdown a:hover {
+            background: #f8f9fa;
+        }
+
+        .logout-form {
+            margin: 0;
+        }
+
+        .logout-btn {
+            background: none;
+            border: none;
+            color: #dc3545;
+            width: 100%;
+            text-align: left;
+            padding: 12px 16px;
+            cursor: pointer;
+            font-family: inherit;
+            font-size: inherit;
+            border-bottom-left-radius: 8px;
+            border-bottom-right-radius: 8px;
+        }
+
+        .logout-btn:hover {
+            background: #ffe6e6;
+        }
+
+        .flash-message {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 1rem 1.5rem;
+            border-radius: 40px;
+            color: white;
+            font-weight: 500;
+            z-index: 1000;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            animation: slideIn 0.3s ease, fadeOut 0.3s ease 5s forwards;
+            max-width: 400px;
+        }
+
+        .flash-message.success { background: #10b981; }
+        .flash-message.error { background: #ef4444; }
+
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        @keyframes fadeOut {
+            to { opacity: 0; visibility: hidden; }
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 2rem auto;
+            padding: 0 2rem;
+        }
+
+        h1 {
+            font-size: 2rem;
+            margin-bottom: 2rem;
+            color: #0f172a;
+        }
+
+        .settings-card {
+            background: white;
+            border-radius: 32px;
+            padding: 2rem;
+            box-shadow: 0 20px 35px -10px rgba(0,0,0,0.1);
+        }
+
+        .wallet-info {
+            background: #f1f5f9;
+            border-radius: 20px;
+            padding: 1rem 1.5rem;
+            margin-bottom: 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .wallet-label {
+            font-weight: 600;
+            color: #334155;
+        }
+
+        .wallet-value {
+            font-weight: 700;
+            color: #0f172a;
+        }
+
+        .wallet-balance {
+            color: #10b981;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: #334155;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 0.8rem 1rem;
+            border: 1px solid #cbd5e1;
+            border-radius: 20px;
+            font-size: 1rem;
+            transition: 0.2s;
+            background: white;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59,130,246,0.1);
+        }
+
+        .form-control.is-invalid {
+            border-color: #ef4444;
+        }
+
+        .error-message {
+            color: #ef4444;
+            font-size: 0.85rem;
+            margin-top: 0.3rem;
+        }
+
+        .form-actions {
+            display: flex;
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 0.8rem 2rem;
+            border-radius: 40px;
+            font-weight: 600;
+            text-decoration: none;
+            text-align: center;
+            transition: 0.2s;
+            border: none;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+
+        .btn-primary {
+            background: #3b82f6;
+            color: white;
+            flex: 1;
+        }
+
+        .btn-primary:hover {
+            background: #2563eb;
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px -5px #3b82f6;
+        }
+
+        .btn-secondary {
+            background: #f1f5f9;
+            color: #1e293b;
+            border: 1px solid #cbd5e1;
+            flex: 1;
+        }
+
+        .btn-secondary:hover {
+            background: #e2e8f0;
+        }
+
+        @media (max-width: 768px) {
+            header {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .header-actions {
+                justify-content: center;
+            }
+            .user-dropdown {
+                position: fixed;
+                top: 60px;
+                right: 10px;
+                left: 10px;
+                min-width: auto;
+            }
+        }
+    </style>
+</head>
+<body>
+<header>
+    <h1 class="logo-link">
+        <a href="/user/movies">
+            <img src="/static/favicon.ico" alt="">
+            Cinema Service
+        </a>
+    </h1>
+
+    <div class="header-actions">
+        <a th:href="@{/user/favourites}" class="action-button favourites-btn" title="Избранное">
+            ♥
+            <span th:if="${favouritesCount != null and favouritesCount > 0}"
+                  class="count-badge"
+                  th:text="${favouritesCount}">0</span>
+        </a>
+
+        <a th:href="@{/user/cart}" class="action-button cart-btn" title="Корзина">
+            🛒
+            <span th:if="${cartCount != null and cartCount > 0}"
+                  class="count-badge"
+                  th:text="${cartCount}">0</span>
+        </a>
+
+        <div class="user-menu" id="userMenu">
+            <div class="user-menu-toggle" onclick="toggleUserMenu()">
+                <img th:src="@{/images/user-icon.png}" alt="Пользователь" class="user-icon" src="">
+                <span class="toggle-icon">▼</span>
+            </div>
+            <div class="user-dropdown">
+                <a th:href="@{/personal-account}">Личный кабинет</a>
+                <a th:href="@{/user/settings}">Настройки⚙️</a>
+                <a th:href="@{/user/top-up}">Пополнить💰</a>
+                <form th:action="@{/logout}" method="post" class="logout-form">
+                    <button type="submit" class="logout-btn">Выйти</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</header>
+
+<main class="container">
+    <h1>Настройки профиля</h1>
+
+    <div th:if="${successMessage}" class="flash-message success" th:text="${successMessage}"></div>
+    <div th:if="${frozenBuyerExceptionMessage}" class="flash-message error" th:text="${frozenBuyerExceptionMessage}"></div>
+    <div th:if="${notAuthorizedUserExceptionMessage}" class="flash-message error" th:text="${notAuthorizedUserExceptionMessage}"></div>
+    <div th:if="${notAuthorizedWalletExceptionMessage}" class="flash-message error" th:text="${notAuthorizedWalletExceptionMessage}"></div>
+    <div th:if="${walletDoesNotExistsExceptionMessage}" class="flash-message error" th:text="${walletDoesNotExistsExceptionMessage}"></div>
+    <div th:if="${validationError}" class="flash-message error" th:text="${validationError}"></div>
+    <div th:if="${passwordsMismatchExceptionMessage}" class="flash-message error" th:text="${passwordsMismatchExceptionMessage}"></div>
+    <div th:if="${alreadyRegisteredExceptionMessage}" class="flash-message error" th:text="${alreadyRegisteredExceptionMessage}"></div>
+
+    <div class="settings-card">
+        <div class="wallet-info" th:if="${wallet != null}">
+            <span class="wallet-label">Текущий пользователь:</span>
+            <div th:if="${wallet.username != null}">
+                <span class="wallet-value" th:text="${wallet.username}">Имя пользователя</span>
+            </div>
+            <div th:if="${wallet.fullName != null}">
+                <span class="wallet-value" th:text="${wallet.fullName}">Имя владельца</span>
+                <span class="wallet-balance">
+                    Баланс: <span th:text="${wallet.balance}">0</span> ₽
+                </span>
+            </div>
+            <div th:if="${wallet.username == null and wallet.fullName == null}">
+                <span class="wallet-value" th:text="${wallet}">Неизвестно</span>
+            </div>
+        </div>
+
+        <form th:action="@{/profile/settings/change}" method="post" th:object="${profileSettingsDTO}">
+
+            <div class="form-group">
+                <label for="username">Имя пользователя</label>
+                <input type="text" id="username" class="form-control"
+                       th:field="*{username}"
+                       th:classappend="${#fields.hasErrors('username')} ? 'is-invalid' : ''"
+                       placeholder="Введите имя пользователя" />
+                <div class="error-message" th:if="${#fields.hasErrors('username')}"
+                     th:each="err : ${#fields.errors('username')}" th:text="${err}"></div>
+            </div>
+
+            <div class="form-group">
+                <label for="email">Email</label>
+                <input type="email" id="email" class="form-control"
+                       th:field="*{email}"
+                       th:classappend="${#fields.hasErrors('email')} ? 'is-invalid' : ''"
+                       placeholder="example@mail.com" />
+                <div class="error-message" th:if="${#fields.hasErrors('email')}"
+                     th:each="err : ${#fields.errors('email')}" th:text="${err}"></div>
+            </div>
+
+            <div class="form-group">
+                <label for="phone">Телефон (международный формат)</label>
+                <input type="tel" id="phone" class="form-control"
+                       th:field="*{phone}"
+                       th:classappend="${#fields.hasErrors('phone')} ? 'is-invalid' : ''"
+                       placeholder="+7 (999) 123-45-67" />
+                <div class="error-message" th:if="${#fields.hasErrors('phone')}"
+                     th:each="err : ${#fields.errors('phone')}" th:text="${err}"></div>
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary">Сохранить изменения</button>
+                <a href="/user/movies" class="btn btn-secondary">Отмена</a>
+            </div>
+        </form>
+    </div>
+</main>
+
+<script>
+    let userMenu = document.getElementById('userMenu');
+
+    function toggleUserMenu() {
+        userMenu.classList.toggle('show');
+    }
+
+    document.addEventListener('click', function(event) {
+        if (!userMenu.contains(event.target)) {
+            userMenu.classList.remove('show');
+        }
+    });
+
+    document.addEventListener('DOMContentLoaded', function() {
+        document.querySelectorAll('.flash-message').forEach(msg => {
+            setTimeout(() => {
+                msg.style.animation = 'fadeOut 0.3s ease forwards';
+                setTimeout(() => msg.remove(), 300);
+            }, 5000);
+        });
+    });
+</script>
+</body>
+</html>

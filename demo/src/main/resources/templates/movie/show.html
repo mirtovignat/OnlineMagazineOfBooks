@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="ru">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title th:text="${card.title}">Фильм</title>
+    <link rel="icon" type="image/x-icon" th:href="@{/favicon.ico}">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
+    <style>
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body {
+            font-family: 'Inter', system-ui, sans-serif;
+            background: radial-gradient(circle at 10% 20%, #0b0f1c, #05070f);
+            color: #eef2ff;
+            line-height: 1.5;
+            min-height: 100vh;
+        }
+        :root {
+            --glass-bg: rgba(18, 25, 45, 0.65);
+            --glass-border: rgba(72, 187, 255, 0.25);
+            --glow-primary: #3b82f6;
+            --glow-success: #10b981;
+            --glow-danger: #f43f5e;
+            --text-light: #e2e8f0;
+            --text-muted: #94a3b8;
+            --card-bg: rgba(15, 23, 42, 0.75);
+            --shadow-xl: 0 25px 45px -12px rgba(0,0,0,0.5);
+            --radius-xl: 28px;
+        }
+        header {
+            position: sticky;
+            top: 0;
+            z-index: 50;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 2rem;
+            background: rgba(8, 12, 24, 0.7);
+            backdrop-filter: blur(16px);
+            border-bottom: 1px solid var(--glass-border);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+        }
+        .logo-link a {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            text-decoration: none;
+            font-weight: 700;
+            font-size: 1.5rem;
+            background: linear-gradient(135deg, #c084fc, #60a5fa);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+        .logo-link img { width: 32px; height: 32px; border-radius: 12px; }
+        .header-actions { display: flex; align-items: center; gap: 1rem; }
+        .action-button {
+            position: relative;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 48px;
+            height: 48px;
+            border-radius: 40px;
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            color: var(--text-light);
+            font-size: 1.5rem;
+            text-decoration: none;
+            transition: all 0.25s ease;
+            backdrop-filter: blur(4px);
+        }
+        .action-button:hover { transform: translateY(-3px); border-color: var(--glow-primary); color: var(--glow-primary); box-shadow: 0 0 12px rgba(59,130,246,0.4); }
+        .count-badge {
+            position: absolute;
+            top: -6px;
+            right: -6px;
+            background: var(--glow-danger);
+            color: white;
+            border-radius: 40px;
+            min-width: 22px;
+            height: 22px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 0 6px #f43f5e;
+        }
+        .login-button {
+            display: flex;
+            align-items: center;
+            background: linear-gradient(135deg, var(--glow-primary), #1d4ed8);
+            color: white;
+            padding: 0.6rem 1.5rem;
+            border-radius: 60px;
+            text-decoration: none;
+            font-weight: 500;
+            transition: 0.2s;
+        }
+        .login-button:hover { transform: translateY(-2px); box-shadow: 0 6px 14px rgba(59,130,246,0.4); }
+        .flash-message {
+            position: fixed;
+            top: 90px;
+            right: 20px;
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 1rem 1.5rem;
+            border-radius: 60px;
+            background: rgba(0,0,0,0.8);
+            backdrop-filter: blur(12px);
+            font-weight: 500;
+            max-width: 400px;
+            border-left: 4px solid;
+            animation: slideIn 0.3s ease, fadeOut 0.3s ease 4s forwards;
+        }
+        .flash-message.success { border-color: var(--glow-success); color: #a7f3d0; }
+        .flash-message.error { border-color: var(--glow-danger); color: #fecdd3; }
+        @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+        @keyframes fadeOut { to { opacity: 0; visibility: hidden; } }
+        .movie-details { max-width: 1200px; margin: 2rem auto; padding: 0 2rem; display: flex; gap: 3rem; }
+        .movie-poster { flex: 0 0 350px; }
+        .movie-poster img { width: 100%; height: 500px; object-fit: cover; border-radius: 32px; box-shadow: 0 20px 30px -10px rgba(0,0,0,0.5); transition: transform 0.3s; }
+        .movie-poster img:hover { transform: scale(1.02); }
+        .movie-info { flex: 1; display: flex; flex-direction: column; gap: 1.2rem; }
+        .movie-title { font-size: 2.8rem; font-weight: 800; background: linear-gradient(135deg, #e0e7ff, #c084fc); -webkit-background-clip: text; background-clip: text; color: transparent; }
+        .badges { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+        .badge { padding: 0.35rem 1.2rem; border-radius: 40px; font-size: 0.9rem; font-weight: 600; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); }
+        .badge.rating { background: rgba(251,191,36,0.2); color: #fde047; }
+        .badge.year { background: rgba(52,211,153,0.2); color: #6ee7b7; }
+        .badge.genre { background: rgba(96,165,250,0.2); color: #93c5fd; }
+        .director-block { background: rgba(0,0,0,0.3); border-radius: 60px; padding: 0.6rem 1.2rem; display: inline-block; }
+        .director-name { font-weight: 600; }
+        .movie-duration { color: var(--text-muted); }
+        .movie-price { font-size: 2rem; font-weight: 700; color: #c084fc; }
+        .icon-group { display: flex; gap: 0.75rem; margin: 0.5rem 0; }
+        .icon-btn {
+            display: flex; align-items: center; justify-content: center;
+            width: 48px; height: 48px; border-radius: 50%;
+            background: rgba(255,255,255,0.05); border: 1px solid var(--glass-border);
+            color: var(--text-light); font-size: 1.5rem; cursor: pointer;
+            transition: all 0.2s;
+        }
+        .icon-btn:hover { transform: scale(1.08); border-color: #f472b6; color: #f472b6; }
+        .icon-btn.rating-btn:hover { border-color: #fbbf24; color: #fbbf24; }
+        .icon-btn.comment-btn:hover { border-color: #06b6d4; color: #06b6d4; }
+        .movie-description { color: var(--text-light); line-height: 1.6; }
+        .purchase-buttons { display: flex; gap: 1rem; margin-top: 0.5rem; width: 100%; }
+        .purchase-buttons form, .purchase-buttons a { flex: 1 1 0; min-width: 0; text-decoration: none; }
+        .cart-btn-large, .buy-btn-large { display: block; width: 100%; padding: 0.9rem 1rem; border-radius: 60px; font-weight: 600; font-size: 1rem; text-align: center; border: none; cursor: pointer; transition: 0.2s; white-space: nowrap; }
+        .cart-btn-large { background: linear-gradient(135deg, var(--glow-primary), #1d4ed8); color: white; }
+        .cart-btn-large:hover { transform: translateY(-2px); box-shadow: 0 10px 20px rgba(59,130,246,0.4); }
+        .buy-btn-large { background: linear-gradient(135deg, var(--glow-success), #059669); color: white; }
+        .buy-btn-large:hover { transform: translateY(-2px); box-shadow: 0 10px 20px rgba(16,185,129,0.4); }
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 2000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            backdrop-filter: blur(8px);
+            align-items: center;
+            justify-content: center;
+        }
+        .modal-content {
+            background: rgba(10, 15, 30, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 48px;
+            padding: 2rem;
+            max-width: 450px;
+            width: 90%;
+            border: 1px solid var(--glass-border);
+            position: relative;
+        }
+        .modal-close {
+            position: absolute;
+            top: 1rem;
+            right: 1.5rem;
+            background: none;
+            border: none;
+            font-size: 2rem;
+            cursor: pointer;
+            color: var(--text-muted);
+        }
+        .modal-close:hover { color: var(--glow-danger); }
+        .modal h2 { font-size: 1.8rem; margin-bottom: 1rem; background: linear-gradient(135deg, #e0e7ff, #c084fc); -webkit-background-clip: text; background-clip: text; color: transparent; }
+        .rating-input, .comment-input { margin: 1.5rem 0; text-align: left; }
+        .rating-input label, .comment-input label { display: block; margin-bottom: 0.3rem; font-weight: 600; }
+        .rating-input input, .comment-input textarea { width: 100%; padding: 0.8rem 1rem; border-radius: 60px; border: 1px solid var(--glass-border); background: rgba(0,0,0,0.3); color: white; }
+        .modal-buttons { display: flex; gap: 1rem; margin-top: 1.5rem; }
+        .modal-confirm-btn, .modal-cancel-btn { flex: 1; padding: 0.8rem; border-radius: 60px; font-weight: 600; border: none; cursor: pointer; }
+        .modal-confirm-btn { background: linear-gradient(135deg, var(--glow-success), #059669); color: white; }
+        .modal-cancel-btn { background: rgba(255,255,255,0.1); color: var(--text-light); border: 1px solid var(--glass-border); }
+        @media (max-width: 900px) { .movie-details { flex-direction: column; align-items: center; } .movie-poster { width: 300px; } .movie-poster img { height: 450px; } }
+        @media (max-width: 600px) { .purchase-buttons { flex-direction: column; } header { flex-direction: column; align-items: stretch; } .header-actions { justify-content: center; } }
+    </style>
+</head>
+<body>
+<header>
+    <h1 class="logo-link"><a href="/movies"><img src="/static/favicon.ico" alt="">Cinema Service</a></h1>
+    <div class="header-actions">
+        <a th:href="@{/user/favourites}" class="action-button favourites-btn" title="Избранное">♥<span th:if="${favouritesCount != null and favouritesCount > 0}" class="count-badge" th:text="${favouritesCount}">0</span></a>
+        <a th:href="@{/user/cart}" class="action-button cart-btn" title="Корзина">🛒<span th:if="${cartCount != null and cartCount > 0}" class="count-badge" th:text="${cartCount}">0</span></a>
+        <a th:href="@{/login}" class="login-button">👤 Войти</a>
+    </div>
+</header>
+<main class="movie-details">
+    <div class="movie-poster"><img th:src="@{/images/posters/{poster}(poster=${card.title+'.jpg'})}" alt="Poster" src=""></div>
+    <div class="movie-info">
+        <h1 class="movie-title" th:text="${card.title}">Название</h1>
+        <div class="badges"><span class="badge rating" th:text="${card.rating ?: '-'}">8.2</span><span class="badge year" th:text="${card.releaseYear ?: '-'}">2013</span><span class="badge genre" th:text="${card.genre ?: '-'}">Комедия</span></div>
+        <div class="director-block"><span class="director-name" th:text="${card.director}">Мартин Скорсезе</span></div>
+        <p class="movie-duration"><strong>Длительность:</strong> <span th:text="${card.formattedDuration}">3:00:00</span></p>
+        <p class="movie-price" th:text="${card.price + ' ₽'}">329.99 ₽</p>
+        <div class="icon-group">
+            <form th:action="@{/user/favourites/add/{title}(title=${card.title})}" method="post" style="display: contents;"><button type="submit" class="icon-btn favourite-btn" title="Добавить в избранное">♡</button></form>
+            <button class="icon-btn rating-btn" th:data-movie-title="${card.title}" onclick="showRatingModal(this)" title="Оценить фильм">☆</button>
+            <a th:href="@{/rated/{title}/reviews(title=${card.title})}" class="icon-btn comment-btn" title="Отзывы">💬</a>
+        </div>
+        <p class="movie-description" th:text="${card.description}">Описание фильма...</p>
+        <div class="purchase-buttons">
+            <form th:action="@{/user/cart/add/{title}(title=${card.title})}" method="post"><button type="submit" class="cart-btn-large">В корзину</button></form>
+            <a th:href="@{/user/purchases/add/{title}(title=${card.title})}" class="buy-btn-large">Купить сейчас</a>
+        </div>
+    </div>
+</main>
+<div th:if="${successMessage}" class="flash-message success" th:text="${successMessage}"></div>
+<div th:if="${notAuthorizedUserExceptionMessage}" class="flash-message error" th:text="${notAuthorizedUserExceptionMessage}"></div>
+<div th:if="${frozenBuyerExceptionMessage}" class="flash-message error" th:text="${frozenBuyerExceptionMessage}"></div>
+<div id="ratingModal" class="modal"><div class="modal-content"><button class="modal-close" onclick="hideRatingModal()">×</button><h2>Оценить фильм</h2><p style="font-weight: bold;" id="ratingModalMovieTitle"></p><form id="ratingForm" method="post"><input type="hidden" name="title" id="ratingFormTitle"><div class="rating-input"><label for="ratingValue">Оценка (0.0–10.0):</label><input type="number" id="ratingValue" name="rating" step="0.1" min="0" max="10" value="5.0" required></div><div class="comment-input"><label for="ratingComment">Комментарий:</label><textarea id="ratingComment" name="review" rows="3" placeholder="Ваш отзыв..." maxlength="2000"></textarea></div><div class="modal-buttons"><button type="button" class="modal-cancel-btn" onclick="hideRatingModal()">Отмена</button><button type="submit" class="modal-confirm-btn">Отправить</button></div></form></div></div>
+<script>
+    function showRatingModal(button) { const title = button.getAttribute('data-movie-title'); document.getElementById('ratingModalMovieTitle').textContent = title; document.getElementById('ratingForm').action = `/user/rated/add/${encodeURIComponent(title)}`; document.getElementById('ratingFormTitle').value = title; document.getElementById('ratingValue').value = '5.0'; document.getElementById('ratingComment').value = ''; document.getElementById('ratingModal').style.display = 'flex'; }
+    function hideRatingModal() { document.getElementById('ratingModal').style.display = 'none'; }
+    document.addEventListener('DOMContentLoaded', () => { document.getElementById('ratingModal').addEventListener('click', e => { if (e.target === document.getElementById('ratingModal')) hideRatingModal(); }); document.querySelectorAll('.flash-message').forEach(msg => { setTimeout(() => { msg.style.animation = 'fadeOut 0.3s ease forwards'; setTimeout(() => msg.remove(), 300); }, 3000); }); });
+</script>
+</body>
+</html>

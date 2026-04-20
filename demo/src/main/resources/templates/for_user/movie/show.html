@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="ru">
+<head>
+    <meta charset="UTF-8"/>
+    <title th:text="${card.title}">Фильм</title>
+    <link rel="icon" type="image/x-icon" th:href="@{/favicon.ico}">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; background: #f8fafc; color: #0f172a; line-height: 1.5; }
+        header { display: flex; justify-content: space-between; align-items: center; padding: 1rem 2rem; background: white; box-shadow: 0 2px 10px rgba(0,0,0,0.05); flex-wrap: wrap; gap: 1rem; }
+        .logo-link a { text-decoration: none; color: inherit; display: flex; align-items: center; gap: 10px; font-size: 1.5rem; font-weight: 600; }
+        .logo-link img { width: 28px; height: 28px; }
+        .header-actions { display: flex; align-items: center; gap: 15px; }
+        .action-button { position: relative; display: inline-flex; align-items: center; justify-content: center; width: 44px; height: 44px; border-radius: 50%; background: white; border: 1px solid #e2e8f0; color: #475569; font-size: 1.5rem; text-decoration: none; transition: all 0.2s; }
+        .action-button:hover { transform: translateY(-2px); box-shadow: 0 6px 12px rgba(0,0,0,0.05); border-color: #94a3b8; }
+        .favourites-btn:hover { color: #e11d48; border-color: #e11d48; }
+        .cart-btn:hover { color: #2563eb; border-color: #2563eb; }
+        .count-badge { position: absolute; top: -5px; right: -5px; background: #e11d48; color: white; border-radius: 50%; width: 20px; height: 20px; font-size: 0.7rem; display: flex; align-items: center; justify-content: center; font-weight: bold; }
+        .user-menu { position: relative; display: inline-block; }
+        .user-menu-toggle { display: flex; align-items: center; cursor: pointer; padding: 8px 12px; background: #f1f5f9; border-radius: 40px; transition: all 0.2s; border: 1px solid #e2e8f0; }
+        .user-menu-toggle:hover { background: #e2e8f0; }
+        .user-icon { width: 24px; height: 24px; margin-right: 8px; border-radius: 50%; }
+        .toggle-icon { font-size: 14px; color: #64748b; transition: transform 0.3s ease; }
+        .user-menu.show .toggle-icon { transform: rotate(180deg); }
+        .user-dropdown { position: absolute; top: 100%; right: 0; background: white; border: 1px solid #e2e8f0; border-radius: 24px; box-shadow: 0 15px 30px -10px rgba(0,0,0,0.15); min-width: 200px; opacity: 0; visibility: hidden; transform: translateY(-10px); transition: all 0.3s ease; z-index: 1000; overflow: hidden; }
+        .user-menu.show .user-dropdown { opacity: 1; visibility: visible; transform: translateY(8px); }
+        .user-dropdown a, .user-dropdown button { display: block; padding: 12px 16px; text-decoration: none; color: #1e293b; border-bottom: 1px solid #f1f5f9; transition: background 0.2s ease; background: none; border: none; width: 100%; text-align: left; font-size: 0.95rem; cursor: pointer; }
+        .user-dropdown a:last-child, .user-dropdown button:last-child { border-bottom: none; }
+        .user-dropdown a:hover, .user-dropdown button:hover { background: #f8fafc; }
+        .user-dropdown .logout-btn { color: #e11d48; }
+        .user-dropdown .logout-btn:hover { background: #ffe6e8; }
+        .flash-message { position: fixed; top: 20px; right: 20px; padding: 1rem 1.5rem; border-radius: 40px; color: white; font-weight: 500; z-index: 1000; box-shadow: 0 10px 25px rgba(0,0,0,0.2); animation: slideIn 0.3s ease, fadeOut 0.3s ease 3s forwards; max-width: 400px; }
+        .flash-message.success { background: #10b981; }
+        .flash-message.error { background: #ef4444; }
+        .flash-message.warning { background: #f59e0b; color: #1e293b; }
+        @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+        @keyframes fadeOut { to { opacity: 0; visibility: hidden; } }
+        .movie-details { max-width: 1200px; margin: 2rem auto; padding: 0 2rem; display: flex; gap: 3rem; }
+        .movie-poster { flex: 0 0 350px; }
+        .movie-poster img { width: 100%; height: 500px; object-fit: cover; border-radius: 24px; box-shadow: 0 20px 30px -10px rgba(0,0,0,0.2); }
+        .movie-info { flex: 1; display: flex; flex-direction: column; gap: 1.5rem; }
+        .movie-title { font-size: 2.5rem; font-weight: 700; color: #0f172a; line-height: 1.2; }
+        .badges { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+        .badge { padding: 0.35rem 1rem; border-radius: 40px; font-size: 0.9rem; font-weight: 600; background: #e2e8f0; color: #334155; }
+        .badge.rating { background: #fbbf24; color: #78350f; }
+        .badge.year { background: #34d399; color: #064e3b; }
+        .badge.genre { background: #60a5fa; color: #1e3a8a; }
+        .director-block { display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; background: #f1f5f9; padding: 0.75rem 1.25rem; border-radius: 40px; }
+        .director-name { font-weight: 600; }
+        .director-link { background: white; border: 1px solid #cbd5e1; border-radius: 40px; padding: 0.3rem 1rem; font-size: 0.9rem; text-decoration: none; color: #1e293b; transition: 0.2s; }
+        .director-link:hover { background: #f8fafc; }
+        .movie-duration { color: #334155; }
+        .movie-price { font-size: 2rem; font-weight: 700; color: #0f172a; }
+        .icon-group { display: flex; gap: 0.75rem; margin: 0.5rem 0; }
+        .icon-btn { display: flex; align-items: center; justify-content: center; width: 48px; height: 48px; border-radius: 50%; background: white; border: 1px solid #e2e8f0; color: #475569; font-size: 1.5rem; text-decoration: none; transition: 0.2s; cursor: pointer; }
+        .icon-btn:hover { transform: scale(1.08); border-color: #e11d48; color: #e11d48; box-shadow: 0 8px 16px rgba(225,29,72,0.15); }
+        .icon-btn.rating-btn:hover { border-color: #f59e0b; color: #f59e0b; }
+        .icon-btn.comment-btn:hover { border-color: #06b6d4; color: #06b6d4; }
+        .movie-description { color: #334155; line-height: 1.6; }
+        .action-buttons { display: flex; gap: 1rem; margin-top: 0.5rem; width: 100%; }
+        .cart-button { display: inline-block; padding: 0.9rem 1.5rem; border-radius: 40px; font-weight: 600; font-size: 1rem; text-align: center; border: none; cursor: pointer; transition: 0.2s; text-decoration: none; }
+        .to-cart-btn-details { background: #3b82f6; color: white; }
+        .to-cart-btn-details:hover { background: #2563eb; transform: translateY(-2px); box-shadow: 0 10px 20px -5px #3b82f6; }
+        .in-cart-btn-details { background: #10b981; color: white; }
+        .in-cart-btn-details:hover { background: #059669; transform: translateY(-2px); box-shadow: 0 10px 20px -5px #10b981; }
+        .buy-button { background: #f59e0b; color: white; border: none; padding: 0.9rem 1.5rem; border-radius: 40px; font-weight: 600; cursor: pointer; transition: 0.2s; }
+        .buy-button:hover { background: #d97706; transform: translateY(-2px); box-shadow: 0 10px 20px -5px #f59e0b; }
+        .bought-message { background: #64748b; color: white; padding: 0.9rem 1.5rem; border-radius: 40px; font-weight: 600; display: inline-block; }
+        .modal { display: none; position: fixed; z-index: 2000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); align-items: center; justify-content: center; backdrop-filter: blur(4px); }
+        .modal-content { background: white; padding: 2rem; border-radius: 32px; width: 90%; max-width: 420px; position: relative; box-shadow: 0 25px 50px -12px black; }
+        .modal-close { position: absolute; top: 1rem; right: 1rem; background: none; border: none; font-size: 1.5rem; cursor: pointer; color: #64748b; width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
+        .modal-close:hover { background: #f1f5f9; }
+        .modal h2 { margin-bottom: 1rem; color: #0f172a; }
+        .rating-input, .comment-input { margin: 1.5rem 0; text-align: left; }
+        .rating-input label, .comment-input label { display: block; margin-bottom: 0.3rem; font-weight: 600; }
+        .rating-input input, .comment-input textarea { width: 100%; padding: 0.8rem 1rem; border: 1px solid #cbd5e1; border-radius: 20px; font-size: 1rem; }
+        .modal-buttons { display: flex; gap: 1rem; margin-top: 1.5rem; }
+        .modal-confirm-btn, .modal-cancel-btn { flex: 1; padding: 0.8rem; border-radius: 40px; font-weight: 600; border: none; cursor: pointer; }
+        .modal-confirm-btn { background: #10b981; color: white; }
+        .modal-cancel-btn { background: #f1f5f9; color: #1e293b; }
+        .modal-confirm-btn:hover { background: #059669; }
+        .modal-cancel-btn:hover { background: #e2e8f0; }
+        @media (max-width: 900px) { .movie-details { flex-direction: column; align-items: center; } .movie-poster { flex: 0 0 auto; width: 300px; } .movie-poster img { height: 450px; } }
+        @media (max-width: 600px) { .action-buttons { flex-direction: column; } header { flex-direction: column; align-items: stretch; } .header-actions { justify-content: center; } }
+        @import url('https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&display=swap');
+        body { font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; background: linear-gradient(145deg, #f1f5f9 0%, #f8fafc 100%); min-height: 100vh; scroll-behavior: smooth; }
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: #e2e8f0; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb { background: #3b82f6; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #2563eb; }
+        header { background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(12px); box-shadow: 0 8px 20px rgba(0,0,0,0.03), 0 2px 6px rgba(0,0,0,0.05); border-bottom: 1px solid rgba(59,130,246,0.1); position: sticky; top: 0; z-index: 100; }
+        .logo-link a { background: linear-gradient(135deg, #0f172a, #1e293b); -webkit-background-clip: text; background-clip: text; color: transparent; transition: transform 0.2s ease; }
+        .logo-link a:hover { transform: scale(1.02); }
+        .action-button { background: rgba(255,255,255,0.9); box-shadow: 0 2px 6px rgba(0,0,0,0.02); transition: all 0.3s cubic-bezier(0.2, 0.9, 0.4, 1.1); }
+        .action-button:hover { transform: translateY(-3px) scale(1.05); box-shadow: 0 12px 20px -8px rgba(0,0,0,0.15); }
+        .user-menu-toggle { background: rgba(255,255,255,0.8); backdrop-filter: blur(4px); border: 1px solid #e2e8f0; transition: all 0.2s; }
+        .user-menu-toggle:hover { background: white; border-color: #3b82f6; box-shadow: 0 4px 12px rgba(59,130,246,0.1); }
+        .user-dropdown { border-radius: 24px; backdrop-filter: blur(8px); background: rgba(255,255,255,0.98); box-shadow: 0 20px 35px -12px rgba(0,0,0,0.2); }
+        .movie-details { max-width: 1280px; margin: 2rem auto; gap: 3rem; animation: fadeSlideUp 0.6s ease; }
+        @keyframes fadeSlideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        .movie-poster img { border-radius: 32px; box-shadow: 0 20px 35px -12px rgba(0,0,0,0.25); transition: transform 0.3s ease, box-shadow 0.3s ease; }
+        .movie-poster img:hover { transform: scale(1.02); box-shadow: 0 30px 45px -15px rgba(0,0,0,0.3); }
+        .movie-title { font-size: 2.8rem; font-weight: 800; letter-spacing: -0.02em; background: linear-gradient(135deg, #0f172a, #1e293b); -webkit-background-clip: text; background-clip: text; color: transparent; }
+        .badge { font-weight: 600; padding: 0.4rem 1.2rem; backdrop-filter: blur(2px); transition: transform 0.2s; }
+        .badge.rating { background: #fbbf24; color: #78350f; box-shadow: 0 2px 6px rgba(0,0,0,0.05); }
+        .badge.year { background: #34d399; color: #064e3b; }
+        .badge.genre { background: #60a5fa; color: #1e3a8a; }
+        .director-block { background: rgba(255,255,255,0.7); backdrop-filter: blur(4px); border: 1px solid #e2e8f0; border-radius: 60px; padding: 0.5rem 1.2rem; transition: all 0.2s; }
+        .director-link { background: white; transition: all 0.2s; }
+        .director-link:hover { background: #3b82f6; color: white; border-color: #3b82f6; transform: translateY(-2px); box-shadow: 0 4px 12px rgba(59,130,246,0.2); }
+        .movie-price { font-size: 2.2rem; font-weight: 800; background: linear-gradient(135deg, #0f172a, #334155); -webkit-background-clip: text; background-clip: text; color: transparent; }
+        .icon-btn { background: #f8fafc; border: 1px solid #e2e8f0; transition: all 0.2s cubic-bezier(0.2, 0.9, 0.4, 1.1); box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
+        .icon-btn:hover { transform: scale(1.1); box-shadow: 0 8px 16px rgba(0,0,0,0.1); }
+        .favourite-btn:hover { background: #ffe4e6; border-color: #e11d48; color: #e11d48; }
+        .rating-btn:hover { background: #fffbeb; border-color: #f59e0b; color: #f59e0b; }
+        .comment-btn:hover { background: #e0f2fe; border-color: #06b6d4; color: #06b6d4; }
+        .to-cart-btn-details { background: linear-gradient(105deg, #3b82f6, #2563eb); box-shadow: 0 6px 12px rgba(59,130,246,0.25); }
+        .to-cart-btn-details:hover { transform: translateY(-2px); box-shadow: 0 12px 24px rgba(59,130,246,0.35); }
+        .in-cart-btn-details { background: linear-gradient(105deg, #10b981, #059669); box-shadow: 0 4px 12px rgba(16,185,129,0.25); }
+        .in-cart-btn-details:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(16,185,129,0.35); }
+        .buy-button { background: linear-gradient(105deg, #f59e0b, #d97706); box-shadow: 0 6px 12px rgba(245,158,11,0.25); }
+        .buy-button:hover { transform: translateY(-2px); box-shadow: 0 12px 24px rgba(245,158,11,0.35); }
+        .bought-message { background: #64748b; box-shadow: 0 4px 12px rgba(0,0,0,0.1); backdrop-filter: blur(4px); }
+        .flash-message { backdrop-filter: blur(8px); border-radius: 60px; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.2); }
+        .flash-message.success { background: linear-gradient(105deg, #10b981, #059669); }
+        .flash-message.error { background: linear-gradient(105deg, #ef4444, #dc2626); }
+        .modal-content { background: rgba(255,255,255,0.98); backdrop-filter: blur(16px); border: 1px solid rgba(59,130,246,0.2); box-shadow: 0 25px 50px -12px rgba(0,0,0,0.3); border-radius: 48px; }
+        .modal-close { transition: all 0.2s; }
+        .modal-confirm-btn { background: linear-gradient(105deg, #10b981, #059669); }
+        .modal-cancel-btn { background: #f1f5f9; border: 1px solid #cbd5e1; }
+        .modal-confirm-btn:hover, .modal-cancel-btn:hover { transform: translateY(-2px); }
+        @media (max-width: 900px) { .movie-title { font-size: 2rem; } .movie-poster { width: 280px; } }
+    </style>
+</head>
+<body>
+<header>
+    <h1 class="logo-link">
+        <a href="/user/movies">
+            <img src="/static/favicon.ico" alt="">
+            Cinema Service
+        </a>
+    </h1>
+    <div class="header-actions">
+        <a th:href="@{/user/favourites}" class="action-button favourites-btn" title="Избранное">
+            ♥
+            <span class="count-badge"
+                  th:style="${favouritesCount != null and favouritesCount > 0} ? 'display: flex' : 'display: none'"
+                  th:text="${favouritesCount != null ? favouritesCount : 0}">0</span>
+        </a>
+        <a th:href="@{/user/cart}" class="action-button cart-btn" title="Корзина">
+            🛒
+            <span class="count-badge"
+                  th:style="${cartCount != null and cartCount > 0} ? 'display: flex' : 'display: none'"
+                  th:text="${cartCount != null ? cartCount : 0}">0</span>
+        </a>
+        <div class="user-menu" id="userMenu">
+            <div class="user-menu-toggle" onclick="toggleUserMenu()">
+                <img th:src="@{/images/user-icon.png}" alt="Пользователь" class="user-icon" src="">
+                <span class="toggle-icon">▼</span>
+            </div>
+            <div class="user-dropdown">
+                <a th:href="@{/personal-account}">Личный кабинет</a>
+                <a th:href="@{/profile/settings}">Настройки⚙️</a>
+                <a th:href="@{/user/top-up}">Пополнить💰</a>
+                <form th:action="@{/logout}" method="post" style="margin: 0;">
+                    <button type="submit" class="logout-btn">Выйти</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</header>
+<main class="movie-details">
+    <div class="movie-poster">
+        <img th:src="@{/images/posters/{poster}(poster=${card.title+'.jpg'})}" alt="Poster" src="">
+    </div>
+    <div class="movie-info">
+        <h1 class="movie-title" th:text="${card.title}">Название</h1>
+        <div class="badges">
+            <span class="badge rating" th:text="${card.rating ?: '-'}">8.2</span>
+            <span class="badge year" th:text="${card.releaseYear ?: '-'}">2013</span>
+            <span class="badge genre" th:text="${card.genre ?: '-'}">Комедия</span>
+        </div>
+        <div class="director-block">
+            <span class="director-name" th:text="${card.director}">Мартин Скорсезе</span>
+        </div>
+        <p class="movie-duration"><strong>Длительность:</strong> <span th:text="${card.formattedDuration}">3:00:00</span></p>
+        <p class="movie-price" th:text="${card.price + ' ₽'}">329.99 ₽</p>
+        <div class="icon-group">
+            <button class="icon-btn favourite-btn"
+                    th:classappend="${card.inFavourites} ? 'active' : ''"
+                    th:data-movie-title="${card.title}"
+                    th:data-action="${card.inFavourites} ? 'remove' : 'add'"
+                    onclick="toggleFavourite(this)"
+                    title="Добавить в избранное">
+                <span th:text="${card.inFavourites} ? '♥' : '♡'"></span>
+            </button>
+            <button class="icon-btn rating-btn"
+                    th:data-movie-title="${card.title}"
+                    onclick="showRatingModal(this)"
+                    title="Оценить фильм">☆
+            </button>
+            <a th:href="@{/user/rated/{title}/reviews(title=${card.title})}"
+               class="icon-btn comment-btn"
+               title="Отзывы">💬</a>
+        </div>
+        <p class="movie-description" th:text="${card.description}">Описание фильма...</p>
+        <div class="action-buttons" th:if="${!card.bought}">
+            <div th:if="${!card.inCart}">
+                <button class="cart-button to-cart-btn-details"
+                        th:data-movie-title="${card.title}"
+                        onclick="addToCart(this)">
+                    В корзину
+                </button>
+            </div>
+            <div th:if="${card.inCart}">
+                <button class="cart-button in-cart-btn-details"
+                        onclick="window.location.href='/user/cart'">
+                    В корзине<br/><span class="go-to-cart">Перейти</span>
+                </button>
+            </div>
+            <button class="buy-button" onclick="showBuyModal()">
+                Купить сейчас
+            </button>
+        </div>
+        <span th:if="${card.bought}" class="bought-message">✓ У вас уже куплен этот фильм</span>
+    </div>
+</main>
+<div th:if="${successMessage}" class="flash-message success" th:text="${successMessage}"></div>
+<div th:if="${frozenBuyerExceptionMessage}" class="flash-message error" th:text="${frozenBuyerExceptionMessage}"></div>
+<div th:if="${notAuthorizedUserExceptionMessage}" class="flash-message error" th:text="${notAuthorizedUserExceptionMessage}"></div>
+<div th:if="${alreadyInCartExceptionMessage}" class="flash-message warning" th:text="${alreadyInCartExceptionMessage}"></div>
+<div th:if="${insufficientFundsExceptionMessage}" class="flash-message error" th:text="${insufficientFundsExceptionMessage}"></div>
+<div id="buyModal" class="modal">
+    <div class="modal-content">
+        <button class="modal-close" onclick="hideBuyModal()">×</button>
+        <h2>Подтверждение покупки</h2>
+        <p>Вы уверены, что хотите купить фильм:</p>
+        <p style="font-weight: bold; font-size: 1.2rem;" id="modalMovieTitle"></p>
+        <div class="modal-price" id="modalMoviePrice"></div>
+        <div class="modal-buttons">
+            <button class="modal-cancel-btn" onclick="hideBuyModal()">Отмена</button>
+            <button class="modal-confirm-btn" onclick="confirmPurchase()">Купить</button>
+        </div>
+    </div>
+</div>
+<div id="ratingModal" class="modal">
+    <div class="modal-content">
+        <button class="modal-close" onclick="hideRatingModal()">×</button>
+        <h2>Оценить фильм</h2>
+        <p style="font-weight: bold;" id="ratingModalMovieTitle"></p>
+        <form id="ratingForm" method="post">
+            <input type="hidden" name="title" id="ratingFormTitle">
+            <div class="rating-input">
+                <label for="ratingValue">Оценка (0.0–10.0):</label>
+                <input type="number" id="ratingValue" name="rating" step="0.1" min="0" max="10" value="5.0" required>
+            </div>
+            <div class="comment-input">
+                <label for="ratingComment">Комментарий:</label>
+                <textarea id="ratingComment" name="review" rows="3" placeholder="Ваш отзыв..."
+                          maxlength="2000"></textarea>
+            </div>
+            <div class="modal-buttons">
+                <button type="button" class="modal-cancel-btn" onclick="hideRatingModal()">Отмена</button>
+                <button type="submit" class="modal-confirm-btn">Отправить</button>
+            </div>
+        </form>
+    </div>
+</div>
+<script>
+    let userMenu = document.getElementById('userMenu');
+    function toggleUserMenu() { userMenu.classList.toggle('show'); }
+    document.addEventListener('click', function(event) { if (!userMenu.contains(event.target)) userMenu.classList.remove('show'); });
+    function showBuyModal() {
+        const movieTitle = document.querySelector('.movie-title').textContent;
+        const moviePrice = document.querySelector('.movie-price').textContent;
+        document.getElementById('modalMovieTitle').textContent = movieTitle;
+        document.getElementById('modalMoviePrice').textContent = moviePrice;
+        document.getElementById('buyModal').style.display = 'flex';
+    }
+    function hideBuyModal() { document.getElementById('buyModal').style.display = 'none'; }
+    function confirmPurchase() {
+        const movieTitle = document.querySelector('.movie-title').textContent;
+        window.location.href = '/user/purchases/add/' + encodeURIComponent(movieTitle);
+    }
+    function showRatingModal(button) {
+        const movieTitle = button.getAttribute('data-movie-title');
+        document.getElementById('ratingModalMovieTitle').textContent = movieTitle;
+        document.getElementById('ratingForm').action = '/user/rated/add/' + encodeURIComponent(movieTitle);
+        document.getElementById('ratingFormTitle').value = movieTitle;
+        document.getElementById('ratingValue').value = '5.0';
+        document.getElementById('ratingComment').value = '';
+        document.getElementById('ratingModal').style.display = 'flex';
+    }
+    function hideRatingModal() { document.getElementById('ratingModal').style.display = 'none'; }
+    function toggleFavourite(button) {
+        const movieTitle = button.getAttribute('data-movie-title');
+        const action = button.getAttribute('data-action');
+        if (!movieTitle) return;
+        button.disabled = true;
+        const url = action === 'add' ? '/user/favourites/add/' + encodeURIComponent(movieTitle) : '/user/favourites/remove/' + encodeURIComponent(movieTitle);
+        const method = action === 'add' ? 'POST' : 'GET';
+        fetch(url, { method: method, redirect: 'manual' })
+            .then(response => {
+                console.log('Response status:', response.status);
+                if (response.status === 302 || response.ok) {
+                    console.log('Success, updating UI');
+                    const newAction = action === 'add' ? 'remove' : 'add';
+                    button.setAttribute('data-action', newAction);
+                    const span = button.querySelector('span');
+                    if (span) {
+                        span.textContent = newAction === 'add' ? '♡' : '♥';
+                    } else {
+                        console.error('Span not found in button');
+                    }
+                    button.classList.toggle('active');
+                    showFlashMessage(action === 'add' ? 'Добавлено в избранное' : 'Удалено из избранного', 'success');
+                    updateFavouritesCount();
+                } else {
+                    throw new Error('Failed to toggle favourite, status: ' + response.status);
+                }
+            })
+            .catch(error => {
+                console.error('Error toggling favourite:', error);
+                showFlashMessage('Ошибка при изменении избранного', 'error');
+            })
+            .finally(() => { button.disabled = false; });
+    }
+    function updateFavouritesCount() {
+        fetch('/user/favourites/count')
+            .then(response => response.json())
+            .then(data => {
+                const favBadge = document.querySelector('.favourites-btn .count-badge');
+                if (favBadge) {
+                    const count = data.count || 0;
+                    favBadge.textContent = count;
+                    favBadge.style.display = count > 0 ? 'flex' : 'none';
+                }
+            })
+            .catch(error => console.error('Error fetching favourites count:', error));
+    }
+    function addToCart(button) {
+        const movieTitle = button.getAttribute('data-movie-title');
+        if (!movieTitle) return;
+        button.disabled = true;
+        fetch('/user/cart/add/' + encodeURIComponent(movieTitle), { method: 'POST', redirect: 'manual' })
+            .then(response => {
+                if (response.status === 302 || response.ok) {
+                    showFlashMessage('Фильм добавлен в корзину', 'success');
+                    updateCartCount();
+                    button.outerHTML = '<button class="cart-button in-cart-btn-details" onclick="window.location.href=\'/user/cart\'">В корзине<br/><span class="go-to-cart">Перейти</span></button>';
+                } else {
+                    throw new Error('Failed to add to cart');
+                }
+            })
+            .catch(error => {
+                console.error('Error adding to cart:', error);
+                showFlashMessage('Ошибка при добавлении в корзину', 'error');
+            })
+            .finally(() => { button.disabled = false; });
+    }
+    function updateCartCount() {
+        fetch('/user/cart/count')
+            .then(response => response.text())
+            .then(count => {
+                const cartBadge = document.querySelector('.cart-btn .count-badge');
+                if (cartBadge) {
+                    const newCount = parseInt(count, 10) || 0;
+                    cartBadge.textContent = newCount;
+                    cartBadge.style.display = newCount > 0 ? 'flex' : 'none';
+                }
+            })
+            .catch(error => console.error('Error fetching cart count:', error));
+    }
+    function showFlashMessage(message, type) {
+        const existingMessages = document.querySelectorAll('.flash-message');
+        existingMessages.forEach(msg => msg.remove());
+        const flashMessage = document.createElement('div');
+        flashMessage.className = `flash-message ${type}`;
+        flashMessage.innerHTML = `<span>${message}</span>`;
+        document.body.appendChild(flashMessage);
+        setTimeout(() => {
+            flashMessage.style.animation = 'fadeOut 0.3s ease forwards';
+            setTimeout(() => { if (flashMessage.parentNode) flashMessage.remove(); }, 300);
+        }, 3000);
+    }
+    document.addEventListener('DOMContentLoaded', function() {
+        document.querySelectorAll('.flash-message').forEach(msg => {
+            setTimeout(() => {
+                msg.style.animation = 'fadeOut 0.3s ease forwards';
+                setTimeout(() => msg.remove(), 300);
+            }, 3000);
+        });
+        document.getElementById('buyModal').addEventListener('click', function(e) { if (e.target === this) hideBuyModal(); });
+        document.getElementById('ratingModal').addEventListener('click', function(e) { if (e.target === this) hideRatingModal(); });
+    });
+</script>
+</body>
+</html>

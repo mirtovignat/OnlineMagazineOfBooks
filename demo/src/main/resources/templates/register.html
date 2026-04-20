@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="ru">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Регистрация — Cinema Service</title>
+    <link rel="icon" type="image/x-icon" th:href="@{/favicon.ico}">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&display=swap"
+          rel="stylesheet">
+    <style>
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body {
+            font-family: 'Inter', system-ui, sans-serif;
+            background: radial-gradient(circle at 10% 20%, #0b0f1c, #05070f);
+            color: #eef2ff;
+            line-height: 1.5;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 1rem;
+        }
+        :root {
+            --glass-bg: rgba(18, 25, 45, 0.65);
+            --glass-border: rgba(72, 187, 255, 0.25);
+            --glow-primary: #3b82f6;
+            --glow-success: #10b981;
+            --glow-danger: #f43f5e;
+            --text-light: #e2e8f0;
+            --text-muted: #94a3b8;
+            --card-bg: rgba(15, 23, 42, 0.75);
+            --shadow-xl: 0 25px 45px -12px rgba(0,0,0,0.5);
+            --radius-xl: 28px;
+        }
+        .main-container { max-width: 800px; width: 100%; background: var(--card-bg); backdrop-filter: blur(12px); border-radius: var(--radius-xl); border: 1px solid var(--glass-border); box-shadow: var(--shadow-xl); overflow: hidden; }
+        .header { background: linear-gradient(135deg, rgba(59,130,246,0.2), rgba(168,85,247,0.2)); padding: 1rem; text-align: center; border-bottom: 1px solid var(--glass-border); }
+        .logo-link { text-decoration: none; color: var(--text-light); display: inline-flex; align-items: center; gap: 0.5rem; font-weight: 600; }
+        .logo-link img { width: 28px; height: 28px; border-radius: 10px; }
+        .header h1 { font-size: 1.5rem; margin-top: 0.3rem; background: linear-gradient(135deg, #e0e7ff, #c084fc); -webkit-background-clip: text; background-clip: text; color: transparent; }
+        .form-container { padding: 1.5rem; }
+        .form-grid { display: flex; flex-direction: column; gap: 1rem; }
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+        .form-row-three { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; }
+        .form-group { display: flex; flex-direction: column; }
+        label { font-size: 0.75rem; font-weight: 600; margin-bottom: 0.2rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
+        input { width: 100%; padding: 0.7rem 0.8rem; border-radius: 60px; border: 1px solid var(--glass-border); background: rgba(0,0,0,0.3); color: white; font-size: 0.9rem; transition: 0.2s; }
+        input:focus { outline: none; border-color: var(--glow-primary); box-shadow: 0 0 0 2px rgba(59,130,246,0.3); }
+        .input-wrapper { position: relative; }
+        .toggle-password { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 1rem; }
+        .field-error { color: var(--glow-danger); font-size: 0.7rem; margin-top: 0.2rem; display: none; }
+        .field-error.show { display: block; }
+        .has-error { border-color: var(--glow-danger) !important; }
+        .btn-submit { background: linear-gradient(135deg, var(--glow-primary), #1d4ed8); color: white; padding: 0.8rem; border: none; border-radius: 60px; font-weight: 600; cursor: pointer; width: 100%; margin-top: 0.5rem; transition: 0.2s; }
+        .btn-submit:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(59,130,246,0.4); }
+        .login-wallet-row { display: flex; justify-content: space-between; align-items: center; margin-top: 1rem; flex-wrap: wrap; gap: 0.5rem; }
+        .login-link { font-size: 0.85rem; }
+        .login-link a { color: #c084fc; text-decoration: none; }
+        .compact-wallet-btn { background: rgba(16,185,129,0.2); border: 1px solid var(--glow-success); color: var(--glow-success); padding: 0.4rem 1rem; border-radius: 60px; font-size: 0.75rem; font-weight: 600; cursor: pointer; transition: 0.2s; }
+        .compact-wallet-btn:hover { background: var(--glow-success); color: white; transform: scale(0.98); }
+        .flash-message {
+            position: fixed;
+            top: 1rem;
+            right: 1rem;
+            padding: 0.7rem 1rem;
+            border-radius: 60px;
+            background: rgba(0,0,0,0.8);
+            backdrop-filter: blur(12px);
+            font-weight: 500;
+            font-size: 0.85rem;
+            border-left: 4px solid;
+            animation: slideIn 0.3s ease, fadeOut 0.3s ease 4s forwards;
+            z-index: 1000;
+        }
+        .flash-message.success { border-color: var(--glow-success); color: #a7f3d0; }
+        .flash-message.error { border-color: var(--glow-danger); color: #fecdd3; }
+        @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+        @keyframes fadeOut { to { opacity: 0; visibility: hidden; } }
+        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7); backdrop-filter: blur(8px); align-items: center; justify-content: center; z-index: 2000; }
+        .modal.active { display: flex; }
+        .modal-content { background: rgba(10,15,30,0.95); backdrop-filter: blur(20px); border-radius: 32px; max-width: 500px; width: 90%; border: 1px solid var(--glass-border); max-height: 90vh; overflow-y: auto; }
+        .modal-header { background: linear-gradient(135deg, rgba(59,130,246,0.2), rgba(168,85,247,0.2)); padding: 1rem; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--glass-border); }
+        .modal-header h2 { font-size: 1.3rem; margin: 0; }
+        .modal-close { background: none; border: none; color: var(--text-muted); font-size: 1.5rem; cursor: pointer; }
+        .modal-body { padding: 1.5rem; }
+        .info-box { background: rgba(0,0,0,0.3); border-left: 3px solid var(--glow-primary); padding: 0.8rem; border-radius: 20px; margin-bottom: 1rem; font-size: 0.8rem; }
+        @media (max-width: 680px) { .form-row, .form-row-three { grid-template-columns: 1fr; gap: 0.8rem; } .form-container { padding: 1rem; } }
+    </style>
+</head>
+<body>
+<div class="main-container">
+    <div class="header"><a href="/movies" class="logo-link"><img src="/static/favicon.ico" alt="Logo"
+                                                                 th:src="@{/static/favicon.ico}"><span>Cinema Service</span></a>
+        <h1>Регистрация</h1></div>
+    <div class="form-container">
+        <div th:if="${successMessage}" class="flash-message success" th:text="${successMessage}"></div>
+        <div th:if="${errorMessage}" class="flash-message error" th:text="${errorMessage}"></div>
+        <div th:if="${passwordsMismatchExceptionMessage}" class="flash-message error"
+             th:text="${passwordsMismatchExceptionMessage}"></div>
+        <div th:if="${alreadyRegisteredExceptionMessage}" class="flash-message error"
+             th:text="${alreadyRegisteredExceptionMessage}"></div>
+        <form th:action="@{/register}" th:object="${registerForm}" method="post" id="registerForm">
+            <div class="form-grid">
+                <div class="form-row-three">
+                    <div class="form-group"><label for="surname">Фамилия *</label><input type="text"
+                                                                                         th:field="*{surname}"
+                                                                                         id="surname"
+                                                                                         th:classappend="${#fields.hasErrors('surname')} ? 'has-error' : ''"
+                                                                                         placeholder="Фамилия"/>
+                        <div th:if="${#fields.hasErrors('surname')}" th:errors="*{surname}" class="field-error"></div>
+                        <div class="field-error" id="surnameError"></div>
+                    </div>
+                    <div class="form-group"><label for="name">Имя *</label><input type="text" th:field="*{name}"
+                                                                                  id="name"
+                                                                                  th:classappend="${#fields.hasErrors('name')} ? 'has-error' : ''"
+                                                                                  placeholder="Имя"/>
+                        <div th:if="${#fields.hasErrors('name')}" th:errors="*{name}" class="field-error"></div>
+                        <div class="field-error" id="nameError"></div>
+                    </div>
+                    <div class="form-group"><label for="patronymic">Отчество *</label><input type="text"
+                                                                                             th:field="*{patronymic}"
+                                                                                             id="patronymic"
+                                                                                             th:classappend="${#fields.hasErrors('patronymic')} ? 'has-error' : ''"
+                                                                                             placeholder="Отчество"/>
+                        <div th:if="${#fields.hasErrors('patronymic')}" th:errors="*{patronymic}"
+                             class="field-error"></div>
+                        <div class="field-error" id="patronymicError"></div>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group"><label for="username">Username *</label><input type="text"
+                                                                                        th:field="*{username}"
+                                                                                        id="username"
+                                                                                        th:classappend="${#fields.hasErrors('username')} ? 'has-error' : ''"
+                                                                                        placeholder="username"/>
+                        <div th:if="${#fields.hasErrors('username')}" th:errors="*{username}" class="field-error"></div>
+                        <div class="field-error" id="usernameError"></div>
+                    </div>
+                    <div class="form-group"><label for="email">Email *</label><input type="email" th:field="*{email}"
+                                                                                     id="email"
+                                                                                     th:classappend="${#fields.hasErrors('email')} ? 'has-error' : ''"
+                                                                                     placeholder="mail@example.com"/>
+                        <div th:if="${#fields.hasErrors('email')}" th:errors="*{email}" class="field-error"></div>
+                        <div class="field-error" id="emailError"></div>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group"><label for="phone">Телефон *</label><input type="tel" th:field="*{phone}"
+                                                                                       id="phone"
+                                                                                       th:classappend="${#fields.hasErrors('phone')} ? 'has-error' : ''"
+                                                                                       placeholder="+7 (999) 123-45-67"/>
+                        <div th:if="${#fields.hasErrors('phone')}" th:errors="*{phone}" class="field-error"></div>
+                        <div class="field-error" id="phoneError"></div>
+                    </div>
+                    <div class="form-group">
+                        <label for="currencyCodeDisplay">Валюта *</label>
+                        <input type="text"
+                               id="currencyCodeDisplay"
+                               value="RUB"
+                               readonly="readonly"
+                               class="form-control"
+                               style="text-transform:uppercase; background-color:#e9ecef"/>
+                        <input type="hidden"
+                               th:field="*{currencyCode}"
+                               id="currencyCode"
+                               value="RUB"/>
+                        <div th:if="${#fields.hasErrors('currencyCode')}" th:errors="*{currencyCode}" class="field-error"></div>
+                        <div class="field-error" id="currencyError"></div>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group"><label for="rawPassword">Пароль (мин. 8 симв.) *</label>
+                        <div class="input-wrapper"><input type="password" th:field="*{rawPassword}" id="rawPassword"
+                                                          th:classappend="${#fields.hasErrors('rawPassword')} ? 'has-error' : ''"
+                                                          placeholder="••••••••"/>
+                            <button type="button" class="toggle-password" data-target="rawPassword">👁</button>
+                        </div>
+                        <div th:if="${#fields.hasErrors('rawPassword')}" th:errors="*{rawPassword}"
+                             class="field-error"></div>
+                        <div class="field-error" id="rawPasswordError"></div>
+                    </div>
+                    <div class="form-group"><label for="repeatRawPassword">Повторите пароль *</label>
+                        <div class="input-wrapper"><input type="password" th:field="*{repeatRawPassword}"
+                                                          id="repeatRawPassword"
+                                                          th:classappend="${#fields.hasErrors('repeatRawPassword')} ? 'has-error' : ''"
+                                                          placeholder="••••••••"/>
+                            <button type="button" class="toggle-password" data-target="repeatRawPassword">👁</button>
+                        </div>
+                        <div th:if="${#fields.hasErrors('repeatRawPassword')}" th:errors="*{repeatRawPassword}"
+                             class="field-error"></div>
+                        <div class="field-error" id="repeatPasswordError"></div>
+                    </div>
+                </div>
+            </div>
+            <button type="submit" class="btn-submit">Зарегистрироваться →</button>
+            <div class="login-wallet-row">
+                <div class="login-link"><span>Уже есть аккаунт?</span> <a th:href="@{/login}">Войти</a>
+        </form>
+    </div>
+</div>
+<div id="walletModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header"><h2>Привязка банковского кошелька</h2>
+            <button class="modal-close" id="closeWalletModalBtn">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div class="info-box"><p>💳 Кошелёк позволит пополнять баланс и оплачивать билеты. Данные нужны для
+                безопасных транзакций.</p></div>
+            <form th:action="@{/wallet/add}" method="post" id="walletForm">
+                <div class="form-grid" style="gap:12px;">
+                    <div class="form-row-three">
+                        <div class="form-group"><label>Фамилия *</label><label for="walletSurname"></label><input type="text" id="walletSurname"
+                                                                                                                  name="surname" placeholder="Фамилия">
+                            <div class="field-error" id="walletSurnameError"></div>
+                        </div>
+                        <div class="form-group"><label>Имя *</label><input type="text" id="walletName" name="name"
+                                                                           placeholder="Имя">
+                            <div class="field-error" id="walletNameError"></div>
+                        </div>
+                        <div class="form-group"><label>Отчество *</label><input type="text" id="walletPatronymic"
+                                                                                name="patronymic"
+                                                                                placeholder="Отчество">
+                            <div class="field-error" id="walletPatronymicError"></div>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group"><label>Email *</label><label for="walletEmail"></label><input type="email" id="walletEmail" name="email"
+                                                                                                              placeholder="Email">
+                            <div class="field-error" id="walletEmailError"></div>
+                        </div>
+                        <div class="form-group"><label>Телефон *</label><label for="walletPhone"></label><input type="tel" id="walletPhone" name="phone"
+                                                                                                                placeholder="+7 (___) ___-__-__">
+                            <div class="field-error" id="walletPhoneError"></div>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group"><label>Пароль кошелька *</label>
+                            <div class="input-wrapper"><label for="walletRawPassword"></label><input type="password" id="walletRawPassword" name="rawPassword"
+                                                                                                     placeholder="Минимум 8 символов">
+                                <button type="button" class="toggle-password" data-target="walletRawPassword">👁</button>
+                            </div>
+                            <div class="field-error" id="walletPasswordError"></div>
+                        </div>
+                        <div class="form-group"><label>Повтор пароля *</label>
+                            <div class="input-wrapper"><label for="walletRepeatPassword"></label><input type="password" id="walletRepeatPassword"
+                                                                                                        name="repeatRawPassword" placeholder="Повторите пароль">
+                                <button type="button" class="toggle-password" data-target="walletRepeatPassword">👁
+                                </button>
+                            </div>
+                            <div class="field-error" id="walletRepeatPasswordError"></div>
+                        </div>
+                    </div>
+                </div>
+                <button type="submit" class="btn-submit" style="margin-top:12px;">Привязать кошелёк</button>
+            </form>
+        </div>
+    </div>
+</div>
+<script>
+    document.querySelectorAll('.toggle-password').forEach(btn => { btn.addEventListener('click', function(e) { e.preventDefault(); const targetId = this.getAttribute('data-target'); if (targetId) { const input = document.getElementById(targetId); if (input) { if (input.type === 'password') { input.type = 'text'; this.textContent = '🙈'; } else { input.type = 'password'; this.textContent = '👁'; } } } }); });
+    function formatPhone(input) { let digits = input.value.replace(/\D/g, ''); if (digits.startsWith('7') || digits.startsWith('8')) { digits = '7' + digits.substring(1); } else if (digits.length > 0 && !digits.startsWith('7')) { digits = '7' + digits; } if (digits.length > 11) digits = digits.substring(0, 11); let formatted = ''; if (digits.length > 0) formatted = '+7'; if (digits.length > 1) formatted += ' (' + digits.substring(1, 4); if (digits.length > 4) formatted += ') ' + digits.substring(4, 7); if (digits.length > 7) formatted += '-' + digits.substring(7, 9); if (digits.length > 9) formatted += '-' + digits.substring(9, 11); input.value = formatted; }
+    function validateProfileForm() { let isValid = true; const errorFields = ['usernameError', 'emailError', 'phoneError', 'surnameError', 'nameError', 'patronymicError', 'currencyError', 'rawPasswordError', 'repeatPasswordError']; errorFields.forEach(id => { const errDiv = document.getElementById(id); if (errDiv) errDiv.classList.remove('show'); }); document.querySelectorAll('#registerForm .has-error').forEach(el => el.classList.remove('has-error')); const username = document.getElementById('username').value.trim(); if (!username) { showError('usernameError', 'Введите логин'); markError('username'); isValid = false; } const email = document.getElementById('email').value.trim(); if (!email) { showError('emailError', 'Введите email'); markError('email'); isValid = false; } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { showError('emailError', 'Некорректный email'); markError('email'); isValid = false; } const phone = document.getElementById('phone').value; const phoneDigits = phone.replace(/\D/g, ''); if (phoneDigits.length > 0 && phoneDigits.length !== 11) { showError('phoneError', 'Номер должен содержать 10 цифр после +7'); markError('phone'); isValid = false; } const surname = document.getElementById('surname').value.trim(); if (!surname) { showError('surnameError', 'Введите фамилию'); markError('surname'); isValid = false; } const name = document.getElementById('name').value.trim(); if (!name) { showError('nameError', 'Введите имя'); markError('name'); isValid = false; } const patronymic = document.getElementById('patronymic').value.trim(); if (!patronymic) { showError('patronymicError', 'Введите отчество'); markError('patronymic'); isValid = false; } const currency = document.getElementById('currencyCode').value.trim().toUpperCase(); if (!currency) { showError('currencyError', 'Код валюты (3 буквы)'); markError('currencyCode'); isValid = false; } else if (!/^[A-Z]{3}$/.test(currency)) { showError('currencyError', '3 заглавные латинские буквы'); markError('currencyCode'); isValid = false; } const password = document.getElementById('rawPassword').value; if (!password) { showError('rawPasswordError', 'Введите пароль'); markError('rawPassword'); isValid = false; } else if (password.length < 8) { showError('rawPasswordError', 'Минимум 8 символов'); markError('rawPassword'); isValid = false; } const repeatPass = document.getElementById('repeatRawPassword').value; if (!repeatPass) { showError('repeatPasswordError', 'Повторите пароль'); markError('repeatRawPassword'); isValid = false; } else if (repeatPass.length < 8) { showError('repeatPasswordError', 'Минимум 8 символов'); markError('repeatRawPassword'); isValid = false; } else if (password !== repeatPass) { showError('repeatPasswordError', 'Пароли не совпадают'); markError('repeatRawPassword'); isValid = false; } if (!isValid) { const firstErr = document.querySelector('#registerForm .has-error'); if (firstErr) firstErr.scrollIntoView({ behavior: 'smooth', block: 'center' }); } return isValid; }
+    function validateWalletForm() { let isValid = true; const modal = document.getElementById('walletModal'); modal.querySelectorAll('.field-error').forEach(el => el.classList.remove('show')); modal.querySelectorAll('.has-error').forEach(el => el.classList.remove('has-error')); const surname = document.getElementById('walletSurname').value.trim(); if (!surname) { showModalError('walletSurnameError', 'Введите фамилию'); markModalError('walletSurname'); isValid = false; } const name = document.getElementById('walletName').value.trim(); if (!name) { showModalError('walletNameError', 'Введите имя'); markModalError('walletName'); isValid = false; } const patronymic = document.getElementById('walletPatronymic').value.trim(); if (!patronymic) { showModalError('walletPatronymicError', 'Введите отчество'); markModalError('walletPatronymic'); isValid = false; } const email = document.getElementById('walletEmail').value.trim(); if (!email) { showModalError('walletEmailError', 'Введите email'); markModalError('walletEmail'); isValid = false; } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { showModalError('walletEmailError', 'Некорректный email'); markModalError('walletEmail'); isValid = false; } const phone = document.getElementById('walletPhone').value; const phoneDigits = phone.replace(/\D/g, ''); if (phoneDigits.length !== 11) { showModalError('walletPhoneError', 'Формат +7 (999) 123-45-67'); markModalError('walletPhone'); isValid = false; } const password = document.getElementById('walletRawPassword').value; if (!password) { showModalError('walletPasswordError', 'Введите пароль'); markModalError('walletRawPassword'); isValid = false; } else if (password.length < 8) { showModalError('walletPasswordError', 'Минимум 8 символов'); markModalError('walletRawPassword'); isValid = false; } const repeatPass = document.getElementById('walletRepeatPassword').value; if (!repeatPass) { showModalError('walletRepeatPasswordError', 'Повторите пароль'); markModalError('walletRepeatPassword'); isValid = false; } else if (repeatPass.length < 8) { showModalError('walletRepeatPasswordError', 'Минимум 8 символов'); markModalError('walletRepeatPassword'); isValid = false; } else if (password !== repeatPass) { showModalError('walletRepeatPasswordError', 'Пароли не совпадают'); markModalError('walletRepeatPassword'); isValid = false; } return isValid; }
+    function showError(id, msg) { const el = document.getElementById(id); if(el) { el.textContent = msg; el.classList.add('show'); } }
+    function markError(id) { const el = document.getElementById(id); if(el) el.classList.add('has-error'); }
+    function showModalError(id, msg) { const el = document.getElementById(id); if(el) { el.textContent = msg; el.classList.add('show'); } }
+    function markModalError(id) { const el = document.getElementById(id); if(el) el.classList.add('has-error'); }
+    document.addEventListener('DOMContentLoaded', function() { const phoneFields = ['phone', 'walletPhone']; phoneFields.forEach(id => { const field = document.getElementById(id); if (field) { field.addEventListener('input', function() { formatPhone(this); }); if (field.value) formatPhone(field); } }); const profileForm = document.getElementById('registerForm'); if (profileForm) { profileForm.addEventListener('submit', function(e) { if (!validateProfileForm()) e.preventDefault(); }); } const walletFormElem = document.getElementById('walletForm'); if (walletFormElem) { walletFormElem.addEventListener('submit', function(e) { if (!validateWalletForm()) e.preventDefault(); }); } const modal = document.getElementById('walletModal'); const openBtn = document.getElementById('openWalletModalBtn'); const closeBtn = document.getElementById('closeWalletModalBtn'); if (openBtn && modal) { openBtn.onclick = () => { modal.classList.add('active'); document.body.style.overflow = 'hidden'; }; closeBtn.onclick = () => { modal.classList.remove('active'); document.body.style.overflow = ''; }; window.onclick = (e) => { if (e.target === modal) { modal.classList.remove('active'); document.body.style.overflow = ''; } }; } setTimeout(() => { document.querySelectorAll('.flash-message').forEach(msg => { msg.style.animation = 'fadeOut 0.3s ease forwards'; setTimeout(() => msg.remove(), 300); }); }, 4000); });
+</script>
+</body>
+</html>

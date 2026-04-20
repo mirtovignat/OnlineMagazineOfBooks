@@ -1,0 +1,7 @@
+target
+build
+.idea
+*.iml
+.git
+node_modules
+.DS_Store

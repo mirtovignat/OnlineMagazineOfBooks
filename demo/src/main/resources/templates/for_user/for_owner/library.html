@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Моя библиотека — Cinema Service</title>
+    <link rel="icon" type="image/x-icon" th:href="@{/favicon.ico}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap"
+          rel="stylesheet">
+    <style>
+        :root { /* такие же переменные, как в корзине */ }
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body { font-family:"Inter",sans-serif; background:#f0f4f8; color:#1e293b; line-height:1.5; }
+        header { /* полностью как в корзине */ }
+        .logo-link a { display:flex; align-items:center; gap:0.75rem; text-decoration:none; color:#1e293b; font-weight:600; font-size:1.5rem; }
+        .logo-link img { width:32px; height:32px; border-radius:8px; }
+        .header-actions { display:flex; align-items:center; gap:1rem; }
+        .action-button { position:relative; display:inline-flex; align-items:center; justify-content:center; width:48px; height:48px; border-radius:50%; background:#fff; border:1px solid #e2e8f0; color:#64748b; font-size:1.5rem; text-decoration:none; transition:all 0.2s; box-shadow:0 1px 3px rgba(0,0,0,0.05); }
+        .action-button:hover { transform:translateY(-3px); box-shadow:0 10px 25px -8px rgba(0,0,0,0.1); border-color:#3b82f6; color:#3b82f6; }
+        .count-badge { position:absolute; top:-4px; right:-4px; background:#ef4444; color:white; border-radius:40px; min-width:22px; height:22px; padding:0 6px; font-size:0.75rem; font-weight:600; display:flex; align-items:center; justify-content:center; box-shadow:0 2px 6px rgba(239,68,68,0.3); }
+        .user-menu { position:relative; }
+        .user-menu-toggle { display:flex; align-items:center; gap:0.5rem; padding:0.5rem 1rem; background:#fff; border:1px solid #e2e8f0; border-radius:40px; cursor:pointer; transition:all 0.2s; box-shadow:0 1px 3px rgba(0,0,0,0.05); }
+        .user-menu-toggle:hover { border-color:#3b82f6; box-shadow:0 10px 25px -8px rgba(0,0,0,0.1); }
+        .user-icon { width:28px; height:28px; border-radius:50%; object-fit:cover; }
+        .toggle-icon { font-size:0.8rem; color:#64748b; transition:transform 0.2s; }
+        .user-menu.show .toggle-icon { transform:rotate(180deg); }
+        .user-dropdown { position:absolute; top:calc(100% + 0.75rem); right:0; min-width:200px; background:#fff; border:1px solid #e2e8f0; border-radius:12px; box-shadow:0 20px 40px -12px rgba(0,0,0,0.15); opacity:0; visibility:hidden; transform:translateY(-10px); transition:all 0.2s; z-index:100; backdrop-filter:blur(8px); background:rgba(255,255,255,0.9); }
+        .user-menu.show .user-dropdown { opacity:1; visibility:visible; transform:translateY(0); }
+        .user-dropdown a, .user-dropdown button { display:block; width:100%; padding:0.75rem 1.5rem; text-align:left; background:none; border:none; font:inherit; color:#1e293b; text-decoration:none; border-bottom:1px solid #e2e8f0; cursor:pointer; transition:background 0.15s; }
+        .user-dropdown a:last-child, .user-dropdown button:last-child { border-bottom:none; }
+        .user-dropdown a:hover, .user-dropdown button:hover { background:#f1f5f9; }
+        .logout-btn { color:#ef4444 !important; }
+
+        .flash-message { /* как в корзине */ }
+        .flash-message.success { border-color:#10b981; background:#ecfdf5; color:#065f46; }
+        .flash-message.error { border-color:#ef4444; background:#fef2f2; color:#991b1b; }
+
+        /* Специфичные для библиотеки */
+        .library-header { text-align:center; padding:2rem 1rem; }
+        .library-header h2 { font-size:2.5rem; font-weight:700; background:linear-gradient(135deg,#1e293b,#10b981); -webkit-background-clip:text; -webkit-text-fill-color:transparent; margin-bottom:0.5rem; }
+        .library-count { display:inline-block; background:#fff; padding:0.5rem 1.5rem; border-radius:40px; font-weight:500; color:#64748b; border:1px solid #e2e8f0; box-shadow:0 1px 3px rgba(0,0,0,0.05); }
+
+        .library-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(300px,1fr)); gap:1.5rem; padding:2rem; max-width:1400px; margin:0 auto; }
+        .movie-card { background:#fff; border-radius:20px; overflow:hidden; box-shadow:0 10px 25px -8px rgba(0,0,0,0.1); transition:all 0.2s; border:1px solid #e2e8f0; opacity:0; transform:translateY(20px); animation:fadeInUp 0.5s ease forwards; }
+        @keyframes fadeInUp { to{opacity:1;transform:translateY(0);} }
+        .movie-card:hover { transform:translateY(-6px); box-shadow:0 20px 40px -12px rgba(0,0,0,0.15); border-color:#10b981; }
+        .movie-card img { width:100%; aspect-ratio:2/3; object-fit:cover; border-bottom:1px solid #e2e8f0; }
+        .movie-card-content { padding:1.5rem; }
+        .movie-card-content h3 { font-size:1.25rem; font-weight:600; margin-bottom:0.5rem; }
+        .movie-meta { display:flex; flex-wrap:wrap; gap:0.5rem; margin:0.75rem 0; }
+        .movie-meta span { padding:0.25rem 0.75rem; border-radius:30px; font-size:0.8rem; font-weight:500; background:#f1f5f9; border:1px solid #e2e8f0; }
+        .movie-genre { background:#dbeafe !important; color:#1e40af !important; border-color:#bfdbfe !important; }
+        .movie-rating { background:#fef9c3 !important; color:#854d0e !important; border-color:#fde047 !important; }
+        .movie-price { font-size:1.5rem; font-weight:700; color:#10b981; margin:0.5rem 0; }
+        .movie-description { color:#64748b; font-size:0.95rem; line-height:1.6; margin:0.75rem 0; display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden; }
+        .movie-card-content a { display:inline-block; margin-top:1rem; color:#3b82f6; font-weight:500; text-decoration:none; transition:color 0.15s; }
+        .movie-card-content a:hover { color:#2563eb; text-decoration:underline; }
+
+        .empty-library-message { text-align:center; padding:5rem 1rem; }
+        .empty-library-message h3 { font-size:2rem; color:#64748b; }
+        .browse-movies-btn { background:#3b82f6; color:white; padding:1rem 2.5rem; border-radius:40px; text-decoration:none; font-weight:600; display:inline-block; margin-top:2rem; transition:all 0.2s; box-shadow:0 8px 16px -6px rgba(59,130,246,0.3); }
+        .browse-movies-btn:hover { background:#2563eb; transform:translateY(-3px); }
+
+        .pagination { display:flex; justify-content:center; align-items:center; gap:1rem; padding:2rem; }
+        .pagination a, .pagination span { padding:0.6rem 1.2rem; border-radius:30px; border:1px solid #e2e8f0; background:#fff; color:#1e293b; text-decoration:none; transition:all 0.2s; }
+        .pagination a:hover { background:#3b82f6; color:white; border-color:#3b82f6; }
+        .pagination .current { background:#3b82f6; color:white; border-color:#3b82f6; }
+
+        @media (max-width:768px) { .library-grid { grid-template-columns:repeat(auto-fill, minmax(250px,1fr)); padding:1rem; } }
+    </style>
+</head>
+<body>
+<header>
+    <h1 class="logo-link"><a href="/user/movies"><img src="/static/favicon.ico" alt="">Cinema Service</a></h1>
+    <div class="header-actions">
+        <a th:href="@{/user/favourites}" class="action-button favourites-btn" title="Избранное">♥<span
+                th:if="${favouritesCount != null and favouritesCount > 0}" class="count-badge"
+                th:text="${favouritesCount}">0</span></a>
+        <a th:href="@{/user/cart}" class="action-button cart-btn" title="Корзина">🛒<span
+                th:if="${cartCount != null and cartCount > 0}" class="count-badge" th:text="${cartCount}">0</span></a>
+        <div class="user-menu" id="userMenu">
+            <div class="user-menu-toggle" onclick="toggleUserMenu()"><img th:src="@{/images/user-icon.png}"
+                                                                          alt="Пользователь" class="user-icon"
+                                                                          src=""><span class="toggle-icon">▼</span>
+            </div>
+            <div class="user-dropdown">
+                <a th:href="@{/personal-account}">Личный кабинет</a>
+                <a th:href="@{/settings}">Настройки</a>
+                <form th:action="@{/logout}" method="post" style="margin:0;">
+                    <button type="submit" class="logout-btn">Выйти</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</header>
+
+<div th:if="${frozenBuyerExceptionMessage}" class="flash-message error"><span
+        th:text="${frozenBuyerExceptionMessage}"></span></div>
+<div th:if="${notAuthorizedUserExceptionMessage}" class="flash-message error"><span
+        th:text="${notAuthorizedUserExceptionMessage}"></span></div>
+
+<div class="library-header">
+    <h2>📚 Моя библиотека</h2>
+    <div class="library-count">Всего фильмов: <span th:text="${library != null ? library.totalElements : 0}">0</span>
+    </div>
+</div>
+
+<main>
+    <div th:if="${library == null or library.isEmpty()}" class="empty-library-message">
+        <h3>😔 Библиотека пуста</h3>
+        <p style="color:#64748b;">Вы еще не купили ни одного фильма.</p>
+        <a th:href="@{/user/movies}" class="browse-movies-btn">Перейти к каталогу фильмов</a>
+    </div>
+
+    <div th:unless="${library == null or library.isEmpty()}">
+        <div class="library-grid">
+            <div class="movie-card" th:each="movie : ${library.content}"
+                 th:style="'animation-delay: ' + (${movieStat.index} * 0.05) + 's'">
+                <img th:src="@{/images/posters/{poster}(poster=${movie.title + '.jpg'})}"
+                     th:alt="'Постер фильма ' + ${movie.title}" onerror="this.src='/images/posters/default.jpg'"
+                     alt="" src="">
+                <div class="movie-card-content">
+                    <h3 th:text="${movie.title}">Название фильма</h3>
+                    <div class="movie-meta">
+                        <span class="movie-genre" th:text="${movie.genre}">Жанр</span>
+                        <span class="movie-rating" th:text="'⭐ ' + ${movie.rating}">8.5</span>
+                        <span th:text="${movie.releaseDate}">2023</span>
+                        <span th:text="${movie.formattedDuration}">2ч 15мин</span>
+                    </div>
+                    <div class="movie-price" th:text="${movie.price + ' ₽'}">329.99 ₽</div>
+                    <div class="movie-description" th:text="${movie.description}">Краткое описание...</div>
+                    <div class="movie-meta" style="margin-top:10px;">
+
+                        <span th:text="'Куплено: ' + ${movie.purchasesCount} + ' раз'">0</span>
+                        <span th:text="'Отзывов: ' + ${movie.reviewCount}">0</span>
+                    </div>
+                    <a th:href="@{/user/movies/{title}(title=${movie.title})}">Подробнее</a>
+                </div>
+            </div>
+        </div>
+
+        <div th:if="${library.totalPages > 1}" class="pagination">
+            <a th:if="${library.hasPrevious()}" th:href="@{/user/purchases(page=${library.number - 1})}">←
+                Предыдущая</a>
+            <span th:unless="${library.hasPrevious()}" class="disabled">← Предыдущая</span>
+            <span th:each="i : ${#numbers.sequence(0, library.totalPages - 1)}">
+                <a th:if="${i == library.number}" class="current" th:text="${i + 1}">1</a>
+                <a th:unless="${i == library.number}" th:href="@{/user/purchases(page=${i})}" th:text="${i + 1}">2</a>
+            </span>
+            <a th:if="${library.hasNext()}" th:href="@{/user/purchases(page=${library.number + 1})}">Следующая →</a>
+            <span th:unless="${library.hasNext()}" class="disabled">Следующая →</span>
+        </div>
+    </div>
+</main>
+
+<script>
+    let userMenu = document.getElementById('userMenu');
+    function toggleUserMenu() { userMenu.classList.toggle('show'); }
+    document.addEventListener('click', function(e) { if (!userMenu.contains(e.target)) userMenu.classList.remove('show'); });
+    document.addEventListener('DOMContentLoaded', function() {
+        document.querySelectorAll('.flash-message').forEach(msg => {
+            setTimeout(() => { msg.style.animation = 'fadeOut 0.3s ease forwards'; setTimeout(() => msg.remove(), 300); }, 3000);
+        });
+        document.querySelectorAll('img').forEach(img => { img.onerror = function() { if (!this.src.includes('default.jpg')) this.src = '/images/posters/default.jpg'; }; });
+    });
+</script>
+</body>
+</html>
