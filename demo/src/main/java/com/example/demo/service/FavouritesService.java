@@ -9,7 +9,6 @@ import com.example.demo.repository.FavouriteMovieRepository;
 import com.example.demo.repository.MovieRepository;
 import com.example.demo.repository.UserRepository;
 import lombok.AllArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,15 +19,10 @@ import java.util.stream.Collectors;
 @Service
 @AllArgsConstructor
 public class FavouritesService {
-    @Autowired
     private final FavouriteMovieRepository favouriteMovieRepository;
-    @Autowired
     private final MovieRepository movieRepository;
-    @Autowired
     private final UserRepository userRepository;
-    @Autowired
     private final FavouritesMapper favouritesMapper;
-    @Autowired
     private final PresenceService cartService;
 
     public boolean isMovieInFavourites(String title, String username) {

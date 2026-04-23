@@ -5,357 +5,100 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Корзина — Cinema Service</title>
     <link rel="icon" type="image/x-icon" th:href="@{/favicon.ico}">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700&display=swap"
+          rel="stylesheet">
     <style>
-        * { margin:0; padding:0; box-sizing:border-box; }
-        body {
-            font-family: 'Inter', system-ui, sans-serif;
-            background: radial-gradient(circle at 10% 20%, #0b0f1c, #05070f);
-            color: #eef2ff;
-            line-height: 1.5;
-            min-height: 100vh;
-        }
-        :root {
-            --glass-bg: rgba(18, 25, 45, 0.65);
-            --glass-border: rgba(72, 187, 255, 0.25);
-            --glow-primary: #3b82f6;
-            --glow-accent: #a855f7;
-            --glow-success: #10b981;
-            --glow-danger: #f43f5e;
-            --text-light: #e2e8f0;
-            --text-muted: #94a3b8;
-            --card-bg: rgba(15, 23, 42, 0.75);
-            --shadow-xl: 0 25px 45px -12px rgba(0,0,0,0.5);
-            --radius-xl: 28px;
-            --radius-lg: 20px;
-        }
-        header {
-            position: sticky;
-            top: 0;
-            z-index: 50;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 1rem 2rem;
-            background: rgba(8, 12, 24, 0.7);
-            backdrop-filter: blur(16px);
-            border-bottom: 1px solid var(--glass-border);
-            box-shadow: 0 8px 20px rgba(0,0,0,0.2);
-        }
-        .logo-link a {
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-            text-decoration: none;
-            font-weight: 700;
-            font-size: 1.5rem;
-            background: linear-gradient(135deg, #c084fc, #60a5fa);
-            -webkit-background-clip: text;
-            background-clip: text;
-            color: transparent;
-        }
-        .logo-link img { width: 32px; height: 32px; border-radius: 12px; }
-        .header-actions { display: flex; align-items: center; gap: 1rem; }
-        .action-button {
-            position: relative;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            width: 48px;
-            height: 48px;
-            border-radius: 40px;
-            background: var(--glass-bg);
-            border: 1px solid var(--glass-border);
-            color: var(--text-light);
-            font-size: 1.5rem;
-            text-decoration: none;
-            transition: all 0.25s ease;
-            backdrop-filter: blur(4px);
-        }
-        .action-button:hover {
-            transform: translateY(-3px);
-            border-color: var(--glow-primary);
-            color: var(--glow-primary);
-            box-shadow: 0 0 12px rgba(59,130,246,0.4);
-        }
-        .count-badge {
-            position: absolute;
-            top: -6px;
-            right: -6px;
-            background: var(--glow-danger);
-            color: white;
-            border-radius: 40px;
-            min-width: 22px;
-            height: 22px;
-            font-size: 0.7rem;
-            font-weight: 700;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0 0 6px #f43f5e;
-        }
-        .user-menu { position: relative; }
-        .user-menu-toggle {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            padding: 0.5rem 1rem;
-            background: var(--glass-bg);
-            border: 1px solid var(--glass-border);
-            border-radius: 60px;
-            cursor: pointer;
-            backdrop-filter: blur(4px);
-        }
-        .user-menu-toggle:hover { border-color: var(--glow-primary); }
-        .user-icon { width: 28px; height: 28px; border-radius: 50%; }
-        .toggle-icon { font-size: 0.8rem; transition: transform 0.2s; }
-        .user-menu.show .toggle-icon { transform: rotate(180deg); }
-        .user-dropdown {
-            position: absolute;
-            top: calc(100% + 0.75rem);
-            right: 0;
-            min-width: 200px;
-            background: rgba(10, 15, 30, 0.95);
-            backdrop-filter: blur(16px);
-            border: 1px solid var(--glass-border);
-            border-radius: 24px;
-            box-shadow: var(--shadow-xl);
-            opacity: 0;
-            visibility: hidden;
-            transform: translateY(-10px);
-            transition: all 0.2s;
-            z-index: 100;
-        }
-        .user-menu.show .user-dropdown { opacity: 1; visibility: visible; transform: translateY(0); }
-        .user-dropdown a, .user-dropdown button {
-            display: block;
-            width: 100%;
-            padding: 0.75rem 1.5rem;
-            text-align: left;
-            background: none;
-            border: none;
-            color: var(--text-light);
-            text-decoration: none;
-            border-bottom: 1px solid rgba(255,255,255,0.05);
-            cursor: pointer;
-            transition: background 0.15s;
-        }
-        .user-dropdown a:hover, .user-dropdown button:hover { background: rgba(59,130,246,0.2); }
-        .logout-btn { color: var(--glow-danger) !important; }
-        .cart-header { text-align: center; padding: 2rem 1rem 1rem; }
-        .cart-header h2 {
-            font-size: 2.5rem;
-            font-weight: 700;
-            background: linear-gradient(135deg, #e0e7ff, #a78bfa);
-            -webkit-background-clip: text;
-            background-clip: text;
-            color: transparent;
-        }
-        .cart-count {
-            display: inline-block;
-            background: var(--card-bg);
-            padding: 0.5rem 1.5rem;
-            border-radius: 60px;
-            border: 1px solid var(--glass-border);
-            backdrop-filter: blur(4px);
-        }
-        .flash-message {
-            position: fixed;
-            top: 90px;
-            right: 20px;
-            z-index: 100;
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-            padding: 1rem 1.5rem;
-            border-radius: 60px;
-            background: rgba(0,0,0,0.8);
-            backdrop-filter: blur(12px);
-            font-weight: 500;
-            max-width: 400px;
-            border-left: 4px solid;
-            animation: slideIn 0.3s ease, fadeOut 0.3s ease 4s forwards;
-        }
-        .flash-message.success { border-color: var(--glow-success); color: #a7f3d0; }
-        .flash-message.error { border-color: var(--glow-danger); color: #fecdd3; }
-        .flash-message.warning { border-color: #fbbf24; color: #fef3c7; }
-        @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
-        @keyframes fadeOut { to { opacity: 0; visibility: hidden; } }
-        .movies-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            gap: 1.8rem;
-            padding: 2rem;
-            max-width: 1400px;
-            margin: 0 auto;
-        }
-        .movie-card {
-            background: var(--card-bg);
-            backdrop-filter: blur(8px);
-            border-radius: var(--radius-xl);
-            overflow: hidden;
-            border: 1px solid var(--glass-border);
-            transition: all 0.3s;
-            opacity: 0;
-            transform: translateY(20px);
-            animation: fadeInUp 0.5s ease forwards;
-        }
-        @keyframes fadeInUp { to { opacity: 1; transform: translateY(0); } }
-        .movie-card:hover {
-            transform: translateY(-8px);
-            border-color: var(--glow-primary);
-            box-shadow: 0 20px 35px -10px rgba(0,0,0,0.5);
-        }
-        .poster-placeholder {
-            width: 100%;
-            aspect-ratio: 2/3;
-            background: linear-gradient(145deg, #1e293b, #0f172a);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: #94a3b8;
-        }
-        .movie-card-content { padding: 1.5rem; display: flex; flex-direction: column; flex-grow: 1; }
-        .movie-card-content h3 { font-size: 1.3rem; font-weight: 600; margin-bottom: 0.75rem; }
-        .badges { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 1rem; }
-        .badge {
-            padding: 0.25rem 0.75rem;
-            border-radius: 40px;
-            font-size: 0.7rem;
-            font-weight: 600;
-            background: rgba(255,255,255,0.1);
-            border: 1px solid rgba(255,255,255,0.2);
-        }
-        .badge.added-at { background: rgba(59,130,246,0.2); color: #93c5fd; }
-        .price { font-size: 1.8rem; font-weight: 700; color: #c084fc; margin: 0.5rem 0 1rem; }
-        .movie-actions { display: flex; gap: 0.75rem; margin-bottom: 1rem; }
-        .icon-btn {
-            width: 42px; height: 42px;
-            border-radius: 50%;
-            background: rgba(255,255,255,0.05);
-            border: 1px solid var(--glass-border);
-            color: var(--text-light);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-        .icon-btn:hover { border-color: var(--glow-danger); color: var(--glow-danger); transform: scale(1.1); }
-        .card-buttons { display: flex; flex-direction: column; gap: 0.75rem; margin-top: auto; }
-        .buy-now-btn {
-            background: linear-gradient(135deg, var(--glow-success), #059669);
-            border: none;
-            padding: 0.9rem;
-            border-radius: 60px;
-            font-weight: 600;
-            color: white;
-            cursor: pointer;
-            transition: 0.2s;
-        }
-        .buy-now-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(16,185,129,0.4); }
-        .clear-cart-section { text-align: center; margin: 2rem 0; }
-        .clear-cart-btn {
-            background: transparent;
-            border: 1px solid var(--glow-danger);
-            color: var(--glow-danger);
-            padding: 0.75rem 2rem;
-            border-radius: 60px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: 0.2s;
-        }
-        .clear-cart-btn:hover { background: var(--glow-danger); color: white; box-shadow: 0 0 12px #f43f5e; }
-        .checkout-btn {
-            background: linear-gradient(135deg, var(--glow-primary), #1d4ed8);
-            color: white;
-            border: none;
-            padding: 1rem 3rem;
-            border-radius: 60px;
-            font-weight: 700;
-            font-size: 1.2rem;
-            cursor: pointer;
-            margin: 2rem auto;
-            display: inline-flex;
-            align-items: center;
-            gap: 0.75rem;
-            transition: 0.2s;
-        }
-        .checkout-btn:hover { transform: translateY(-3px); box-shadow: 0 12px 28px rgba(59,130,246,0.5); }
-        .empty-cart-message { text-align: center; padding: 5rem 1rem; }
-        .empty-cart-message h3 { font-size: 2rem; color: var(--text-muted); }
-        .browse-movies-btn {
-            background: var(--glow-primary);
-            color: white;
-            padding: 1rem 2.5rem;
-            border-radius: 60px;
-            text-decoration: none;
-            font-weight: 600;
-            display: inline-block;
-            margin-top: 2rem;
-        }
-        .modal {
-            display: none;
-            position: fixed;
-            inset: 0;
-            background: rgba(0,0,0,0.7);
-            backdrop-filter: blur(8px);
-            align-items: center;
-            justify-content: center;
-            z-index: 200;
-        }
-        .modal-content {
-            background: rgba(10, 15, 30, 0.95);
-            backdrop-filter: blur(20px);
-            border-radius: 48px;
-            padding: 2rem;
-            max-width: 450px;
-            width: 90%;
-            border: 1px solid var(--glass-border);
-            box-shadow: var(--shadow-xl);
-            position: relative;
-        }
-        .modal-close {
-            position: absolute;
-            top: 1rem;
-            right: 1.5rem;
-            background: none;
-            border: none;
-            font-size: 2rem;
-            cursor: pointer;
-            color: var(--text-muted);
-        }
-        .modal-close:hover { color: var(--glow-danger); }
-        .modal h2 { font-size: 1.8rem; margin-bottom: 1rem; background: linear-gradient(135deg, #e0e7ff, #c084fc); -webkit-background-clip: text; background-clip: text; color: transparent; }
-        .modal-price { font-size: 2rem; font-weight: 700; color: #c084fc; background: rgba(0,0,0,0.3); padding: 1rem; border-radius: 60px; margin: 1.5rem 0; text-align: center; }
-        .modal-buttons { display: flex; gap: 1rem; margin-top: 2rem; }
-        .modal-confirm-btn, .modal-cancel-btn { flex: 1; padding: 0.9rem; border-radius: 60px; font-weight: 600; cursor: pointer; border: none; }
-        .modal-confirm-btn { background: linear-gradient(135deg, var(--glow-success), #059669); color: white; }
-        .modal-cancel-btn { background: rgba(255,255,255,0.1); color: var(--text-light); border: 1px solid var(--glass-border); }
-        @media (max-width: 768px) { .movies-grid { padding: 1rem; } .cart-header h2 { font-size: 2rem; } }
+        *{margin:0;padding:0;box-sizing:border-box;}
+        body{font-family:'Inter',sans-serif;background:radial-gradient(circle at 10% 20%,#0b0f1c,#05070f);color:#eef2ff;line-height:1.5;min-height:100vh;}
+        :root{--glass-bg:rgba(18,25,45,0.65);--glass-border:rgba(72,187,255,0.25);--glow-primary:#3b82f6;--glow-success:#10b981;--glow-danger:#f43f5e;--text-light:#e2e8f0;--text-muted:#94a3b8;--card-bg:rgba(15,23,42,0.75);--shadow-xl:0 25px 45px -12px rgba(0,0,0,0.5);--radius-xl:28px;}
+        header{position:sticky;top:0;z-index:50;display:flex;justify-content:space-between;align-items:center;padding:1rem 2rem;background:rgba(8,12,24,0.7);backdrop-filter:blur(16px);border-bottom:1px solid var(--glass-border);box-shadow:0 8px 20px rgba(0,0,0,0.2);}
+        .logo-link a{display:flex;align-items:center;gap:0.75rem;text-decoration:none;font-weight:700;font-size:1.5rem;background:linear-gradient(135deg,#c084fc,#60a5fa);-webkit-background-clip:text;background-clip:text;color:transparent;}
+        .logo-link img{width:32px;height:32px;border-radius:12px;}
+        .header-actions{display:flex;align-items:center;gap:1rem;}
+        .action-button{position:relative;display:inline-flex;align-items:center;justify-content:center;width:48px;height:48px;border-radius:40px;background:var(--glass-bg);border:1px solid var(--glass-border);color:var(--text-light);font-size:1.5rem;text-decoration:none;transition:all 0.25s ease;backdrop-filter:blur(4px);}
+        .action-button:hover{transform:translateY(-3px);border-color:var(--glow-primary);color:var(--glow-primary);box-shadow:0 0 12px rgba(59,130,246,0.4);}
+        .count-badge{position:absolute;top:-6px;right:-6px;background:var(--glow-danger);color:white;border-radius:40px;min-width:22px;height:22px;font-size:0.7rem;font-weight:700;display:flex;align-items:center;justify-content:center;box-shadow:0 0 6px #f43f5e;}
+        .user-menu{position:relative;}
+        .user-menu-toggle{display:flex;align-items:center;gap:0.5rem;padding:0.5rem 1rem;background:var(--glass-bg);border:1px solid var(--glass-border);border-radius:60px;cursor:pointer;backdrop-filter:blur(4px);}
+        .user-menu-toggle:hover{border-color:var(--glow-primary);}
+        .user-icon{width:28px;height:28px;border-radius:50%;}
+        .toggle-icon{font-size:0.8rem;transition:transform 0.2s;}
+        .user-menu.show .toggle-icon{transform:rotate(180deg);}
+        .user-dropdown{position:absolute;top:calc(100% + 0.75rem);right:0;min-width:200px;background:rgba(10,15,30,0.95);backdrop-filter:blur(16px);border:1px solid var(--glass-border);border-radius:24px;box-shadow:var(--shadow-xl);opacity:0;visibility:hidden;transform:translateY(-10px);transition:all 0.2s;z-index:100;}
+        .user-menu.show .user-dropdown{opacity:1;visibility:visible;transform:translateY(0);}
+        .user-dropdown a,.user-dropdown button{display:block;width:100%;padding:0.75rem 1.5rem;text-align:left;background:none;border:none;color:var(--text-light);text-decoration:none;border-bottom:1px solid rgba(255,255,255,0.05);cursor:pointer;transition:background 0.15s;}
+        .user-dropdown a:hover,.user-dropdown button:hover{background:rgba(59,130,246,0.2);}
+        .logout-btn{color:var(--glow-danger) !important;}
+        .flash-message{position:fixed;top:90px;right:20px;z-index:100;display:flex;align-items:center;gap:0.75rem;padding:1rem 1.5rem;border-radius:60px;background:rgba(0,0,0,0.8);backdrop-filter:blur(12px);font-weight:500;max-width:400px;border-left:4px solid;animation:slideIn 0.3s ease,fadeOut 0.3s ease 5s forwards;}
+        .flash-message.success{border-color:var(--glow-success);color:#a7f3d0;}
+        .flash-message.error{border-color:var(--glow-danger);color:#fecdd3;}
+        .flash-message.warning{border-color:#fbbf24;color:#fef3c7;}
+        @keyframes slideIn{from{transform:translateX(100%);opacity:0;}to{transform:translateX(0);opacity:1;}}
+        @keyframes fadeOut{to{opacity:0;visibility:hidden;}}
+        .cart-header{text-align:center;padding:2rem 1rem 1rem;}
+        .cart-header h2{font-size:2.5rem;font-weight:700;background:linear-gradient(135deg,#e0e7ff,#a78bfa);-webkit-background-clip:text;background-clip:text;color:transparent;}
+        .cart-count{display:inline-block;background:var(--card-bg);padding:0.5rem 1.5rem;border-radius:60px;border:1px solid var(--glass-border);}
+        .movies-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:2rem;padding:2rem;max-width:1400px;margin:0 auto;}
+        .movie-card{background:var(--card-bg);backdrop-filter:blur(8px);border-radius:var(--radius-xl);overflow:hidden;border:1px solid var(--glass-border);transition:all 0.3s ease;display:flex;flex-direction:column;height:100%;opacity:0;transform:translateY(20px);animation:fadeSlideUp 0.5s ease forwards;}
+        @keyframes fadeSlideUp{to{opacity:1;transform:translateY(0);}}
+        .movie-card:hover{transform:translateY(-8px);border-color:var(--glow-primary);box-shadow:var(--shadow-xl);}
+        .movie-poster-link{display:block;text-decoration:none;}
+        .movie-poster-placeholder{width:100%;aspect-ratio:2/3;background:#2d3748;background-image:linear-gradient(145deg,#2d3748 0%,#1a202c 100%);display:flex;align-items:center;justify-content:center;color:#718096;font-size:0.9rem;text-align:center;padding:1rem;border-bottom:1px solid var(--glass-border);transition:opacity 0.2s;}
+        .movie-poster-link:hover .movie-poster-placeholder{opacity:0.8;}
+        .movie-card-content{padding:1.5rem;flex-grow:1;display:flex;flex-direction:column;}
+        .movie-card-content h3{font-size:1.3rem;font-weight:600;margin-bottom:0.75rem;}
+        .movie-card-content h3 a{color:inherit;text-decoration:none;}
+        .movie-card-content h3 a:hover{text-decoration:underline;color:#c084fc;}
+        .badges{display:flex;flex-wrap:wrap;gap:0.5rem;margin-bottom:1rem;}
+        .badge{padding:0.25rem 1rem;border-radius:40px;font-size:0.8rem;font-weight:600;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);}
+        .price{font-size:1.6rem;font-weight:700;color:#c084fc;margin:0.5rem 0 1rem;}
+        .movie-actions{display:flex;gap:0.75rem;margin-bottom:1rem;}
+        .icon-btn{display:flex;align-items:center;justify-content:center;width:44px;height:44px;border-radius:50%;background:rgba(255,255,255,0.05);border:1px solid var(--glass-border);color:var(--text-light);font-size:1.5rem;cursor:pointer;transition:0.2s;}
+        .icon-btn:hover{transform:scale(1.1);border-color:#f472b6;color:#f472b6;}
+        .card-buttons{display:flex;flex-direction:column;gap:0.75rem;margin-top:0.5rem;}
+        .buy-now-btn{background:linear-gradient(135deg,var(--glow-success),#059669);color:white;border:none;padding:0.9rem;border-radius:60px;font-weight:600;cursor:pointer;transition:0.2s;}
+        .buy-now-btn:hover{transform:translateY(-2px);box-shadow:0 8px 20px rgba(16,185,129,0.4);}
+        .clear-cart-section{text-align:center;margin:2rem 0;}
+        .clear-cart-btn{background:transparent;border:1px solid var(--glow-danger);color:var(--glow-danger);padding:0.75rem 2rem;border-radius:60px;font-weight:600;cursor:pointer;transition:0.2s;}
+        .clear-cart-btn:hover{background:var(--glow-danger);color:white;box-shadow:0 0 12px #f43f5e;}
+        .checkout-btn{background:linear-gradient(135deg,var(--glow-primary),#1d4ed8);color:white;border:none;padding:1rem 3rem;border-radius:60px;font-weight:700;font-size:1.2rem;cursor:pointer;margin:2rem auto;display:inline-flex;align-items:center;gap:0.75rem;transition:0.2s;}
+        .checkout-btn:hover{transform:translateY(-3px);box-shadow:0 12px 28px rgba(59,130,246,0.5);}
+        .empty-cart-message{text-align:center;padding:5rem 1rem;}
+        .empty-cart-message h3{font-size:2rem;color:var(--text-muted);}
+        .browse-movies-btn{background:var(--glow-primary);color:white;padding:1rem 2.5rem;border-radius:60px;text-decoration:none;font-weight:600;display:inline-block;margin-top:2rem;}
+        .modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);backdrop-filter:blur(8px);align-items:center;justify-content:center;z-index:200;}
+        .modal-content{background:rgba(10,15,30,0.95);backdrop-filter:blur(20px);border-radius:48px;padding:2rem;max-width:450px;width:90%;border:1px solid var(--glass-border);position:relative;}
+        .modal-close{position:absolute;top:1rem;right:1.5rem;background:none;border:none;font-size:2rem;cursor:pointer;color:var(--text-muted);}
+        .modal-close:hover{color:var(--glow-danger);}
+        .modal h2{font-size:1.8rem;margin-bottom:1rem;background:linear-gradient(135deg,#e0e7ff,#c084fc);-webkit-background-clip:text;background-clip:text;color:transparent;}
+        .modal-price{font-size:2rem;font-weight:700;color:#c084fc;background:rgba(0,0,0,0.3);padding:1rem;border-radius:60px;margin:1.5rem 0;text-align:center;}
+        .modal-buttons{display:flex;gap:1rem;margin-top:2rem;}
+        .modal-confirm-btn,.modal-cancel-btn{flex:1;padding:0.9rem;border-radius:60px;font-weight:600;cursor:pointer;border:none;}
+        .modal-confirm-btn{background:linear-gradient(135deg,var(--glow-success),#059669);color:white;}
+        .modal-cancel-btn{background:rgba(255,255,255,0.1);color:var(--text-light);border:1px solid var(--glass-border);}
+        @media (max-width:768px){.movies-grid{padding:1rem;}.cart-header h2{font-size:2rem;}}
     </style>
 </head>
 <body>
 <header>
     <h1 class="logo-link"><a href="/user/movies"><img src="/static/favicon.ico" alt="">Cinema Service</a></h1>
     <div class="header-actions">
-        <a th:href="@{/user/favourites}" class="action-button favourites-btn" title="Избранное">
-            ♥
-            <span class="count-badge"
-                  th:style="${favouritesCount != null and favouritesCount > 0} ? 'display: flex' : 'display: none'"
-                  th:text="${favouritesCount != null ? favouritesCount : 0}">0</span>
-        </a>
-        <a th:href="@{/user/cart}" class="action-button cart-btn" title="Корзина">
-            🛒
-            <span class="count-badge"
-                  th:style="${cartCount != null and cartCount > 0} ? 'display: flex' : 'display: none'"
-                  th:text="${cartCount != null ? cartCount : 0}">0</span>
-        </a>
+        <a th:href="@{/user/favourites}" class="action-button favourites-btn" title="Избранное">♥<span
+                class="count-badge"
+                th:style="${favouritesCount != null and favouritesCount > 0} ? 'display: flex' : 'display: none'"
+                th:text="${favouritesCount != null ? favouritesCount : 0}">0</span></a>
+        <a th:href="@{/user/cart}" class="action-button cart-btn" title="Корзина">🛒<span class="count-badge"
+                                                                                         th:style="${cartCount != null and cartCount > 0} ? 'display: flex' : 'display: none'"
+                                                                                         th:text="${cartCount != null ? cartCount : 0}">0</span></a>
         <div class="user-menu" id="userMenu">
-            <div class="user-menu-toggle" onclick="toggleUserMenu()"><img th:src="@{/images/user-icon.png}" alt="Пользователь" class="user-icon" src=""><span class="toggle-icon">▼</span></div>
+            <div class="user-menu-toggle" onclick="toggleUserMenu()"><img th:src="@{/images/user-icon.png}"
+                                                                          alt="Пользователь" class="user-icon"
+                                                                          src=""><span class="toggle-icon">▼</span>
+            </div>
             <div class="user-dropdown">
                 <a th:href="@{/personal-account}">Личный кабинет</a>
-                <a th:href="@{/settings}">Настройки</a>
+                <a th:href="@{/profile/settings}">Настройки⚙️</a>
+                <a th:href="@{/user/top-up}">Пополнить💰</a>
                 <form th:action="@{/logout}" method="post" style="margin:0;">
                     <button type="submit" class="logout-btn">Выйти</button>
                 </form>
@@ -366,46 +109,57 @@
 <div class="cart-header"><h2>🛒 Ваша корзина</h2>
     <div class="cart-count">Количество фильмов: <span th:text="${cartCount}">0</span></div>
 </div>
-<div th:if="${successMessage}" class="flash-message success"><span th:text="${successMessage}"></span></div>
-<div th:if="${notAuthorizedUserExceptionMessage}" class="flash-message error"><span th:text="${notAuthorizedUserExceptionMessage}"></span></div>
-<div th:if="${alreadyInCartExceptionMessage}" class="flash-message warning"><span th:text="${alreadyInCartExceptionMessage}"></span></div>
-<div th:if="${insufficientFundsExceptionMessage}" class="flash-message error"><span th:text="${insufficientFundsExceptionMessage}"></span></div>
-<div th:if="${emptyCartExceptionMessage}" class="flash-message warning"><span th:text="${emptyCartExceptionMessage}"></span></div>
 <main>
-    <div th:if="${cart == null or cart.isEmpty()}" class="empty-cart-message">
-        <h3>😔 Корзина пуста</h3>
-        <p style="color: var(--text-muted);">Вы еще не добавили ни одного фильма в корзину.</p>
-        <a th:href="@{/user/movies}" class="browse-movies-btn">Перейти к каталогу фильмов</a>
-    </div>
+    <div th:if="${successMessage}" class="flash-message success" th:text="${successMessage}"></div>
+    <div th:if="${notAuthorizedUserExceptionMessage}" class="flash-message error"
+         th:text="${notAuthorizedUserExceptionMessage}"></div>
+    <div th:if="${insufficientFundsExceptionMessage}" class="flash-message error"
+         th:text="${insufficientFundsExceptionMessage}"></div>
+    <div th:if="${emptyCartExceptionMessage}" class="flash-message warning"
+         th:text="${emptyCartExceptionMessage}"></div>
+
+    <div th:if="${cart == null or cart.isEmpty()}" class="empty-cart-message"><h3>😔 Корзина пуста</h3>
+        <p style="color: var(--text-muted);">Вы еще не добавили ни одного фильма.</p><a th:href="@{/user/movies}"
+                                                                                        class="browse-movies-btn">Перейти
+            к каталогу</a></div>
     <div th:unless="${cart == null or cart.isEmpty()}">
         <div class="clear-cart-section">
             <button class="clear-cart-btn" onclick="showClearCartModal()">🗑️ Очистить всю корзину</button>
         </div>
-        <form th:action="@{/user/purchases/add/bulk}" method="post" style="text-align: center;" th:with="totalPrice=${#aggregates.sum(cart.![unitPriceSnapshot()])}">
+        <form th:action="@{/user/purchases/add/bulk}" method="post" style="text-align:center;"
+              th:with="totalPrice=${#aggregates.sum(cart.![unitPriceSnapshot()])}">
             <input type="hidden" name="titles" th:each="cartMovie : ${cart}" th:value="${cartMovie.title()}"/>
-            <button type="submit" class="checkout-btn">🛒 Перейти к оплате (<span th:text="${totalPrice}">0</span> ₽)</button>
+            <button type="submit" class="checkout-btn">🛒 Перейти к оплате (<span th:text="${totalPrice}">0</span> ₽)
+            </button>
         </form>
         <div class="movies-grid">
-            <div class="movie-card" th:each="cartMovie : ${cart}" th:style="'animation-delay: ' + (${cartMovieStat.index} * 0.05) + 's'">
-                <a th:href="@{/user/movies/{title}(title=${cartMovie.title()})}">
-                    <div class="poster-placeholder">Постер</div>
+            <div class="movie-card" th:each="cartMovie : ${cart}"
+                 th:style="'animation-delay: ' + (${cartMovieStat.index} * 0.05) + 's'">
+                <a class="movie-poster-link" th:href="@{/user/movies/show/{title}(title=${cartMovie.title()})}">
+                    <div class="movie-poster-placeholder"><span>📽️ Постер</span></div>
                 </a>
                 <div class="movie-card-content">
-                    <h3 th:text="${cartMovie.title()}">Название фильма</h3>
-                    <div class="badges"><span class="badge added-at" th:text="${#temporals.format(cartMovie.addedAt(), 'dd.MM.yyyy HH:mm')}">01.01.2023 12:00</span></div>
+                    <h3><a th:href="@{/user/movies/show/{title}(title=${cartMovie.title()})}"
+                           th:text="${cartMovie.title()}">Название фильма</a></h3>
+                    <div class="badges"><span class="badge"
+                                              th:text="${#temporals.format(cartMovie.addedAt(), 'dd.MM.yyyy HH:mm')}">01.01.2023 12:00</span>
+                    </div>
                     <p class="price" th:text="${cartMovie.unitPriceSnapshot() + ' ₽'}">329.99 ₽</p>
                     <div class="movie-actions">
-                        <button class="icon-btn favourite-btn"
-                                th:data-movie-title="${cartMovie.title()}"
+                        <button class="icon-btn favourite-btn" th:data-movie-title="${cartMovie.title()}"
                                 th:data-action="${cartMovie.inFavourites ? 'remove' : 'add'}"
-                                onclick="toggleFavourite(this)"
-                                title="Добавить в избранное">
-                            <span th:text="${cartMovie.inFavourites ? '♥' : '♡'}"></span>
-                        </button>
-                        <button class="icon-btn remove-btn" th:data-movie-title="${cartMovie.title()}" onclick="showRemoveModal(this)" title="Удалить из корзины">🗑️</button>
+                                onclick="toggleFavourite(this)" title="Добавить в избранное"><span
+                                th:text="${cartMovie.inFavourites ? '♥' : '♡'}"></span></button>
+                        <form th:action="@{/user/cart/remove/{title}(title=${cartMovie.title()})}" method="post"
+                              style="display: inline;">
+                            <button type="submit" class="icon-btn remove-btn" title="Удалить из корзины">🗑️</button>
+                        </form>
                     </div>
                     <div class="card-buttons">
-                        <button class="buy-now-btn" th:data-movie-title="${cartMovie.title()}" th:data-movie-price="${cartMovie.unitPriceSnapshot()}" onclick="showBuyModal(this)">Купить сейчас</button>
+                        <button class="buy-now-btn" th:data-movie-title="${cartMovie.title()}"
+                                th:data-movie-price="${cartMovie.unitPriceSnapshot()}" onclick="showBuyModal(this)">
+                            Купить сейчас
+                        </button>
                     </div>
                 </div>
             </div>
@@ -417,7 +171,7 @@
         <button class="modal-close" onclick="hideBuyModal()">×</button>
         <h2>Подтверждение покупки</h2>
         <p>Вы уверены, что хотите купить фильм:</p>
-        <p style="font-weight: 600;" id="modalMovieTitle"></p>
+        <p style="font-weight:600;" id="modalMovieTitle"></p>
         <div class="modal-price" id="modalMoviePrice"></div>
         <div class="modal-buttons">
             <button class="modal-cancel-btn" onclick="hideBuyModal()">Отмена</button>
@@ -442,7 +196,7 @@
         <button class="modal-close" onclick="hideRemoveModal()">×</button>
         <h2>Удаление из корзины</h2>
         <p>Вы уверены, что хотите удалить фильм:</p>
-        <p style="font-weight: 600;" id="removeMovieTitle"></p>
+        <p style="font-weight:600;" id="removeMovieTitle"></p>
         <div class="modal-buttons">
             <button class="modal-cancel-btn" onclick="hideRemoveModal()">Отмена</button>
             <button class="modal-confirm-btn" onclick="confirmRemove()">Удалить</button>
@@ -463,7 +217,17 @@
     function clearCart() { window.location.href = '/user/cart/clear'; }
     function showRemoveModal(button) { movieToRemove = button.getAttribute('data-movie-title'); document.getElementById('removeMovieTitle').textContent = movieToRemove; document.getElementById('removeModal').style.display = 'flex'; }
     function hideRemoveModal() { document.getElementById('removeModal').style.display = 'none'; }
-    function confirmRemove() { window.location.href = '/user/cart/remove/' + encodeURIComponent(movieToRemove); }
+
+    function confirmRemove() {
+        if (movieToRemove) {
+            var form = document.createElement('form');
+            form.method = 'POST';
+            form.action = '/user/cart/remove/' + encodeURIComponent(movieToRemove);
+            document.body.appendChild(form);
+            form.submit();
+        }
+    }
+
     function toggleFavourite(button) {
         const movieTitle = button.getAttribute('data-movie-title');
         const action = button.getAttribute('data-action');
@@ -473,72 +237,50 @@
         const method = action === 'add' ? 'POST' : 'GET';
         fetch(url, { method: method, redirect: 'manual' })
             .then(response => {
-                if (response.status === 302 || response.ok) {
+                if (response.type === 'opaqueredirect' || response.status === 302) {
                     const newAction = action === 'add' ? 'remove' : 'add';
                     button.setAttribute('data-action', newAction);
                     const span = button.querySelector('span');
                     span.textContent = newAction === 'add' ? '♡' : '♥';
                     button.classList.toggle('active');
-                    showFlashMessage(action === 'add' ? 'Добавлено в избранное' : 'Удалено из избранного', 'success');
-                    updateFavouritesCount();
-                } else {
-                    throw new Error('Failed to toggle favourite');
-                }
+                    const badge = document.querySelector('.favourites-btn .count-badge');
+                    let current = parseInt(badge.textContent) || 0;
+                    if (action === 'add') current++; else current--;
+                    if (current > 0) {
+                        badge.textContent = current;
+                        badge.style.display = 'flex';
+                    } else {
+                        badge.style.display = 'none';
+                    }
+                    showFlashMessage(action === 'add' ? 'Добавлено в избранное' : 'Удалено из избранного', 'success', true);
+                } else { throw new Error(); }
             })
-            .catch(error => {
-                console.error('Error toggling favourite:', error);
-                showFlashMessage('Ошибка при изменении избранного', 'error');
-            })
-            .finally(() => { button.disabled = false; });
+            .catch(() => showFlashMessage('Ошибка', 'error', true))
+            .finally(() => button.disabled = false);
     }
-    function updateFavouritesCount() {
-        fetch('/user/favourites/count')
-            .then(response => response.json())
-            .then(data => {
-                const favBadge = document.querySelector('.favourites-btn .count-badge');
-                if (favBadge) {
-                    const count = data.count || 0;
-                    favBadge.textContent = count;
-                    favBadge.style.display = count > 0 ? 'flex' : 'none';
-                }
-            })
-            .catch(error => console.error('Error fetching favourites count:', error));
-    }
-    function updateCartCount() {
-        fetch('/user/cart/count')
-            .then(response => response.text())
-            .then(count => {
-                const cartBadge = document.querySelector('.cart-btn .count-badge');
-                if (cartBadge) {
-                    const newCount = parseInt(count, 10) || 0;
-                    cartBadge.textContent = newCount;
-                    cartBadge.style.display = newCount > 0 ? 'flex' : 'none';
-                }
-            })
-            .catch(error => console.error('Error fetching cart count:', error));
-    }
-    function showFlashMessage(message, type) {
-        const existingMessages = document.querySelectorAll('.flash-message');
-        existingMessages.forEach(msg => msg.remove());
-        const flashMessage = document.createElement('div');
-        flashMessage.className = `flash-message ${type}`;
-        flashMessage.innerHTML = `<span>${message}</span>`;
-        document.body.appendChild(flashMessage);
+    function showFlashMessage(message, type, isJs = false) {
+        if (!isJs) return;
+        document.querySelectorAll('.js-flash').forEach(msg => msg.remove());
+        const flash = document.createElement('div');
+        flash.className = `flash-message ${type} js-flash`;
+        flash.innerHTML = `<span>${message}</span>`;
+        document.body.appendChild(flash);
         setTimeout(() => {
-            flashMessage.style.animation = 'fadeOut 0.3s ease forwards';
-            setTimeout(() => { if (flashMessage.parentNode) flashMessage.remove(); }, 300);
+            flash.style.animation = 'fadeOut 0.3s ease forwards';
+            setTimeout(() => flash.remove(), 300);
         }, 3000);
     }
     document.addEventListener('DOMContentLoaded', function() {
-        document.querySelectorAll('.flash-message').forEach(msg => {
-            setTimeout(() => {
-                msg.style.animation = 'fadeOut 0.3s ease forwards';
-                setTimeout(() => msg.style.display = 'none', 300);
-            }, 3000);
-        });
         document.getElementById('buyModal').addEventListener('click', function(e) { if (e.target === this) hideBuyModal(); });
         document.getElementById('clearCartModal').addEventListener('click', function(e) { if (e.target === this) hideClearCartModal(); });
         document.getElementById('removeModal').addEventListener('click', function(e) { if (e.target === this) hideRemoveModal(); });
+        setTimeout(() => {
+            document.querySelectorAll('.flash-message').forEach(msg => {
+                if (!msg.classList.contains('js-flash')) {
+                    setTimeout(() => msg.remove(), 5000);
+                }
+            });
+        }, 100);
     });
 </script>
 </body>

@@ -57,7 +57,8 @@ public class WalletController {
             return "redirect:/user/top-up";
         }
         try {
-            userService.topUp(topUpFormDTO, userForOwnerViewDTO.username());
+            User user = userService.findUserByUsername(userForOwnerViewDTO.username());
+            userService.topUp(topUpFormDTO, user);
             User updatedUser = userRepository.findByUsernameOrThrow(userForOwnerViewDTO.username());
             UserForOwnerViewDTO updatedDTO = userMapper.toOwnerView(updatedUser);
             session.setAttribute("userForOwnerViewDTO", updatedDTO);

@@ -1,31 +1,99 @@
 package com.example.demo.service;
 
-import com.example.demo.dto.user.ProfileSettingsDTO;
-import com.example.demo.dto.user.UserForOwnerViewDTO;
+import com.example.demo.dto.user.*;
 import com.example.demo.dto.wallet.TopUpFormDTO;
 import com.example.demo.dto.wallet.WalletForOwnerViewDTO;
+import com.example.demo.exception.user.DataCoincidenceException;
+import com.example.demo.exception.user.InvalidPasswordException;
+import com.example.demo.exception.user.UserNotFoundException;
 import com.example.demo.mapper.UserMapper;
 import com.example.demo.model.User;
 import com.example.demo.repository.UserRepository;
+import com.example.demo.utils.SecurityConfig;
 import lombok.AllArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @AllArgsConstructor
 public class UserService {
-    @Autowired
     private final UserRepository userRepository;
-    @Autowired
     private final UserMapper userMapper;
-    @Autowired
-    private final CartService cartService;
+    private final SecurityConfig securityConfig;
+
+    public User findUserByUsername(String username) {
+        return userRepository.findByUsername(username)
+                .orElseThrow(UserNotFoundException::new);
+    }
+
+    public boolean isProfileUnchanged(ProfileSettingsDTO profileSettingsDTO, User user) {
+        return profileSettingsDTO.equals(userMapper.toSettingsForm(user));
+    }
+
+    public boolean isProfileUnchanged(UsernameChangingDTO usernameChangingDTO, User user) {
+        return usernameChangingDTO.equals(userMapper.toUsernameChangingForm(user));
+    }
+
+    public boolean isProfileUnchanged(PhoneChangingDTO phoneChangingDTO, User user) {
+        return phoneChangingDTO.equals(userMapper.toPhoneChangingForm(user));
+    }
+
+    public boolean isProfileUnchanged(EmailChangingDTO emailChangingDTO, User user) {
+        return emailChangingDTO.equals(userMapper.toEmailChangingForm(user));
+    }
+
+    public boolean isProfileUnchanged(PasswordChangingDTO passwordChangingDTO, User user) {
+        return passwordChangingDTO.equals(userMapper.toPasswordChangingForm(user));
+    }
+
+    private void throwIfNoChanges(boolean unchanged) {
+        if (unchanged) {
+            throw new DataCoincidenceException();
+        }
+    }
 
     @Transactional
-    public void changeProfile(ProfileSettingsDTO profileSettingsDTO, String username) {
-        User user = userRepository.findByUsernameOrThrow(username);
+    public void changeProfile(ProfileSettingsDTO profileSettingsDTO, User user) {
+        throwIfNoChanges(isProfileUnchanged(profileSettingsDTO, user));
         userMapper.updateUserFromDto(profileSettingsDTO, user);
+        userRepository.save(user);
+    }
+
+    @Transactional
+    public void changeUsername(UsernameChangingDTO usernameChangingDTO, User user) {
+        throwIfNoChanges(isProfileUnchanged(usernameChangingDTO, user));
+        userMapper.updateUserFromUsernameChangingDTO(usernameChangingDTO, user);
+        userRepository.save(user);
+    }
+
+    @Transactional
+    public void changeEmail(EmailChangingDTO emailChangingDTO, User user) {
+        throwIfNoChanges(isProfileUnchanged(emailChangingDTO, user));
+        userMapper.updateUserFromEmailChangingDTO(emailChangingDTO, user);
+        userRepository.save(user);
+    }
+
+    @Transactional
+    public void changePhone(PhoneChangingDTO phoneChangingDTO, User user) {
+        throwIfNoChanges(isProfileUnchanged(phoneChangingDTO, user));
+        userMapper.updateUserFromPhoneChangingDTO(phoneChangingDTO, user);
+        userRepository.save(user);
+    }
+
+    private void validatePasswordChanging(PasswordChangingDTO dto, User user) {
+        dto.isMismatch();
+        dto.isCoincidence();
+        if (!securityConfig.passwordEncoder()
+                .matches(dto.currentPassword(), user.getPasswordHash())) {
+            throw new InvalidPasswordException();
+        }
+    }
+
+    @Transactional
+    public void changePassword(PasswordChangingDTO passwordChangingDTO, User user) {
+        validatePasswordChanging(passwordChangingDTO, user);
+        throwIfNoChanges(isProfileUnchanged(passwordChangingDTO, user));
+        userMapper.updateUserFromPasswordChangingDTO(passwordChangingDTO, user);
         userRepository.save(user);
     }
 
@@ -34,21 +102,24 @@ public class UserService {
         userRepository.deleteByUsername(username);
     }
 
-    public UserForOwnerViewDTO getUserForOwner(String username) {
-        return userMapper.toOwnerView(userRepository
-                .findByUsernameOrThrow(username));
-    }
-
     @Transactional
-    public void topUp(TopUpFormDTO topUpFormDTO, String username) {
-        User user = userRepository.findByUsernameOrThrow(username);
-        WalletForOwnerViewDTO walletForOwnerViewDTO = userMapper.toWalletView(user);
-        userMapper.updateFromTopUpForm(topUpFormDTO,
-                userRepository.findByUsernameOrThrow(username));
+    public void topUp(TopUpFormDTO topUpFormDTO, User user) {
+        userMapper.updateFromTopUpForm(topUpFormDTO, user);
         userRepository.save(user);
     }
 
     public WalletForOwnerViewDTO getWalletForOwner(String username) {
         return userMapper.toWalletView(userRepository.findByUsernameOrThrow(username));
+    }
+
+    public UserForOwnerViewDTO getUserForOwner(String username) {
+        return userMapper.toOwnerView(findUserByUsername(username));
+    }
+
+    @Transactional
+    public void deletePhone(String username) {
+        User user = findUserByUsername(username);
+        user.setPhone(null);
+        userRepository.save(user);
     }
 }

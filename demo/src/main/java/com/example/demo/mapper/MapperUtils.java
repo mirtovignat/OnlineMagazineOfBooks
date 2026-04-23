@@ -4,10 +4,9 @@ import com.example.demo.model.FavouriteMovie;
 import com.example.demo.model.Movie;
 import com.example.demo.model.PurchasedMovie;
 import com.example.demo.model.RatedMovie;
+import com.example.demo.utils.SecurityConfig;
 import lombok.AllArgsConstructor;
 import org.mapstruct.Named;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
@@ -22,8 +21,7 @@ import java.util.stream.Collectors;
 @AllArgsConstructor
 public class MapperUtils {
 
-    @Autowired
-    private final PasswordEncoder passwordEncoder;
+    private final SecurityConfig securityConfig;
 
     @Named("toFullName")
     public String toFullName(String surname,
@@ -47,7 +45,7 @@ public class MapperUtils {
         if (rawPassword == null) {
             return null;
         }
-        return passwordEncoder.encode(rawPassword);
+        return securityConfig.passwordEncoder().encode(rawPassword);
     }
 
     @Named("moviesToIds")

@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Мои оценки — Cinema Service</title>
+    <link rel="icon" type="image/x-icon" th:href="@{/favicon.ico}">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&display=swap"
+          rel="stylesheet">
+    <style>
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body { font-family: 'Inter', system-ui, sans-serif; background: radial-gradient(circle at 10% 20%, #0b0f1c, #05070f); color: #eef2ff; line-height: 1.5; min-height: 100vh; }
+        :root { --glass-bg: rgba(18, 25, 45, 0.65); --glass-border: rgba(72, 187, 255, 0.25); --glow-primary: #3b82f6; --glow-accent: #a855f7; --glow-success: #10b981; --glow-danger: #f43f5e; --text-light: #e2e8f0; --text-muted: #94a3b8; --card-bg: rgba(15, 23, 42, 0.75); --shadow-xl: 0 25px 45px -12px rgba(0,0,0,0.5); --radius-xl: 28px; --radius-lg: 20px; }
+        header { position: sticky; top: 0; z-index: 50; display: flex; justify-content: space-between; align-items: center; padding: 1rem 2rem; background: rgba(8, 12, 24, 0.7); backdrop-filter: blur(16px); border-bottom: 1px solid var(--glass-border); box-shadow: 0 8px 20px rgba(0,0,0,0.2); }
+        .logo-link a { display: flex; align-items: center; gap: 0.75rem; text-decoration: none; font-weight: 700; font-size: 1.5rem; background: linear-gradient(135deg, #c084fc, #60a5fa); -webkit-background-clip: text; background-clip: text; color: transparent; }
+        .logo-link img { width: 32px; height: 32px; border-radius: 12px; }
+        .header-actions { display: flex; align-items: center; gap: 1rem; }
+        .user-menu { position: relative; }
+        .user-menu-toggle { display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem 1rem; background: var(--glass-bg); border: 1px solid var(--glass-border); border-radius: 60px; cursor: pointer; backdrop-filter: blur(4px); }
+        .user-menu-toggle:hover { border-color: var(--glow-primary); }
+        .user-icon { width: 28px; height: 28px; border-radius: 50%; }
+        .toggle-icon { font-size: 0.8rem; transition: transform 0.2s; }
+        .user-menu.show .toggle-icon { transform: rotate(180deg); }
+        .user-dropdown { position: absolute; top: calc(100% + 0.75rem); right: 0; min-width: 200px; background: rgba(10, 15, 30, 0.95); backdrop-filter: blur(16px); border: 1px solid var(--glass-border); border-radius: 24px; box-shadow: var(--shadow-xl); opacity: 0; visibility: hidden; transform: translateY(-10px); transition: all 0.2s; z-index: 100; }
+        .user-menu.show .user-dropdown { opacity: 1; visibility: visible; transform: translateY(0); }
+        .user-dropdown a, .user-dropdown button { display: block; width: 100%; padding: 0.75rem 1.5rem; text-align: left; background: none; border: none; color: var(--text-light); text-decoration: none; border-bottom: 1px solid rgba(255,255,255,0.05); cursor: pointer; transition: background 0.15s; }
+        .user-dropdown a:hover, .user-dropdown button:hover { background: rgba(59,130,246,0.2); }
+        .logout-btn { color: var(--glow-danger) !important; }
+        .flash-message { position: fixed; top: 90px; right: 20px; z-index: 100; display: flex; align-items: center; gap: 0.75rem; padding: 1rem 1.5rem; border-radius: 60px; background: rgba(0,0,0,0.8); backdrop-filter: blur(12px); font-weight: 500; max-width: 400px; border-left: 4px solid; animation: slideIn 0.3s ease, fadeOut 0.3s ease 4s forwards; }
+        .flash-message.success { border-color: var(--glow-success); color: #a7f3d0; }
+        .flash-message.error { border-color: var(--glow-danger); color: #fecdd3; }
+        @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+        @keyframes fadeOut { to { opacity: 0; visibility: hidden; } }
+        .history-container { max-width: 1200px; margin: 2rem auto; padding: 0 2rem; }
+        .history-container h1 { font-size: 2.5rem; font-weight: 700; background: linear-gradient(135deg, #e0e7ff, #a78bfa); -webkit-background-clip: text; background-clip: text; color: transparent; margin-bottom: 2rem; }
+        .history-table { width: 100%; border-collapse: separate; border-spacing: 0 0.75rem; }
+        .history-table thead th { text-align: left; padding: 1rem 1.5rem; font-weight: 600; color: var(--text-muted); text-transform: uppercase; font-size: 0.8rem; letter-spacing: 0.5px; }
+        .history-table tbody tr { background: var(--card-bg); backdrop-filter: blur(4px); border-radius: 20px; transition: all 0.2s; }
+        .history-table tbody tr:hover { transform: scale(1.005); box-shadow: 0 8px 20px rgba(0,0,0,0.3); }
+        .history-table td { padding: 1.25rem 1.5rem; border-top: 1px solid rgba(255,255,255,0.05); vertical-align: top; }
+        .history-table td:first-child { border-top-left-radius: 20px; border-bottom-left-radius: 20px; }
+        .history-table td:last-child { border-top-right-radius: 20px; border-bottom-right-radius: 20px; }
+        .movie-link { color: #c084fc; font-weight: 600; text-decoration: none; }
+        .movie-link:hover { text-decoration: underline; }
+        .rating-value { display: inline-block; background: #fbbf24; color: #1e1b2f; font-weight: 700; padding: 0.2rem 0.6rem; border-radius: 40px; font-size: 0.85rem; }
+        .film-rating { color: #fcd34d; font-weight: 500; }
+        .review-text { max-width: 250px; white-space: normal; word-break: break-word; font-size: 0.9rem; color: #cbd5e1; }
+        .empty-state { text-align: center; padding: 4rem 2rem; background: var(--card-bg); border-radius: 32px; border: 1px solid var(--glass-border); }
+        .empty-state p { color: var(--text-muted); font-size: 1.2rem; margin-bottom: 2rem; }
+        .btn { background: var(--glow-primary); color: white; padding: 0.9rem 2.2rem; border-radius: 60px; text-decoration: none; font-weight: 600; display: inline-block; transition: 0.2s; }
+        .btn:hover { transform: translateY(-3px); box-shadow: 0 8px 20px rgba(59,130,246,0.4); }
+        .pagination { display: flex; justify-content: center; align-items: center; gap: 1rem; margin-top: 2rem; }
+        .pagination a, .pagination span { padding: 0.6rem 1.2rem; border-radius: 40px; border: 1px solid var(--glass-border); background: var(--card-bg); color: var(--text-light); text-decoration: none; transition: 0.2s; }
+        .pagination a:hover { background: var(--glow-primary); border-color: var(--glow-primary); color: white; }
+        @media (max-width: 768px) { .history-table, .history-table thead, .history-table tbody, .history-table tr, .history-table td { display: block; } .history-table thead { display: none; } .history-table tbody tr { margin-bottom: 1rem; padding: 1rem; border-radius: 20px; } .history-table td { padding: 0.75rem 0; border: none; display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem; } .history-table td::before { content: attr(data-label); font-weight: 600; color: var(--text-muted); width: 35%; flex-shrink: 0; } .review-text { max-width: 65%; } }
+    </style>
+</head>
+<body>
+<header>
+    <h1 class="logo-link"><a href="/user/movies"><img src="/static/favicon.ico" alt="">Cinema Service</a></h1>
+    <div class="header-actions">
+        <div class="user-menu" id="userMenu">
+            <div class="user-menu-toggle" onclick="toggleUserMenu()"><img th:src="@{/images/user-icon.png}"
+                                                                          alt="Пользователь" class="user-icon"><span
+                    class="toggle-icon">▼</span></div>
+            <div class="user-dropdown">
+                <a th:href="@{/personal-account}">Личный кабинет</a>
+                <a th:href="@{/profile/settings}">Настройки⚙️</a>
+                <a th:href="@{/user/top-up}">Пополнить💰</a>
+                <form th:action="@{/logout}" method="post" style="margin:0;">
+                    <button type="submit" class="logout-btn">Выйти</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</header>
+<main class="history-container">
+    <h1>Мои оценки фильмов</h1>
+    <div th:if="${successMessage}" class="flash-message success" th:text="${successMessage}"></div>
+    <div th:if="${notAuthorizedUserExceptionMessage}" class="flash-message error"
+         th:text="${notAuthorizedUserExceptionMessage}"></div>
+    <div th:if="${ratedHistory != null and not ratedHistory.empty}">
+        <table class="history-table">
+            <thead>
+            <tr>
+                <th>Название фильма</th>
+                <th>Моя оценка</th>
+                <th>Мой отзыв</th>
+                <th>Дата оценки</th>
+                <th>Рейтинг фильма</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="rated : ${ratedHistory.content}">
+                <td data-label="Название"><a th:href="@{/user/movies/{title}(title=${rated.title})}" class="movie-link"
+                                             th:text="${rated.title}">Название</a>
+                    <div class="movie-meta" style="font-size:0.75rem; color:#7e8a98; margin-top:4px;"><span
+                            th:text="${rated.releaseDate} ? ${#temporals.format(rated.releaseDate, 'yyyy')} : ''">2025</span><span
+                            th:text="| • ${rated.genre}|" th:if="${rated.genre != null}"></span><span
+                            th:text="| • ${rated.formattedDuration}|" th:if="${rated.formattedDuration != null}"></span>
+                    </div>
+                </td>
+                <td data-label="Моя оценка"><span class="rating-value" th:text="${rated.ratingValue}">8.5</span> / 10
+                </td>
+                <td data-label="Мой отзыв">
+                    <div class="review-text"
+                         th:if="${rated.reviewText != null and not #strings.isEmpty(rated.reviewText)}"
+                         th:text="${rated.reviewText}">Отличный фильм!
+                    </div>
+                    <span th:if="${rated.reviewText == null or #strings.isEmpty(rated.reviewText)}"
+                          style="color:#5b6e8c; font-style:italic;">— нет отзыва —</span></td>
+                <td data-label="Дата оценки"><span th:text="${#temporals.format(rated.ratedAt, 'dd MMM yyyy, HH:mm')}">15 мар 2025, 18:30</span>
+                </td>
+                <td data-label="Рейтинг фильма"><span class="film-rating"
+                                                      th:text="${#numbers.formatDecimal(rated.rating, 1, 1)}">7.9</span>
+                    / 10 <span style="font-size:0.7rem; color:#6c7a91;">(<span
+                            th:text="${rated.ratingsCount}">124</span> оценок)</span></td>
+            </tr>
+            </tbody>
+        </table>
+        <div class="pagination" th:if="${ratedHistory.totalPages > 1}"><a th:if="${ratedHistory.hasPrevious()}"
+                                                                          th:href="@{/user/ratings(page=${ratedHistory.number - 1}, size=${ratedHistory.size})}">«
+            Предыдущая</a><span>Страница <span th:text="${ratedHistory.number + 1}">1</span> из <span
+                th:text="${ratedHistory.totalPages}">1</span></span><a th:if="${ratedHistory.hasNext()}"
+                                                                       th:href="@{/user/ratings(page=${ratedHistory.number + 1}, size=${ratedHistory.size})}">Следующая
+            »</a></div>
+    </div>
+    <div th:if="${ratedHistory == null or ratedHistory.empty}" class="empty-state"><p>Вы ещё не оценили ни одного
+        фильма</p><a href="/user/movies" class="btn">Перейти к каталогу</a></div>
+</main>
+<script>
+    let userMenu = document.getElementById('userMenu');
+    function toggleUserMenu() { userMenu.classList.toggle('show'); }
+    document.addEventListener('click', function(e) { if (!userMenu.contains(e.target)) userMenu.classList.remove('show'); });
+    document.addEventListener('DOMContentLoaded', function() { document.querySelectorAll('.flash-message').forEach(msg => { setTimeout(() => { msg.style.animation = 'fadeOut 0.3s ease forwards'; setTimeout(() => msg.remove(), 300); }, 5000); }); });
+</script>
+</body>
+</html>

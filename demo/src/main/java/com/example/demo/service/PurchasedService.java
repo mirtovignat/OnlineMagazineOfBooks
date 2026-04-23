@@ -56,27 +56,31 @@ public class PurchasedService {
         User user = userRepository.findByUsernameOrThrow(username);
         List<String> titles = cartService.getAllInCartOfUser(username)
                 .stream().map(CartMovieForOwnerViewDTO::title).collect(Collectors.toList());
-        if (titles.isEmpty()) return;
+        if (titles.isEmpty()) {
+            return;
+        }
         List<Movie> movies = movieRepository.findAllByTitles(titles);
         Set<Long> purchasedIds = purchasedMovieRepository.findAllByUserUsername(user.getUsername())
-                .stream().map(pm -> pm.getMovie().getId()).collect(Collectors.toSet());
-        List<Movie> newMovies = movies.stream().filter(m -> !purchasedIds.contains(m.getId())).toList();
+                .stream().map(purchasedMovie -> purchasedMovie.getMovie().getId())
+                .collect(Collectors.toSet());
+        List<Movie> newMovies = movies.stream().filter(movie -> !purchasedIds.contains(movie.getId())).toList();
         if (newMovies.isEmpty()) {
             cartService.removeAllFromCart(username);
             return;
         }
-        BigDecimal totalPrice = newMovies.stream().map(Movie::getPrice).reduce(BigDecimal.ZERO, BigDecimal::add);
+        BigDecimal totalPrice = newMovies.stream()
+                .map(Movie::getPrice).reduce(BigDecimal.ZERO, BigDecimal::add);
         if (user.getBalance().compareTo(totalPrice) < 0) {
             throw new InsufficientFundsException(totalPrice, user.getBalance());
         }
         if (user.spendMoney(totalPrice)) {
             List<PurchasedMovie> purchasedMovies = new ArrayList<>();
             for (Movie movie : newMovies) {
-                PurchasedMovie pm = new PurchasedMovie();
-                pm.setMovie(movie);
-                pm.setUser(user);
-                pm.setPriceSnapshot(movie.getPrice());
-                purchasedMovies.add(pm);
+                PurchasedMovie purchasedMovie = new PurchasedMovie();
+                purchasedMovie.setMovie(movie);
+                purchasedMovie.setUser(user);
+                purchasedMovie.setPriceSnapshot(movie.getPrice());
+                purchasedMovies.add(purchasedMovie);
             }
             purchasedMovieRepository.saveAll(purchasedMovies);
         }
@@ -87,7 +91,6 @@ public class PurchasedService {
     public void removeFromPurchased(String title, String username) {
         purchasedMovieRepository.deleteByTitleAndUsername(title, username);
     }
-
 
 
     public PurchasedMovie findPurchasedMovieOrThrow(String username, String title) {

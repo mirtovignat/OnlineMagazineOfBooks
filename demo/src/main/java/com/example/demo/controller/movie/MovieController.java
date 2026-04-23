@@ -5,7 +5,6 @@ import com.example.demo.dto.movie.MovieCardViewDTO;
 import com.example.demo.service.MovieService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.AllArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -20,9 +19,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 @AllArgsConstructor
 @RequestMapping("/movies")
 public class MovieController {
-    @Autowired
     private final LogoutController logoutController;
-    @Autowired
     private final MovieService movieService;
 
     @GetMapping

@@ -1,10 +1,13 @@
 package com.example.demo.dto.authorize;
 
+import com.example.demo.exception.user.PasswordsMismatchException;
 import jakarta.validation.constraints.*;
+
+import java.util.Objects;
 
 public record RegisterFormDTO(
         @NotBlank(message = "Введите username")
-        String username,
+        @Size(min = 6, max = 20) String username,
 
         @NotBlank(message = "Введите email")
         @Email(message = "Некорректный email адрес")
@@ -41,4 +44,11 @@ public record RegisterFormDTO(
         @Pattern(regexp = "[A-Z]{3}", message = "Неверный формат валюты")
         String currencyCode
 ) {
+    public void ifMismatch() {
+        if (!Objects.equals(rawPassword(), repeatRawPassword())) {
+            throw new PasswordsMismatchException();
+        }
+    }
+
+
 }

@@ -2,12 +2,11 @@ package com.example.demo.controller;
 
 import com.example.demo.dto.joined_to_user.CartMovieForOwnerViewDTO;
 import com.example.demo.dto.user.UserForOwnerViewDTO;
-import com.example.demo.exception.authorize.NotAuthorizedUserException;
 import com.example.demo.exception.cart.EmptyException;
+import com.example.demo.exception.user.NotAuthorizedUserException;
 import com.example.demo.service.CartService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.AllArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -19,9 +18,7 @@ import java.util.List;
 @RequestMapping("/user/cart")
 @AllArgsConstructor
 public class CartController {
-    @Autowired
     private final BadgeUpdater badgeUpdater;
-    @Autowired
     private final CartService cartService;
 
     @GetMapping("/count")

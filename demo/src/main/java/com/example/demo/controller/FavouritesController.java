@@ -1,8 +1,8 @@
 package com.example.demo.controller;
 
 import com.example.demo.dto.user.UserForOwnerViewDTO;
-import com.example.demo.exception.authorize.NotAuthorizedUserException;
 import com.example.demo.exception.cart.EmptyException;
+import com.example.demo.exception.user.NotAuthorizedUserException;
 import com.example.demo.service.FavouritesService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.AllArgsConstructor;

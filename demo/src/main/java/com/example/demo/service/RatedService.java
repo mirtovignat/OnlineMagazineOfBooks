@@ -73,10 +73,12 @@ public class RatedService {
     }
 
     @Transactional
-    public RatedMovieForOwnerViewDTO updateRating(RatedMovieForOwnerFormDTO dto, String username) {
-        RatedMovie ratedMovie = ratedMovieRepository.findByUserUsernameAndMovieTitleOrThrow(username, dto.title());
-        ratedMovie.setRatingValue(dto.rating());
-        ratedMovie.setReview(dto.review());
+    public RatedMovieForOwnerViewDTO updateRating(RatedMovieForOwnerFormDTO ratedMovieForOwnerFormDTO,
+                                                  String username) {
+        RatedMovie ratedMovie = ratedMovieRepository.findByUserUsernameAndMovieTitleOrThrow(
+                username, ratedMovieForOwnerFormDTO.title());
+        ratedMovie.setRatingValue(ratedMovieForOwnerFormDTO.rating());
+        ratedMovie.setReview(ratedMovieForOwnerFormDTO.review());
         ratedMovie = ratedMovieRepository.save(ratedMovie);
         updateMovieRating(ratedMovie.getMovie());
         return ratedMapper.toOwnerView(ratedMovie);
@@ -99,8 +101,4 @@ public class RatedService {
         movieRepository.save(movie);
     }
 
-    @Transactional
-    public void removeAllRatings(String username) {
-        ratedMovieRepository.deleteAllByUsername(username);
-    }
 }

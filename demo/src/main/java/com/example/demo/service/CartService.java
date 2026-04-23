@@ -10,7 +10,6 @@ import com.example.demo.repository.CartItemRepository;
 import com.example.demo.repository.MovieRepository;
 import com.example.demo.repository.UserRepository;
 import lombok.AllArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,15 +20,10 @@ import java.util.stream.Collectors;
 @Service
 @AllArgsConstructor
 public class CartService {
-    @Autowired
     private final CartItemRepository cartItemRepository;
-    @Autowired
     private final MovieRepository movieRepository;
-    @Autowired
     private final UserRepository userRepository;
-    @Autowired
     private final CartItemMapper cartItemMapper;
-    @Autowired
     private final PresenceService favouritesService;
 
     @Transactional(readOnly = true)

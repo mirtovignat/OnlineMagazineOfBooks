@@ -3,11 +3,10 @@ package com.example.demo.controller.rated;
 import com.example.demo.dto.joined_to_user.RatedMovieForOwnerFormDTO;
 import com.example.demo.dto.joined_to_user.RatedMovieForOwnerViewDTO;
 import com.example.demo.dto.user.UserForOwnerViewDTO;
-import com.example.demo.exception.authorize.NotAuthorizedUserException;
+import com.example.demo.exception.user.NotAuthorizedUserException;
 import com.example.demo.service.RatedService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.AllArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -17,7 +16,6 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 @Controller
 @RequestMapping("/user/rated")
 public class RatedForUserController {
-    @Autowired
     private final RatedService ratedService;
 
     @GetMapping("/{title}/reviews")

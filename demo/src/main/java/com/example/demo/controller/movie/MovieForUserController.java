@@ -4,11 +4,10 @@ import com.example.demo.controller.BadgeUpdater;
 import com.example.demo.dto.movie.MovieCardDetailsForUserViewDTO;
 import com.example.demo.dto.movie.MovieCardForUserViewDTO;
 import com.example.demo.dto.user.UserForOwnerViewDTO;
-import com.example.demo.exception.authorize.NotAuthorizedUserException;
+import com.example.demo.exception.user.NotAuthorizedUserException;
 import com.example.demo.service.MovieService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.AllArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -26,9 +25,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 @RequestMapping("/user/movies")
 public class MovieForUserController {
 
-    @Autowired
     private final MovieService movieService;
-    @Autowired
     private final BadgeUpdater badgeUpdater;
 
     @GetMapping

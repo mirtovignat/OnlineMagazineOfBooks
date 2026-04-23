@@ -2,12 +2,11 @@ package com.example.demo.controller;
 
 import com.example.demo.dto.joined_to_user.LibrarianMovieForOwnerViewDTO;
 import com.example.demo.dto.user.UserForOwnerViewDTO;
-import com.example.demo.exception.authorize.NotAuthorizedUserException;
 import com.example.demo.exception.purchased.InsufficientFundsException;
+import com.example.demo.exception.user.NotAuthorizedUserException;
 import com.example.demo.service.PurchasedService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.AllArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -21,7 +20,6 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 @RequestMapping("/user/purchases")
 @AllArgsConstructor
 public class PurchasesController {
-    @Autowired
     private final PurchasedService purchasedService;
 
     @PostMapping("/add/bulk")
