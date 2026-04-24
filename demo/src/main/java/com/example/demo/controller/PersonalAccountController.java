@@ -39,30 +39,16 @@ public class PersonalAccountController {
     private final RatedService ratedService;
 
     @GetMapping("/rated-history")
-    public String getRated(HttpServletRequest httpServletRequest,
-                           Model model,
-                           @SessionAttribute(required = false) UserForOwnerViewDTO userForOwnerViewDTO,
-                           RedirectAttributes redirectAttributes,
+    public String getRated(Model model,
+                           @SessionAttribute UserForOwnerViewDTO userForOwnerViewDTO,
                            @PageableDefault(size = 12,
                                    sort = "movie.releaseDate",
                                    direction = Sort.Direction.DESC) Pageable pageable) {
-        try {
-            if (userForOwnerViewDTO == null) {
-                redirectAttributes.addFlashAttribute(
-                        "notAuthorizedUserExceptionMessage",
-                        new NotAuthorizedUserException().getMessage());
-                return "redirect:" + httpServletRequest.getHeader("Referer");
-            } else {
-                Page<RatedMovieForOwnerViewDTO> ratedHistory =
-                        ratedService.getRatedHistory(pageable, userForOwnerViewDTO.username());
-                model.addAttribute("ratedHistory", ratedHistory);
-                model.addAttribute("ratedCount", ratedHistory.getSize());
-                return "for_user/for_owner/rated-history";
-            }
-        } catch (NotAuthorizedUserException e) {
-            redirectAttributes.addFlashAttribute("notAuthorizedUserExceptionMessage", e.getMessage());
-        }
-        return "redirect:" + httpServletRequest.getHeader("Referer");
+        Page<RatedMovieForOwnerViewDTO> ratedHistory =
+                ratedService.getRatedHistory(pageable, userForOwnerViewDTO.username());
+        model.addAttribute("ratedHistory", ratedHistory);
+        model.addAttribute("ratedCount", ratedHistory.getSize());
+        return "for_user/for_owner/rated-history";
     }
 
     @GetMapping("/history")

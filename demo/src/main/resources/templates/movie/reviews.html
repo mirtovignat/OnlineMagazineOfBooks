@@ -1,229 +1,58 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" lang="ru">
 <head>
-    <meta charset="UTF-8"/>
+    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Отзывы о фильме — Cinema Service</title>
     <link rel="icon" type="image/x-icon" th:href="@{/favicon.ico}">
     <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700&display=swap"
           rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/main.css}">
     <style>
-        * { margin:0; padding:0; box-sizing:border-box; }
-        body {
-            font-family: 'Inter', system-ui, sans-serif;
-            background: radial-gradient(circle at 10% 20%, #0b0f1c, #05070f);
-            color: #eef2ff;
-            line-height: 1.5;
-            min-height: 100vh;
-        }
-        :root {
-            --glass-bg: rgba(18, 25, 45, 0.65);
-            --glass-border: rgba(72, 187, 255, 0.25);
-            --glow-primary: #3b82f6;
-            --glow-success: #10b981;
-            --glow-danger: #f43f5e;
-            --text-light: #e2e8f0;
-            --text-muted: #94a3b8;
-            --card-bg: rgba(15, 23, 42, 0.75);
-            --shadow-xl: 0 25px 45px -12px rgba(0,0,0,0.5);
-            --radius-xl: 28px;
-        }
-        header {
-            position: sticky;
-            top: 0;
-            z-index: 50;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 1rem 2rem;
-            background: rgba(8, 12, 24, 0.7);
-            backdrop-filter: blur(16px);
-            border-bottom: 1px solid var(--glass-border);
-            box-shadow: 0 8px 20px rgba(0,0,0,0.2);
-        }
-        .logo-link a {
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-            text-decoration: none;
-            font-weight: 700;
-            font-size: 1.5rem;
-            background: linear-gradient(135deg, #c084fc, #60a5fa);
-            -webkit-background-clip: text;
-            background-clip: text;
-            color: transparent;
-        }
-        .logo-link img { width: 32px; height: 32px; border-radius: 12px; }
-        .header-actions { display: flex; align-items: center; gap: 1rem; }
-        .user-menu { position: relative; }
-        .user-menu-toggle {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            padding: 0.5rem 1rem;
-            background: var(--glass-bg);
-            border: 1px solid var(--glass-border);
-            border-radius: 60px;
-            cursor: pointer;
-            backdrop-filter: blur(4px);
-        }
-        .user-menu-toggle:hover { border-color: var(--glow-primary); }
-        .user-icon { width: 28px; height: 28px; border-radius: 50%; }
-        .toggle-icon { font-size: 0.8rem; transition: transform 0.2s; }
-        .user-menu.show .toggle-icon { transform: rotate(180deg); }
-        .user-dropdown {
-            position: absolute;
-            top: calc(100% + 0.75rem);
-            right: 0;
-            min-width: 200px;
-            background: rgba(10, 15, 30, 0.95);
-            backdrop-filter: blur(16px);
-            border: 1px solid var(--glass-border);
-            border-radius: 24px;
-            box-shadow: var(--shadow-xl);
-            opacity: 0;
-            visibility: hidden;
-            transform: translateY(-10px);
-            transition: all 0.2s;
-            z-index: 100;
-        }
-        .user-menu.show .user-dropdown { opacity: 1; visibility: visible; transform: translateY(0); }
-        .user-dropdown a, .user-dropdown button {
-            display: block;
-            width: 100%;
-            padding: 0.75rem 1.5rem;
-            text-align: left;
-            background: none;
-            border: none;
-            color: var(--text-light);
-            text-decoration: none;
-            border-bottom: 1px solid rgba(255,255,255,0.05);
-            cursor: pointer;
-            transition: background 0.15s;
-        }
-        .user-dropdown a:hover, .user-dropdown button:hover { background: rgba(59,130,246,0.2); }
-        .logout-btn { color: var(--glow-danger) !important; }
-        .flash-message {
-            position: fixed;
-            top: 90px;
-            right: 20px;
-            z-index: 100;
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-            padding: 1rem 1.5rem;
-            border-radius: 60px;
-            background: rgba(0,0,0,0.8);
-            backdrop-filter: blur(12px);
-            font-weight: 500;
-            max-width: 400px;
-            border-left: 4px solid;
-            animation: slideIn 0.3s ease, fadeOut 0.3s ease 5s forwards;
-        }
-        .flash-message.success { border-color: var(--glow-success); color: #a7f3d0; }
-        .flash-message.error { border-color: var(--glow-danger); color: #fecdd3; }
-        @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
-        @keyframes fadeOut { to { opacity: 0; visibility: hidden; } }
-        .reviews-container { max-width: 900px; margin: 2rem auto; padding: 0 1.5rem; }
-        .movie-title {
-            font-size: 2rem;
-            margin-bottom: 1.5rem;
-            border-bottom: 2px solid var(--glow-primary);
-            padding-bottom: 0.75rem;
-        }
-        .movie-title span {
-            background: linear-gradient(135deg, #e0e7ff, #c084fc);
-            -webkit-background-clip: text;
-            background-clip: text;
-            color: transparent;
-        }
-        .reviews-grid { display: flex; flex-direction: column; gap: 1.5rem; margin-top: 1.5rem; }
-        .review-card {
-            background: var(--card-bg);
-            backdrop-filter: blur(8px);
-            border-radius: 24px;
-            padding: 1.5rem;
-            border: 1px solid var(--glass-border);
-            transition: all 0.2s;
-        }
-        .review-card:hover { border-color: var(--glow-primary); transform: translateY(-2px); }
-        .review-header { display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem; flex-wrap: wrap; }
-        .review-author { font-weight: bold; color: #c084fc; font-size: 1rem; }
-        .review-rating { background: rgba(251,191,36,0.2); color: #fde047; padding: 0.2rem 0.8rem; border-radius: 40px; font-size: 0.9rem; font-weight: 600; }
-        .review-date { color: var(--text-muted); font-size: 0.8rem; margin-left: auto; }
-        .review-text { line-height: 1.6; color: var(--text-light); white-space: pre-wrap; }
-        .no-reviews { text-align: center; padding: 3rem; background: var(--card-bg); border-radius: 32px; color: var(--text-muted); border: 1px solid var(--glass-border); }
-        .back-link { display: inline-block; margin-bottom: 1rem; color: #c084fc; text-decoration: none; font-weight: 500; }
-        .back-link:hover { text-decoration: underline; }
-        @media (max-width: 768px) { header { flex-direction: column; align-items: stretch; } .header-actions { justify-content: center; } .movie-title { font-size: 1.5rem; } }
+        .reviews-container{max-width:900px;margin:2rem auto;padding:0 1.5rem;}
+        .movie-title{font-size:2rem;margin-bottom:1.5rem;border-bottom:2px solid var(--glow-primary);padding-bottom:0.75rem;}
+        .movie-title span{background:linear-gradient(135deg,#e0e7ff,#c084fc);-webkit-background-clip:text;background-clip:text;color:transparent;}
+        .reviews-grid{display:flex;flex-direction:column;gap:1.5rem;margin-top:1.5rem;}
+        .review-card{background:var(--card-bg);backdrop-filter:blur(8px);border-radius:24px;padding:1.5rem;border:1px solid var(--glass-border);transition:all 0.2s;}
+        .review-card:hover{border-color:var(--glow-primary);transform:translateY(-2px);}
+        .review-header{display:flex;align-items:center;gap:1rem;margin-bottom:1rem;flex-wrap:wrap;}
+        .review-author{font-weight:bold;color:#c084fc;font-size:1rem;}
+        .review-rating{background:rgba(251,191,36,0.2);color:#fde047;padding:0.2rem 0.8rem;border-radius:40px;font-size:0.9rem;font-weight:600;}
+        .review-date{color:var(--text-muted);font-size:0.8rem;margin-left:auto;}
+        .review-text{line-height:1.6;color:var(--text-light);white-space:pre-wrap;}
+        .no-reviews{text-align:center;padding:3rem;background:var(--card-bg);border-radius:32px;color:var(--text-muted);border:1px solid var(--glass-border);}
+        .back-link{display:inline-block;margin-bottom:1rem;color:#c084fc;text-decoration:none;font-weight:500;}
+        .back-link:hover{text-decoration:underline;}
+        .login-button{display:flex;align-items:center;background:linear-gradient(135deg,var(--glow-primary),#1d4ed8);color:white;padding:0.6rem 1.5rem;border-radius:60px;text-decoration:none;font-weight:500;transition:0.2s;}
+        .login-button:hover{transform:translateY(-2px);box-shadow:0 6px 14px rgba(59,130,246,0.4);}
+        @media (max-width:768px){.movie-title{font-size:1.5rem;}}
     </style>
 </head>
 <body>
 <header>
     <h1 class="logo-link"><a href="/movies"><img src="/static/favicon.ico" alt="">Cinema Service</a></h1>
-    <div class="header-actions">
-        <div class="user-menu" id="userMenu">
-            <div class="user-menu-toggle" onclick="toggleUserMenu()">
-                <img th:src="@{/images/user-icon.png}" alt="Пользователь" class="user-icon" src="">
-                <span class="toggle-icon">▼</span>
-            </div>
-            <div class="user-dropdown">
-                <a th:href="@{/personal-account}">Личный кабинет</a>
-                <a th:href="@{/profile/settings}">Настройки⚙️</a>
-                <a th:href="@{/user/top-up}">Пополнить💰</a>
-                <form th:action="@{/logout}" method="post" style="margin:0;">
-                    <button type="submit" class="logout-btn">Выйти</button>
-                </form>
-            </div>
-        </div>
-    </div>
+    <div class="header-actions"><a th:href="@{/login}" class="login-button">👤 Войти</a></div>
 </header>
-
-<div th:if="${successMessage}" class="flash-message success"><span th:text="${successMessage}"></span></div>
-<div th:if="${notAuthorizedUserExceptionMessage}" class="flash-message error"><span
-        th:text="${notAuthorizedUserExceptionMessage}"></span></div>
-<div th:if="${errorMessage}" class="flash-message error"><span th:text="${errorMessage}"></span></div>
-
 <main class="reviews-container">
     <a href="javascript:history.back()" class="back-link">← Назад</a>
-    <div class="movie-title">
-        <span th:text="'Отзывы на фильм: ' + ${title}">Отзывы на фильм: Название</span>
-    </div>
-
+    <div class="movie-title"><span th:text="'Отзывы на фильм: ' + ${title}">Отзывы на фильм: Название</span></div>
     <div th:if="${reviews != null and !reviews.empty}" class="reviews-grid">
         <div class="review-card" th:each="review : ${reviews}">
-            <div class="review-header">
-                <span class="review-author" th:text="${review.username}">Иван Иванов</span>
-                <span class="review-rating" th:text="${review.ratingValue} + ' / 10'">8.5 / 10</span>
-                <span class="review-date" th:text="${#temporals.format(review.ratedAt, 'dd.MM.yyyy HH:mm')}">01.01.2023 15:30</span>
+            <div class="review-header"><span class="review-author" th:text="${review.username}">Иван Иванов</span><span
+                    class="review-rating" th:text="${review.ratingValue} + ' / 10'">8.5 / 10</span><span
+                    class="review-date" th:text="${#temporals.format(review.ratedAt, 'dd.MM.yyyy HH:mm')}">01.01.2023 15:30</span>
             </div>
             <div class="review-text" th:if="${review.reviewText != null and !review.reviewText.empty}"
                  th:text="${review.reviewText}">Текст отзыва...
             </div>
             <div class="review-text" th:unless="${review.reviewText != null and !review.reviewText.empty}"
-                 style="color: #94a3b8; font-style: italic;">Пользователь не оставил текстового отзыва.
+                 style="color:#94a3b8; font-style:italic;">Пользователь не оставил текстового отзыва.
             </div>
         </div>
     </div>
-
-    <div th:if="${reviews == null or reviews.empty}" class="no-reviews">
-        <p>😕 Пока нет отзывов на этот фильм.</p>
-        <p>Будьте первым, кто оставит отзыв!</p>
-    </div>
+    <div th:if="${reviews == null or reviews.empty}" class="no-reviews"><p>😕 Пока нет отзывов на этот фильм.</p>
+        <p>Будьте первым, кто оставит отзыв!</p></div>
 </main>
-
-<script>
-    let userMenu = document.getElementById('userMenu');
-    function toggleUserMenu() { userMenu.classList.toggle('show'); }
-    document.addEventListener('click', function(event) { if (!userMenu.contains(event.target)) userMenu.classList.remove('show'); });
-    document.addEventListener('DOMContentLoaded', function() {
-        document.querySelectorAll('.flash-message').forEach(msg => {
-            setTimeout(() => {
-                msg.style.animation = 'fadeOut 0.3s ease forwards';
-                setTimeout(() => msg.remove(), 300);
-            }, 5000);
-        });
-    });
-</script>
+<script th:src="@{/js/main.js}" defer></script>
 </body>
 </html>

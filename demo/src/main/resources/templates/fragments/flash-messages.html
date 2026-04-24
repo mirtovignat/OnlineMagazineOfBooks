@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="">
+<body>
+<div th:fragment="flashMessages">
+    <div th:if="${successMessage}" class="flash-message success" th:text="${successMessage}"></div>
+    <div th:if="${errorMessage}" class="flash-message error" th:text="${errorMessage}"></div>
+    <div th:if="${infoMessage}" class="flash-message info" th:text="${infoMessage}"></div>
+    <div th:if="${notAuthorizedUserExceptionMessage}" class="flash-message error"
+         th:text="${notAuthorizedUserExceptionMessage}"></div>
+    <div th:if="${insufficientFundsExceptionMessage}" class="flash-message error"
+         th:text="${insufficientFundsExceptionMessage}"></div>
+    <div th:if="${emptyCartExceptionMessage}" class="flash-message warning"
+         th:text="${emptyCartExceptionMessage}"></div>
+    <div th:if="${passwordsMismatchExceptionMessage}" class="flash-message error"
+         th:text="${passwordsMismatchExceptionMessage}"></div>
+    <div th:if="${alreadyRegisteredExceptionMessage}" class="flash-message error"
+         th:text="${alreadyRegisteredExceptionMessage}"></div>
+    <div th:if="${invalidPasswordExceptionMessage}" class="flash-message error"
+         th:text="${invalidPasswordExceptionMessage}"></div>
+    <div th:if="${userNotFoundExceptionMessage}" class="flash-message error"
+         th:text="${userNotFoundExceptionMessage}"></div>
+</div>
+</body>
+</html>

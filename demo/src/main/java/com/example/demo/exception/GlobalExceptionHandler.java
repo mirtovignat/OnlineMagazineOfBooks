@@ -1,10 +1,12 @@
 package com.example.demo.exception;
 
-import com.example.demo.exception.authorize.*;
 import com.example.demo.exception.cart.EmptyException;
 import com.example.demo.exception.purchased.InsufficientFundsException;
+import com.example.demo.exception.user.*;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
@@ -12,80 +14,133 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 @ControllerAdvice
 public class GlobalExceptionHandler {
 
-    private String getReferer(HttpServletRequest request) {
-        String referer = request.getHeader("Referer");
+    private boolean isAjaxRequest(HttpServletRequest httpServletRequest) {
+        String requestedWith = httpServletRequest.getHeader("X-Requested-With");
+        return "XMLHttpRequest".equals(requestedWith);
+    }
+
+    private String getReferer(HttpServletRequest httpServletRequest) {
+        String referer = httpServletRequest.getHeader("Referer");
         return (referer != null && !referer.isBlank()) ? referer : "/";
     }
 
     @ExceptionHandler(NotAuthorizedUserException.class)
-    public String handleNotAuthorized(NotAuthorizedUserException e,
-                                      HttpServletRequest request,
-                                      RedirectAttributes ra) {
-        ra.addFlashAttribute("notAuthorizedUserExceptionMessage", e.getMessage());
-        return "redirect:" + getReferer(request);
+    public Object handleNotAuthorized(NotAuthorizedUserException e,
+                                      HttpServletRequest httpServletRequest,
+                                      RedirectAttributes redirectAttributes) {
+        if (isAjaxRequest(httpServletRequest)) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body("{\"message\": \"" + e.getMessage() + "\"}");
+        }
+        redirectAttributes.addFlashAttribute("notAuthorizedUserExceptionMessage", e.getMessage());
+        return "redirect:" + getReferer(httpServletRequest);
     }
 
     @ExceptionHandler(EmptyException.class)
-    public String handleEmpty(EmptyException e,
-                              HttpServletRequest request,
-                              RedirectAttributes ra) {
-        ra.addFlashAttribute("emptyCartExceptionMessage", e.getMessage());
-        return "redirect:" + getReferer(request);
+    public Object handleEmpty(EmptyException e,
+                              HttpServletRequest httpServletRequest,
+                              RedirectAttributes redirectAttributes) {
+        if (isAjaxRequest(httpServletRequest)) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body("{\"message\": \"" + e.getMessage() + "\"}");
+        }
+        redirectAttributes.addFlashAttribute("emptyCartExceptionMessage", e.getMessage());
+        return "redirect:" + getReferer(httpServletRequest);
     }
 
     @ExceptionHandler(InsufficientFundsException.class)
-    public String handleInsufficientFunds(InsufficientFundsException e,
-                                          HttpServletRequest request,
-                                          RedirectAttributes ra) {
-        ra.addFlashAttribute("insufficientFundsExceptionMessage", e.getMessage());
-        return "redirect:" + getReferer(request);
+    public Object handleInsufficientFunds(InsufficientFundsException e,
+                                          HttpServletRequest httpServletRequest,
+                                          RedirectAttributes redirectAttributes) {
+        if (isAjaxRequest(httpServletRequest)) {
+            return ResponseEntity.status(HttpStatus.PAYMENT_REQUIRED)
+                    .body("{\"message\": \"" + e.getMessage() + "\"}");
+        }
+        redirectAttributes.addFlashAttribute("insufficientFundsExceptionMessage", e.getMessage());
+        return "redirect:" + getReferer(httpServletRequest);
     }
 
     @ExceptionHandler(PasswordsMismatchException.class)
-    public String handlePasswordsMismatch(PasswordsMismatchException e,
-                                          HttpServletRequest request,
-                                          RedirectAttributes ra) {
-        ra.addFlashAttribute("passwordsMismatchExceptionMessage", e.getMessage());
-        return "redirect:" + getReferer(request);
+    public Object handlePasswordsMismatch(PasswordsMismatchException e,
+                                          HttpServletRequest httpServletRequest,
+                                          RedirectAttributes redirectAttributes) {
+        if (isAjaxRequest(httpServletRequest)) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body("{\"message\": \"" + e.getMessage() + "\"}");
+        }
+        redirectAttributes.addFlashAttribute("passwordsMismatchExceptionMessage", e.getMessage());
+        return "redirect:" + getReferer(httpServletRequest);
     }
 
     @ExceptionHandler(AlreadyRegisteredException.class)
-    public String handleAlreadyRegistered(AlreadyRegisteredException e,
-                                          HttpServletRequest request,
-                                          RedirectAttributes ra) {
-        ra.addFlashAttribute("alreadyRegisteredExceptionMessage", e.getMessage());
-        return "redirect:" + getReferer(request);
+    public Object handleAlreadyRegistered(AlreadyRegisteredException e,
+                                          HttpServletRequest httpServletRequest,
+                                          RedirectAttributes redirectAttributes) {
+        if (isAjaxRequest(httpServletRequest)) {
+            return ResponseEntity.status(HttpStatus.CONFLICT)
+                    .body("{\"message\": \"" + e.getMessage() + "\"}");
+        }
+        redirectAttributes.addFlashAttribute("alreadyRegisteredExceptionMessage", e.getMessage());
+        return "redirect:" + getReferer(httpServletRequest);
     }
 
     @ExceptionHandler(InvalidPasswordException.class)
-    public String handleInvalidPassword(InvalidPasswordException e,
-                                        HttpServletRequest request,
-                                        RedirectAttributes ra) {
-        ra.addFlashAttribute("invalidPasswordExceptionMessage", e.getMessage());
-        return "redirect:" + getReferer(request);
+    public Object handleInvalidPassword(InvalidPasswordException e,
+                                        HttpServletRequest httpServletRequest,
+                                        RedirectAttributes redirectAttributes) {
+        if (isAjaxRequest(httpServletRequest)) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body("{\"message\": \"" + e.getMessage() + "\"}");
+        }
+        redirectAttributes.addFlashAttribute("invalidPasswordExceptionMessage", e.getMessage());
+        return "redirect:" + getReferer(httpServletRequest);
     }
 
     @ExceptionHandler(UserNotFoundException.class)
-    public String handleUserNotFound(UserNotFoundException e,
-                                     HttpServletRequest request,
-                                     RedirectAttributes ra) {
-        ra.addFlashAttribute("userNotFoundExceptionMessage", e.getMessage());
-        return "redirect:" + getReferer(request);
+    public Object handleUserNotFound(UserNotFoundException e,
+                                     HttpServletRequest httpServletRequest,
+                                     RedirectAttributes redirectAttributes) {
+        if (isAjaxRequest(httpServletRequest)) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body("{\"message\": \"" + e.getMessage() + "\"}");
+        }
+        redirectAttributes.addFlashAttribute("userNotFoundExceptionMessage", e.getMessage());
+        return "redirect:" + getReferer(httpServletRequest);
+    }
+
+    @ExceptionHandler(DataCoincidenceException.class)
+    public Object handleDataCoincidence(DataCoincidenceException e,
+                                        HttpServletRequest httpServletRequest,
+                                        RedirectAttributes redirectAttributes) {
+        if (isAjaxRequest(httpServletRequest)) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body("{\"message\": \"" + e.getMessage() + "\"}");
+        }
+        redirectAttributes.addFlashAttribute("infoMessage", e.getMessage());
+        return "redirect:" + getReferer(httpServletRequest);
     }
 
     @ExceptionHandler(EntityNotFoundException.class)
-    public String handleEntityNotFound(EntityNotFoundException e,
-                                       HttpServletRequest request,
-                                       RedirectAttributes ra) {
-        ra.addFlashAttribute("errorMessage", e.getMessage());
-        return "redirect:" + getReferer(request);
+    public Object handleEntityNotFound(EntityNotFoundException e,
+                                       HttpServletRequest httpServletRequest,
+                                       RedirectAttributes redirectAttributes) {
+        if (isAjaxRequest(httpServletRequest)) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body("{\"message\": \"" + e.getMessage() + "\"}");
+        }
+        redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
+        return "redirect:" + getReferer(httpServletRequest);
     }
 
     @ExceptionHandler(Exception.class)
-    public String handleGeneric(Exception e,
-                                HttpServletRequest request,
-                                RedirectAttributes ra) {
-        ra.addFlashAttribute("errorMessage", "Произошла ошибка: " + e.getMessage());
-        return "redirect:" + getReferer(request);
+    public Object handleGeneric(Exception e,
+                                HttpServletRequest httpServletRequest,
+                                RedirectAttributes redirectAttributes) {
+        if (isAjaxRequest(httpServletRequest)) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("{\"message\": \"Произошла ошибка: " + e.getMessage() + "\"}");
+        }
+        redirectAttributes.addFlashAttribute("errorMessage", "Произошла ошибка: " + e.getMessage());
+        return "redirect:" + getReferer(httpServletRequest);
     }
 }

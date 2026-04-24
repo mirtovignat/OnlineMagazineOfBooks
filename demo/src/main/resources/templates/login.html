@@ -1,11 +1,12 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" lang="ru">
 <head>
-    <meta charset="UTF-8"/>
+    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>Вход</title>
+    <title>Вход — Cinema Service</title>
     <link rel="icon" type="image/x-icon" th:href="@{/favicon.ico}">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700&display=swap"
+          rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <style>
         * { margin:0; padding:0; box-sizing:border-box; }
@@ -32,7 +33,7 @@
             --shadow-xl: 0 25px 45px -12px rgba(0,0,0,0.5);
             --radius-xl: 28px;
         }
-        main {
+        .login-container {
             max-width: 450px;
             width: 100%;
             background: var(--card-bg);
@@ -43,26 +44,7 @@
             box-shadow: var(--shadow-xl);
         }
         h1 { text-align: center; font-size: 1.8rem; margin-bottom: 1.5rem; background: linear-gradient(135deg, #e0e7ff, #c084fc); -webkit-background-clip: text; background-clip: text; color: transparent; }
-        label { display: block; margin-top: 0.8rem; margin-bottom: 0.3rem; font-weight: 500; font-size: 0.9rem; }
-        .input-container { position: relative; width: 100%; margin-bottom: 0.5rem; }
-        input { width: 100%; padding: 0.8rem 2.5rem 0.8rem 1rem; border-radius: 60px; border: 1px solid var(--glass-border); background: rgba(0,0,0,0.3); color: white; font-size: 1rem; }
-        input:focus { outline: none; border-color: var(--glow-primary); box-shadow: 0 0 0 2px rgba(59,130,246,0.3); }
-        button[type="submit"] { width: 100%; margin-top: 1.2rem; padding: 0.8rem; background: linear-gradient(135deg, var(--glow-primary), #1d4ed8); color: white; border: none; border-radius: 60px; font-weight: 600; font-size: 1rem; cursor: pointer; transition: 0.2s; }
-        button[type="submit"]:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(59,130,246,0.4); }
-        a { color: #c084fc; text-decoration: none; }
-        a:hover { text-decoration: underline; }
-        .toggle-password-btn {
-            position: absolute;
-            right: 15px;
-            top: 50%;
-            transform: translateY(-50%);
-            background: none;
-            border: none;
-            cursor: pointer;
-            color: var(--text-muted);
-            font-size: 1.1rem;
-        }
-        .logo-link a {
+        .logo-link {
             display: inline-flex;
             align-items: center;
             gap: 0.5rem;
@@ -75,9 +57,21 @@
             color: transparent;
             margin-bottom: 1rem;
             justify-content: center;
+            width: 100%;
         }
         .logo-link img { width: 28px; height: 28px; border-radius: 10px; }
+        label { display: block; margin-top: 0.8rem; margin-bottom: 0.3rem; font-weight: 500; font-size: 0.9rem; }
+        .input-container { position: relative; width: 100%; margin-bottom: 0.5rem; }
+        input { width: 100%; padding: 0.8rem 2.5rem 0.8rem 1rem; border-radius: 60px; border: 1px solid var(--glass-border); background: rgba(0,0,0,0.3); color: white; font-size: 1rem; }
+        input:focus { outline: none; border-color: var(--glow-primary); box-shadow: 0 0 0 2px rgba(59,130,246,0.3); }
+        button[type="submit"] { width: 100%; margin-top: 1.2rem; padding: 0.8rem; background: linear-gradient(135deg, var(--glow-primary), #1d4ed8); color: white; border: none; border-radius: 60px; font-weight: 600; font-size: 1rem; cursor: pointer; transition: 0.2s; }
+        button[type="submit"]:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(59,130,246,0.4); }
+        .toggle-password-btn { position: absolute; right: 15px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; color: var(--text-muted); font-size: 1.1rem; }
         .client-error { color: var(--glow-danger); font-size: 0.8rem; margin-top: 0.2rem; display: none; }
+        .msg-error { display: none; }
+        .login-footer { text-align: center; margin-top: 1.5rem; }
+        .login-footer a { color: #c084fc; text-decoration: none; }
+        .login-footer a:hover { text-decoration: underline; }
         .flash-message {
             margin-bottom: 1rem;
             padding: 0.8rem 1rem;
@@ -94,41 +88,68 @@
         .flash-message.success { border-color: var(--glow-success); color: #a7f3d0; }
         .close-btn { background: none; border: none; color: inherit; font-size: 1.3rem; cursor: pointer; opacity: 0.7; }
         .close-btn:hover { opacity: 1; }
-        .msg-error { display: none; }
     </style>
 </head>
 <body>
-<main>
+<div class="login-container">
     <div class="logo-link"><a href="/movies"><img src="/static/favicon.ico" alt="">Cinema Service</a></div>
     <h1>Вход</h1>
-    <div th:if="${invalidPasswordExceptionMessage}" class="flash-message error"><span class="message-text" th:text="${invalidPasswordExceptionMessage}"></span><button class="close-btn" onclick="this.parentElement.remove()">&times;</button></div>
-    <div th:if="${userNotFoundExceptionMessage}" class="flash-message error"><span class="message-text" th:text="${userNotFoundExceptionMessage}"></span><button class="close-btn" onclick="this.parentElement.remove()">&times;</button></div>
-    <div th:if="${exceptionMessage}" class="flash-message error"><span class="message-text" th:text="${exceptionMessage}"></span><button class="close-btn" onclick="this.parentElement.remove()">&times;</button></div>
-    <div th:if="${logoutMessage}" class="flash-message success"><span class="message-text" th:text="${logoutMessage}"></span><button class="close-btn" onclick="this.parentElement.remove()">&times;</button></div>
-    <div th:if="${registeredMessage}" class="flash-message success"><span class="message-text" th:text="${registeredMessage}"></span><button class="close-btn" onclick="this.parentElement.remove()">&times;</button></div>
-    <div th:if="${loginError}" class="flash-message error"><span class="message-text" th:text="${loginError}"></span><button class="close-btn" onclick="this.parentElement.remove()">&times;</button></div>
+    <div th:if="${invalidPasswordExceptionMessage}" class="flash-message error"><span
+            th:text="${invalidPasswordExceptionMessage}"></span>
+        <button class="close-btn" onclick="this.parentElement.remove()">&times;</button>
+    </div>
+    <div th:if="${userNotFoundExceptionMessage}" class="flash-message error"><span
+            th:text="${userNotFoundExceptionMessage}"></span>
+        <button class="close-btn" onclick="this.parentElement.remove()">&times;</button>
+    </div>
+    <div th:if="${exceptionMessage}" class="flash-message error"><span th:text="${exceptionMessage}"></span>
+        <button class="close-btn" onclick="this.parentElement.remove()">&times;</button>
+    </div>
     <form th:action="@{/login}" th:object="${loginForm}" method="post" id="loginForm">
         <input type="hidden" th:field="*{identifier}" id="identifierType"/>
         <label for="identifierValue">Username, email или phone</label>
-        <div class="input-container"><input id="identifierValue" th:field="*{identifierValue}" type="text" placeholder="username, email или +380..." required/></div>
+        <div class="input-container"><input id="identifierValue" th:field="*{identifierValue}" type="text"
+                                            placeholder="username, email или +380..." required/></div>
         <div th:if="${#fields.hasErrors('identifierValue')}" class="msg-error" th:errors="*{identifierValue}"></div>
         <div id="clientIdentifierError" class="client-error"></div>
         <label for="loginPassword">Пароль</label>
-        <div class="input-container"><input id="loginPassword" th:field="*{rawPassword}" type="password" required minlength="8"/><button type="button" id="loginTogglePasswordBtn" onclick="togglePassword()" class="toggle-password-btn" aria-label="Показать пароль"><i id="loginPasswordToggleIcon" class="fas fa-eye-slash"></i></button></div>
+        <div class="input-container"><input id="loginPassword" th:field="*{rawPassword}" type="password" required
+                                            minlength="8"/>
+            <button type="button" id="loginTogglePasswordBtn" onclick="togglePassword()" class="toggle-password-btn"><i
+                    id="loginPasswordToggleIcon" class="fas fa-eye-slash"></i></button>
+        </div>
         <div th:errors="*{rawPassword}" class="msg-error"></div>
-        <button type="submit" id="submitBtn">Войти</button>
+        <button type="submit">Войти</button>
     </form>
-    <p style="text-align:center; margin-top:1.5rem;"><a th:href="@{/register}">Создать аккаунт</a> · <a th:href="@{/password/forgot}">Забыли пароль?</a></p>
-</main>
+    <div class="login-footer"><a th:href="@{/register}">Создать аккаунт</a> · <a th:href="@{/password/forgot}">Забыли
+        пароль?</a></div>
+</div>
 <script>
-    function togglePassword() { const pwd = document.getElementById('loginPassword'); const icon = document.getElementById('loginPasswordToggleIcon'); if (pwd.type === 'password') { pwd.type = 'text'; icon.classList.remove('fa-eye-slash'); icon.classList.add('fa-eye'); } else { pwd.type = 'password'; icon.classList.remove('fa-eye'); icon.classList.add('fa-eye-slash'); } }
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/; const phoneRegex = /^\+\d{1,3}[\s\-]?\(?\d{1,3}\)?[\s\-]?\d{3}[\s\-]?\d{2}[\s\-]?\d{2}$/; const usernameRegex = /^[a-zA-Z0-9_]{3,20}$/;
+    function togglePassword() {
+        const pwd = document.getElementById('loginPassword');
+        const icon = document.getElementById('loginPasswordToggleIcon');
+        if (pwd.type === 'password') { pwd.type = 'text'; icon.classList.remove('fa-eye-slash'); icon.classList.add('fa-eye'); }
+        else { pwd.type = 'password'; icon.classList.remove('fa-eye'); icon.classList.add('fa-eye-slash'); }
+    }
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const phoneRegex = /^\+\d{1,3}[\s\-]?\(?\d{1,3}\)?[\s\-]?\d{3}[\s\-]?\d{2}[\s\-]?\d{2}$/;
+    const usernameRegex = /^[a-zA-Z0-9_]{3,20}$/;
     function getIdentifierType(value) { if (emailRegex.test(value)) return 'EMAIL'; if (phoneRegex.test(value)) return 'PHONE'; if (usernameRegex.test(value)) return 'USERNAME'; return null; }
-    function validateIdentifier() { const input = document.getElementById('identifierValue'); const errorDiv = document.getElementById('clientIdentifierError'); const hiddenField = document.getElementById('identifierType'); const value = input.value.trim(); if (value === '') { errorDiv.style.display = 'none'; hiddenField.value = ''; return false; } const type = getIdentifierType(value); if (type) { errorDiv.style.display = 'none'; hiddenField.value = type; return true; } else { errorDiv.textContent = 'Введите корректный username (3-20 символов: буквы, цифры, _), email или телефон в формате +380...'; errorDiv.style.display = 'block'; hiddenField.value = ''; return false; } }
+    function validateIdentifier() {
+        const input = document.getElementById('identifierValue');
+        const errorDiv = document.getElementById('clientIdentifierError');
+        const hiddenField = document.getElementById('identifierType');
+        const value = input.value.trim();
+        if (value === '') { errorDiv.style.display = 'none'; hiddenField.value = ''; return false; }
+        const type = getIdentifierType(value);
+        if (type) { errorDiv.style.display = 'none'; hiddenField.value = type; return true; }
+        else { errorDiv.textContent = 'Введите корректный username (3-20 символов: буквы, цифры, _), email или телефон в формате +380...'; errorDiv.style.display = 'block'; hiddenField.value = ''; return false; }
+    }
     document.getElementById('loginForm').addEventListener('submit', function(event) { if (!validateIdentifier()) event.preventDefault(); });
     document.getElementById('identifierValue').addEventListener('input', validateIdentifier);
     document.getElementById('identifierValue').addEventListener('blur', validateIdentifier);
-    window.addEventListener('load', function() { validateIdentifier(); });
+    window.addEventListener('load', validateIdentifier);
+    setTimeout(() => { document.querySelectorAll('.flash-message').forEach(msg => { setTimeout(() => { msg.style.animation = 'fadeOut 0.3s ease forwards'; setTimeout(() => msg.remove(), 300); }, 5000); }); }, 100);
 </script>
 </body>
 </html>

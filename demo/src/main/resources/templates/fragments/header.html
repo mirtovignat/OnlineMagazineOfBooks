@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="">
+<body>
+<div th:fragment="header">
+    <header>
+        <h1 class="logo-link"><a href="/user/movies"><img src="/static/favicon.ico" alt="">Cinema Service</a></h1>
+        <div class="header-actions">
+            <a th:href="@{/user/favourites}" class="action-button favourites-btn" title="Избранное">♥
+                <span class="count-badge"
+                      th:style="${favouritesCount != null and favouritesCount > 0} ? 'display: flex' : 'display: none'"
+                      th:text="${favouritesCount != null ? favouritesCount : 0}">0</span>
+            </a>
+            <a th:href="@{/user/cart}" class="action-button cart-btn" title="Корзина">🛒
+                <span class="count-badge"
+                      th:style="${cartCount != null and cartCount > 0} ? 'display: flex' : 'display: none'"
+                      th:text="${cartCount != null ? cartCount : 0}">0</span>
+            </a>
+            <div class="user-menu" id="userMenu">
+                <div class="user-menu-toggle" onclick="toggleUserMenu()">
+                    <img th:src="@{/images/user-icon.png}" alt="Пользователь" class="user-icon" src="">
+                    <span class="toggle-icon">▼</span>
+                </div>
+                <div class="user-dropdown">
+                    <a th:href="@{/personal-account}">Личный кабинет</a>
+                    <a th:href="@{/profile/settings}">Настройки⚙️</a>
+                    <a th:href="@{/user/top-up}">Пополнить💰</a>
+                    <form th:action="@{/logout}" method="post" style="margin:0;">
+                        <button type="submit" class="logout-btn">Выйти</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </header>
+</div>
+</body>
+</html>

@@ -1,5 +1,6 @@
 package com.example.demo.service;
 
+import com.example.demo.config.SecurityConfig;
 import com.example.demo.dto.authorize.LoginFormDTO;
 import com.example.demo.dto.authorize.RegisterFormDTO;
 import com.example.demo.dto.user.UserForOwnerViewDTO;
@@ -8,7 +9,6 @@ import com.example.demo.exception.user.InvalidPasswordException;
 import com.example.demo.mapper.UserMapper;
 import com.example.demo.model.User;
 import com.example.demo.repository.UserRepository;
-import com.example.demo.utils.SecurityConfig;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

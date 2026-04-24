@@ -17,6 +17,7 @@ import java.util.Optional;
 @Repository
 public interface MovieRepository extends JpaRepository<Movie, Long>, JpaSpecificationExecutor<Movie> {
 
+
     @EntityGraph(attributePaths = {"purchases", "favourites", "ratings", "cartItems"})
     @Query("""
             SELECT DISTINCT movie
@@ -31,7 +32,7 @@ public interface MovieRepository extends JpaRepository<Movie, Long>, JpaSpecific
                         + title));
     }
 
-    @EntityGraph(attributePaths = {"purchases", "favourites", "ratings", "cartItems"})
+    @EntityGraph(attributePaths = {"purchases"})
     @Query("""
             SELECT DISTINCT movie
             FROM Movie movie

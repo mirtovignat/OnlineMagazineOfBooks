@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="">
+<body>
+<div th:fragment="headerPublic">
+    <header>
+        <h1 class="logo-link"><a href="/movies"><img src="/static/favicon.ico" alt="">Cinema Service</a></h1>
+        <div class="header-actions">
+            <a th:href="@{/login}" class="login-button">👤 Войти</a>
+        </div>
+    </header>
+</div>
+</body>
+</html>

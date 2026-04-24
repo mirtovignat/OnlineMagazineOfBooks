@@ -7,30 +7,8 @@
     <link rel="icon" type="image/x-icon" th:href="@{/favicon.ico}">
     <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700&display=swap"
           rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/main.css}">
     <style>
-        *{margin:0;padding:0;box-sizing:border-box;}
-        body{font-family:'Inter',sans-serif;background:radial-gradient(circle at 10% 20%,#0b0f1c,#05070f);color:#eef2ff;line-height:1.5;min-height:100vh;}
-        :root{--glass-bg:rgba(18,25,45,0.65);--glass-border:rgba(72,187,255,0.25);--glow-primary:#3b82f6;--glow-success:#10b981;--glow-danger:#f43f5e;--text-light:#e2e8f0;--text-muted:#94a3b8;--card-bg:rgba(15,23,42,0.75);--shadow-xl:0 25px 45px -12px rgba(0,0,0,0.5);--radius-xl:28px;}
-        header{position:sticky;top:0;z-index:50;display:flex;justify-content:space-between;align-items:center;padding:1rem 2rem;background:rgba(8,12,24,0.7);backdrop-filter:blur(16px);border-bottom:1px solid var(--glass-border);box-shadow:0 8px 20px rgba(0,0,0,0.2);}
-        .logo-link a{display:flex;align-items:center;gap:0.75rem;text-decoration:none;font-weight:700;font-size:1.5rem;background:linear-gradient(135deg,#c084fc,#60a5fa);-webkit-background-clip:text;background-clip:text;color:transparent;}
-        .logo-link img{width:32px;height:32px;border-radius:12px;}
-        .header-actions{display:flex;align-items:center;gap:1rem;}
-        .user-menu{position:relative;}
-        .user-menu-toggle{display:flex;align-items:center;gap:0.5rem;padding:0.5rem 1rem;background:var(--glass-bg);border:1px solid var(--glass-border);border-radius:60px;cursor:pointer;backdrop-filter:blur(4px);}
-        .user-menu-toggle:hover{border-color:var(--glow-primary);}
-        .user-icon{width:28px;height:28px;border-radius:50%;}
-        .toggle-icon{font-size:0.8rem;transition:transform 0.2s;}
-        .user-menu.show .toggle-icon{transform:rotate(180deg);}
-        .user-dropdown{position:absolute;top:calc(100% + 0.75rem);right:0;min-width:200px;background:rgba(10,15,30,0.95);backdrop-filter:blur(16px);border:1px solid var(--glass-border);border-radius:24px;box-shadow:var(--shadow-xl);opacity:0;visibility:hidden;transform:translateY(-10px);transition:all 0.2s;z-index:100;}
-        .user-menu.show .user-dropdown{opacity:1;visibility:visible;transform:translateY(0);}
-        .user-dropdown a,.user-dropdown button{display:block;width:100%;padding:0.75rem 1.5rem;text-align:left;background:none;border:none;color:var(--text-light);text-decoration:none;border-bottom:1px solid rgba(255,255,255,0.05);cursor:pointer;transition:background 0.15s;}
-        .user-dropdown a:hover,.user-dropdown button:hover{background:rgba(59,130,246,0.2);}
-        .logout-btn{color:var(--glow-danger) !important;}
-        .flash-message{position:fixed;top:90px;right:20px;z-index:100;display:flex;align-items:center;gap:0.75rem;padding:1rem 1.5rem;border-radius:60px;background:rgba(0,0,0,0.8);backdrop-filter:blur(12px);font-weight:500;max-width:400px;border-left:4px solid;animation:slideIn 0.3s ease,fadeOut 0.3s ease 4s forwards;}
-        .flash-message.success{border-color:var(--glow-success);color:#a7f3d0;}
-        .flash-message.error{border-color:var(--glow-danger);color:#fecdd3;}
-        @keyframes slideIn{from{transform:translateX(100%);opacity:0;}to{transform:translateX(0);opacity:1;}}
-        @keyframes fadeOut{to{opacity:0;visibility:hidden;}}
         .history-container{max-width:1200px;margin:2rem auto;padding:0 2rem;}
         .history-container h1{font-size:2.5rem;font-weight:700;background:linear-gradient(135deg,#e0e7ff,#a78bfa);-webkit-background-clip:text;background-clip:text;color:transparent;margin-bottom:2rem;}
         .history-table{width:100%;border-collapse:separate;border-spacing:0 0.75rem;}
@@ -40,8 +18,7 @@
         .history-table td{padding:1.25rem 1.5rem;border-top:1px solid rgba(255,255,255,0.05);}
         .history-table td:first-child{border-top-left-radius:20px;border-bottom-left-radius:20px;}
         .history-table td:last-child{border-top-right-radius:20px;border-bottom-right-radius:20px;}
-        .movie-link{color:#c084fc;font-weight:600;text-decoration:none;}
-        .movie-link:hover{text-decoration:underline;}
+        .movie-link{color:#c084fc;font-weight:600;text-decoration:none;}.movie-link:hover{text-decoration:underline;}
         .price{font-weight:700;color:var(--glow-success);}
         .empty-state{text-align:center;padding:4rem 2rem;background:var(--card-bg);border-radius:32px;border:1px solid var(--glass-border);}
         .empty-state p{color:var(--text-muted);font-size:1.2rem;margin-bottom:2rem;}
@@ -54,24 +31,8 @@
     </style>
 </head>
 <body>
-<header>
-    <h1 class="logo-link"><a href="/user/movies"><img src="/static/favicon.ico" alt="">Cinema Service</a></h1>
-    <div class="header-actions">
-        <div class="user-menu" id="userMenu">
-            <div class="user-menu-toggle" onclick="toggleUserMenu()"><img th:src="@{/images/user-icon.png}"
-                                                                          alt="Пользователь" class="user-icon"><span
-                    class="toggle-icon">▼</span></div>
-            <div class="user-dropdown">
-                <a th:href="@{/personal-account}">Личный кабинет</a>
-                <a th:href="@{/profile/settings}">Настройки⚙️</a>
-                <a th:href="@{/user/top-up}">Пополнить💰</a>
-                <form th:action="@{/logout}" method="post" style="margin:0;">
-                    <button type="submit" class="logout-btn">Выйти</button>
-                </form>
-            </div>
-        </div>
-    </div>
-</header>
+<th:block th:replace="~{fragments/header :: header}"></th:block>
+<th:block th:replace="~{fragments/flash-messages :: flashMessages}"></th:block>
 <main class="history-container">
     <h1>История покупок</h1>
     <div th:if="${history != null and not history.empty}">
@@ -106,10 +67,6 @@
     <div th:if="${history == null or history.empty}" class="empty-state"><p>У вас пока нет купленных фильмов</p><a
             href="/user/movies" class="btn">Перейти к каталогу</a></div>
 </main>
-<script>
-    let userMenu = document.getElementById('userMenu');
-    function toggleUserMenu() { userMenu.classList.toggle('show'); }
-    document.addEventListener('click', function(e) { if (!userMenu.contains(e.target)) userMenu.classList.remove('show'); });
-</script>
+<script th:src="@{/js/main.js}" defer></script>
 </body>
 </html>

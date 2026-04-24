@@ -2,18 +2,21 @@ package com.example.demo.repository;
 
 import com.example.demo.model.CartItem;
 import jakarta.persistence.EntityNotFoundException;
-import org.springframework.data.jpa.repository.EntityGraph;
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Modifying;
-import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.jpa.repository.*;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Optional;
 
+import static jakarta.persistence.LockModeType.PESSIMISTIC_WRITE;
+
 @Repository
 public interface CartItemRepository extends JpaRepository<CartItem, Long> {
+
+    @Lock(PESSIMISTIC_WRITE)
+    @Query("SELECT ci FROM CartItem ci JOIN FETCH ci.movie WHERE ci.user.username = :username")
+    List<CartItem> findAllByUsernameWithLock(@Param("username") String username);
 
     @EntityGraph(attributePaths = "movie")
     @Query("""

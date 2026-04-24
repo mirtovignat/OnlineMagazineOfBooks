@@ -1,5 +1,6 @@
 package com.example.demo.service;
 
+import com.example.demo.config.SecurityConfig;
 import com.example.demo.dto.user.*;
 import com.example.demo.dto.wallet.TopUpFormDTO;
 import com.example.demo.dto.wallet.WalletForOwnerViewDTO;
@@ -9,10 +10,11 @@ import com.example.demo.exception.user.UserNotFoundException;
 import com.example.demo.mapper.UserMapper;
 import com.example.demo.model.User;
 import com.example.demo.repository.UserRepository;
-import com.example.demo.utils.SecurityConfig;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.math.BigDecimal;
 
 @Service
 @AllArgsConstructor
@@ -104,7 +106,11 @@ public class UserService {
 
     @Transactional
     public void topUp(TopUpFormDTO topUpFormDTO, User user) {
-        userMapper.updateFromTopUpForm(topUpFormDTO, user);
+        if (topUpFormDTO.amount() == null || topUpFormDTO.amount() <= 0) {
+            throw new IllegalArgumentException("Сумма пополнения должна быть положительной");
+        }
+        BigDecimal addAmount = BigDecimal.valueOf(topUpFormDTO.amount());
+        user.addMoney(addAmount);
         userRepository.save(user);
     }
 

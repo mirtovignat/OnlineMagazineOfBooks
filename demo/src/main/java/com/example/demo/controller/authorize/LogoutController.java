@@ -10,23 +10,13 @@ import org.springframework.web.bind.annotation.PostMapping;
 @AllArgsConstructor
 public class LogoutController {
 
-    public void invalidate(HttpServletRequest httpServletRequest) {
-        HttpSession httpSession = httpServletRequest
-                .getSession(false);
-        if (httpSession != null) {
-            httpSession.removeAttribute("userForOwnerViewDTO");
-            httpSession.invalidate();
-        }
-    }
-
     @PostMapping("/logout")
-    public String logout(HttpServletRequest httpServletRequest) {
+    public void logout(HttpServletRequest httpServletRequest) {
         HttpSession httpSession = httpServletRequest
                 .getSession(false);
         if (httpSession != null) {
             httpSession.removeAttribute("userForOwnerViewDTO");
             httpSession.invalidate();
         }
-        return "redirect:/movies";
     }
 }

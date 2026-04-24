@@ -7,131 +7,20 @@
     <link rel="icon" type="image/x-icon" th:href="@{/favicon.ico}">
     <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700&display=swap"
           rel="stylesheet">
-    <style>
-        *{margin:0;padding:0;box-sizing:border-box;}
-        body{font-family:'Inter',sans-serif;background:radial-gradient(circle at 10% 20%,#0b0f1c,#05070f);color:#eef2ff;line-height:1.5;min-height:100vh;}
-        :root{--glass-bg:rgba(18,25,45,0.65);--glass-border:rgba(72,187,255,0.25);--glow-primary:#3b82f6;--glow-success:#10b981;--glow-danger:#f43f5e;--text-light:#e2e8f0;--text-muted:#94a3b8;--card-bg:rgba(15,23,42,0.75);--shadow-xl:0 25px 45px -12px rgba(0,0,0,0.5);--radius-xl:28px;}
-        header{position:sticky;top:0;z-index:50;display:flex;justify-content:space-between;align-items:center;padding:1rem 2rem;background:rgba(8,12,24,0.7);backdrop-filter:blur(16px);border-bottom:1px solid var(--glass-border);box-shadow:0 8px 20px rgba(0,0,0,0.2);}
-        .logo-link a{display:flex;align-items:center;gap:0.75rem;text-decoration:none;font-weight:700;font-size:1.5rem;background:linear-gradient(135deg,#c084fc,#60a5fa);-webkit-background-clip:text;background-clip:text;color:transparent;}
-        .logo-link img{width:32px;height:32px;border-radius:12px;}
-        .header-actions{display:flex;align-items:center;gap:1rem;}
-        .action-button{position:relative;display:inline-flex;align-items:center;justify-content:center;width:48px;height:48px;border-radius:40px;background:var(--glass-bg);border:1px solid var(--glass-border);color:var(--text-light);font-size:1.5rem;text-decoration:none;transition:all 0.25s ease;backdrop-filter:blur(4px);}
-        .action-button:hover{transform:translateY(-3px);border-color:var(--glow-primary);color:var(--glow-primary);box-shadow:0 0 12px rgba(59,130,246,0.4);}
-        .count-badge{position:absolute;top:-6px;right:-6px;background:var(--glow-danger);color:white;border-radius:40px;min-width:22px;height:22px;font-size:0.7rem;font-weight:700;display:flex;align-items:center;justify-content:center;box-shadow:0 0 6px #f43f5e;}
-        .user-menu{position:relative;}
-        .user-menu-toggle{display:flex;align-items:center;gap:0.5rem;padding:0.5rem 1rem;background:var(--glass-bg);border:1px solid var(--glass-border);border-radius:60px;cursor:pointer;backdrop-filter:blur(4px);}
-        .user-menu-toggle:hover{border-color:var(--glow-primary);}
-        .user-icon{width:28px;height:28px;border-radius:50%;}
-        .toggle-icon{font-size:0.8rem;transition:transform 0.2s;}
-        .user-menu.show .toggle-icon{transform:rotate(180deg);}
-        .user-dropdown{position:absolute;top:calc(100% + 0.75rem);right:0;min-width:200px;background:rgba(10,15,30,0.95);backdrop-filter:blur(16px);border:1px solid var(--glass-border);border-radius:24px;box-shadow:var(--shadow-xl);opacity:0;visibility:hidden;transform:translateY(-10px);transition:all 0.2s;z-index:100;}
-        .user-menu.show .user-dropdown{opacity:1;visibility:visible;transform:translateY(0);}
-        .user-dropdown a,.user-dropdown button{display:block;width:100%;padding:0.75rem 1.5rem;text-align:left;background:none;border:none;color:var(--text-light);text-decoration:none;border-bottom:1px solid rgba(255,255,255,0.05);cursor:pointer;transition:background 0.15s;}
-        .user-dropdown a:hover,.user-dropdown button:hover{background:rgba(59,130,246,0.2);}
-        .logout-btn{color:var(--glow-danger) !important;}
-        .flash-message{position:fixed;top:90px;right:20px;z-index:100;display:flex;align-items:center;gap:0.75rem;padding:1rem 1.5rem;border-radius:60px;background:rgba(0,0,0,0.8);backdrop-filter:blur(12px);font-weight:500;max-width:400px;border-left:4px solid;animation:slideIn 0.3s ease,fadeOut 0.3s ease 5s forwards;}
-        .flash-message.success{border-color:var(--glow-success);color:#a7f3d0;}
-        .flash-message.error{border-color:var(--glow-danger);color:#fecdd3;}
-        .flash-message.warning{border-color:#fbbf24;color:#fef3c7;}
-        @keyframes slideIn{from{transform:translateX(100%);opacity:0;}to{transform:translateX(0);opacity:1;}}
-        @keyframes fadeOut{to{opacity:0;visibility:hidden;}}
-        .movies-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:2rem;padding:2rem;max-width:1400px;margin:0 auto;}
-        .movie-card{background:var(--card-bg);backdrop-filter:blur(8px);border-radius:var(--radius-xl);overflow:hidden;border:1px solid var(--glass-border);transition:all 0.3s ease;display:flex;flex-direction:column;height:100%;opacity:0;transform:translateY(20px);animation:fadeSlideUp 0.5s ease forwards;}
-        @keyframes fadeSlideUp{to{opacity:1;transform:translateY(0);}}
-        .movie-card:hover{transform:translateY(-8px);border-color:var(--glow-primary);box-shadow:var(--shadow-xl);}
-        .movie-poster-link{display:block;text-decoration:none;}
-        .movie-poster-placeholder{width:100%;aspect-ratio:2/3;background:#2d3748;background-image:linear-gradient(145deg,#2d3748 0%,#1a202c 100%);display:flex;align-items:center;justify-content:center;color:#718096;font-size:0.9rem;text-align:center;padding:1rem;border-bottom:1px solid var(--glass-border);transition:opacity 0.2s;}
-        .movie-poster-link:hover .movie-poster-placeholder{opacity:0.8;}
-        .movie-card-content{padding:1.5rem;flex-grow:1;display:flex;flex-direction:column;}
-        .movie-card-content h3{font-size:1.3rem;font-weight:600;margin-bottom:0.75rem;}
-        .movie-card-content h3 a{color:inherit;text-decoration:none;}
-        .movie-card-content h3 a:hover{text-decoration:underline;color:#c084fc;}
-        .badges{display:flex;flex-wrap:wrap;gap:0.5rem;margin-bottom:1rem;}
-        .badge{padding:0.25rem 1rem;border-radius:40px;font-size:0.8rem;font-weight:600;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);}
-        .badge.rating{background:rgba(251,191,36,0.2);color:#fde047;}
-        .badge.year{background:rgba(52,211,153,0.2);color:#6ee7b7;}
-        .badge.genre{background:rgba(96,165,250,0.2);color:#93c5fd;}
-        .price{font-size:1.6rem;font-weight:700;color:#c084fc;margin:0.5rem 0 1rem;}
-        .movie-actions{display:flex;gap:0.75rem;margin-bottom:1rem;}
-        .icon-btn{display:flex;align-items:center;justify-content:center;width:44px;height:44px;border-radius:50%;background:rgba(255,255,255,0.05);border:1px solid var(--glass-border);color:var(--text-light);font-size:1.5rem;cursor:pointer;transition:0.2s;}
-        .icon-btn:hover{transform:scale(1.1);border-color:#f472b6;color:#f472b6;}
-        .icon-btn.rating-btn:hover{border-color:#fbbf24;color:#fbbf24;}
-        .icon-btn.comment-btn:hover{border-color:#06b6d4;color:#06b6d4;}
-        .purchase-buttons{display:flex;flex-direction:column;gap:0.75rem;margin-top:0.5rem;}
-        .cart-button,.buy-now-btn,.bought-btn{display:block;width:100%;padding:0.8rem 1rem;border-radius:60px;font-weight:600;font-size:0.95rem;text-align:center;border:none;cursor:pointer;transition:0.2s;text-decoration:none;}
-        .to-cart-btn-details{background:linear-gradient(135deg,var(--glow-primary),#1d4ed8);color:white;}
-        .to-cart-btn-details:hover{transform:translateY(-2px);box-shadow:0 8px 20px rgba(59,130,246,0.4);}
-        .in-cart-btn-details{background:linear-gradient(135deg,var(--glow-success),#059669);color:white;}
-        .in-cart-btn-details:hover{transform:translateY(-2px);box-shadow:0 8px 20px rgba(16,185,129,0.4);}
-        .buy-now-btn{background:linear-gradient(135deg,var(--glow-success),#059669);color:white;}
-        .buy-now-btn:hover{transform:translateY(-2px);box-shadow:0 8px 20px rgba(16,185,129,0.4);}
-        .bought-btn{background:#64748b;color:white;cursor:default;opacity:0.8;}
-        .go-to-cart{font-size:0.7rem;opacity:0.8;display:block;}
-        .pagination{display:flex;justify-content:center;align-items:center;gap:1.5rem;padding:2rem;margin-top:1rem;}
-        .pagination a{padding:0.7rem 1.5rem;background:var(--card-bg);color:var(--text-light);text-decoration:none;border-radius:60px;border:1px solid var(--glass-border);transition:0.2s;}
-        .pagination a:hover{background:var(--glow-primary);border-color:var(--glow-primary);color:white;transform:translateY(-2px);}
-        .pagination span{color:var(--text-muted);}
-        .modal{display:none;position:fixed;z-index:2000;left:0;top:0;width:100%;height:100%;background:rgba(0,0,0,0.7);backdrop-filter:blur(8px);align-items:center;justify-content:center;}
-        .modal-content{background:rgba(10,15,30,0.95);backdrop-filter:blur(20px);border-radius:48px;padding:2rem;max-width:450px;width:90%;border:1px solid var(--glass-border);position:relative;}
-        .modal-close{position:absolute;top:1rem;right:1.5rem;background:none;border:none;font-size:2rem;cursor:pointer;color:var(--text-muted);}
-        .modal-close:hover{color:var(--glow-danger);}
-        .modal h2{font-size:1.8rem;margin-bottom:1rem;background:linear-gradient(135deg,#e0e7ff,#c084fc);-webkit-background-clip:text;background-clip:text;color:transparent;}
-        .rating-input,.comment-input{margin:1.5rem 0;text-align:left;}
-        .rating-input label,.comment-input label{display:block;margin-bottom:0.3rem;font-weight:600;}
-        .rating-input input,.comment-input textarea{width:100%;padding:0.8rem 1rem;border-radius:60px;border:1px solid var(--glass-border);background:rgba(0,0,0,0.3);color:white;}
-        .modal-buttons{display:flex;gap:1rem;margin-top:1.5rem;}
-        .modal-confirm-btn,.modal-cancel-btn{flex:1;padding:0.8rem;border-radius:60px;font-weight:600;border:none;cursor:pointer;}
-        .modal-confirm-btn{background:linear-gradient(135deg,var(--glow-success),#059669);color:white;}
-        .modal-cancel-btn{background:rgba(255,255,255,0.1);color:var(--text-light);border:1px solid var(--glass-border);}
-        @media (max-width:768px){.movies-grid{padding:1rem;gap:1.5rem;}header{flex-direction:column;align-items:stretch;}.header-actions{justify-content:center;}}
-    </style>
+    <link rel="stylesheet" th:href="@{/css/main.css}">
 </head>
 <body>
-<header>
-    <h1 class="logo-link"><a href="/user/movies"><img src="/static/favicon.ico" alt="">Cinema Service</a></h1>
-    <div class="header-actions">
-        <a th:href="@{/user/favourites}" class="action-button favourites-btn" title="Избранное">♥<span
-                class="count-badge"
-                th:style="${favouritesCount != null and favouritesCount > 0} ? 'display: flex' : 'display: none'"
-                th:text="${favouritesCount != null ? favouritesCount : 0}">0</span></a>
-        <a th:href="@{/user/cart}" class="action-button cart-btn" title="Корзина">🛒<span class="count-badge"
-                                                                                         th:style="${cartCount != null and cartCount > 0} ? 'display: flex' : 'display: none'"
-                                                                                         th:text="${cartCount != null ? cartCount : 0}">0</span></a>
-        <div class="user-menu" id="userMenu">
-            <div class="user-menu-toggle" onclick="toggleUserMenu()"><img th:src="@{/images/user-icon.png}"
-                                                                          alt="Пользователь" class="user-icon"
-                                                                          src=""><span class="toggle-icon">▼</span>
-            </div>
-            <div class="user-dropdown">
-                <a th:href="@{/personal-account}">Личный кабинет</a>
-                <a th:href="@{/profile/settings}">Настройки⚙️</a>
-                <a th:href="@{/user/top-up}">Пополнить💰</a>
-                <form th:action="@{/logout}" method="post" style="margin:0;">
-                    <button type="submit" class="logout-btn">Выйти</button>
-                </form>
-            </div>
-        </div>
-    </div>
-</header>
+<th:block th:replace="~{fragments/header :: header}"></th:block>
+<th:block th:replace="~{fragments/flash-messages :: flashMessages}"></th:block>
 <main>
-    <div th:if="${successMessage}" class="flash-message success" th:text="${successMessage}"></div>
-    <div th:if="${notAuthorizedUserExceptionMessage}" class="flash-message error"
-         th:text="${notAuthorizedUserExceptionMessage}"></div>
-    <div th:if="${insufficientFundsExceptionMessage}" class="flash-message error"
-         th:text="${insufficientFundsExceptionMessage}"></div>
-    <div th:if="${frozenBuyerExceptionMessage}" class="flash-message error"
-         th:text="${frozenBuyerExceptionMessage}"></div>
-    <div th:if="${alreadyInCartExceptionMessage}" class="flash-message warning"
-         th:text="${alreadyInCartExceptionMessage}"></div>
-
     <div class="movies-grid" th:if="${cardsPage != null and !cardsPage.empty}">
         <div class="movie-card" th:each="movie : ${cardsPage.content}">
             <a class="movie-poster-link" th:href="@{/user/movies/{title}(title=${movie.title})}">
                 <div class="movie-poster-placeholder"><span>📽️ Постер</span></div>
             </a>
             <div class="movie-card-content">
-                <h3><a th:href="@{/user/movies/{title}(title=${movie.title})}"
-                       th:text="${movie.title}">Название</a></h3>
+                <h3><a th:href="@{/user/movies/{title}(title=${movie.title})}" th:text="${movie.title}">Название</a>
+                </h3>
                 <div class="badges"><span class="badge rating" th:text="${movie.rating}">8.2</span><span
                         class="badge year" th:text="${movie.releaseYear}">2013</span><span class="badge genre"
                                                                                            th:text="${movie.genre}">Комедия</span>
@@ -174,8 +63,8 @@
             </div>
         </div>
     </div>
-    <div th:if="${cardsPage == null or cardsPage.empty}" style="text-align: center; padding: 4rem 2rem;"><h2
-            style="color: #64748b;">Фильмы не найдены</h2></div>
+    <div th:if="${cardsPage == null or cardsPage.empty}" style="text-align:center; padding:4rem 2rem;"><h2
+            style="color:#64748b;">Фильмы не найдены</h2></div>
     <div class="pagination" th:if="${cardsPage != null and !cardsPage.empty and cardsPage.totalPages > 1}">
         <a th:if="${cardsPage.hasPrevious()}"
            th:href="@{/user/movies(page=${cardsPage.number - 1}, size=${cardsPage.size})}">« Предыдущая</a>
@@ -185,141 +74,8 @@
            th:href="@{/user/movies(page=${cardsPage.number + 1}, size=${cardsPage.size})}">Следующая »</a>
     </div>
 </main>
-<div id="buyModal" class="modal">
-    <div class="modal-content">
-        <button class="modal-close" onclick="hideBuyModal()">×</button>
-        <h2>Подтверждение покупки</h2>
-        <p>Вы уверены, что хотите купить фильм:</p>
-        <p style="font-weight: bold; font-size: 1.2rem;" id="modalMovieTitle"></p>
-        <div class="modal-price" id="modalMoviePrice"></div>
-        <div class="modal-buttons">
-            <button class="modal-cancel-btn" onclick="hideBuyModal()">Отмена</button>
-            <button class="modal-confirm-btn" onclick="confirmPurchase()">Купить</button>
-        </div>
-    </div>
-</div>
-<div id="ratingModal" class="modal">
-    <div class="modal-content">
-        <button class="modal-close" onclick="hideRatingModal()">×</button>
-        <h2>Оценить фильм</h2>
-        <p style="font-weight: bold;" id="ratingModalMovieTitle"></p>
-        <form id="ratingForm" method="post"><input type="hidden" name="title" id="ratingFormTitle" value="">
-            <div class="rating-input"><label for="ratingValue">Оценка (0.0–10.0):</label><input type="number"
-                                                                                                id="ratingValue"
-                                                                                                name="rating" step="0.1"
-                                                                                                min="0" max="10"
-                                                                                                value="5.0" required>
-            </div>
-            <div class="comment-input"><label for="ratingComment">Комментарий (необязательно):</label><textarea
-                    id="ratingComment" name="review" rows="3" placeholder="Ваш отзыв..." maxlength="2000"></textarea>
-            </div>
-            <div class="modal-buttons">
-                <button type="button" class="modal-cancel-btn" onclick="hideRatingModal()">Отмена</button>
-                <button type="submit" class="modal-confirm-btn">Отправить</button>
-            </div>
-        </form>
-    </div>
-</div>
-<script>
-    let userMenu = document.getElementById('userMenu');
-    function toggleUserMenu() { userMenu.classList.toggle('show'); }
-    document.addEventListener('click', function(event) { if (!userMenu.contains(event.target)) userMenu.classList.remove('show'); });
-    function showBuyModal(button) {
-        const movieTitle = button.getAttribute('data-movie-title');
-        const moviePrice = button.getAttribute('data-movie-price');
-        document.getElementById('modalMovieTitle').textContent = movieTitle;
-        document.getElementById('modalMoviePrice').textContent = moviePrice + ' ₽';
-        document.getElementById('buyModal').style.display = 'flex';
-    }
-    function hideBuyModal() { document.getElementById('buyModal').style.display = 'none'; }
-    function confirmPurchase() {
-        const movieTitle = document.getElementById('modalMovieTitle').textContent;
-        window.location.href = '/user/purchases/add/' + encodeURIComponent(movieTitle);
-    }
-    function showRatingModal(button) {
-        const movieTitle = button.getAttribute('data-movie-title');
-        document.getElementById('ratingModalMovieTitle').textContent = movieTitle;
-        const form = document.getElementById('ratingForm');
-        form.action = '/user/rated/add/' + encodeURIComponent(movieTitle);
-        document.getElementById('ratingFormTitle').value = movieTitle;
-        document.getElementById('ratingValue').value = '5.0';
-        document.getElementById('ratingComment').value = '';
-        document.getElementById('ratingModal').style.display = 'flex';
-    }
-    function hideRatingModal() { document.getElementById('ratingModal').style.display = 'none'; }
-    function toggleFavourite(button) {
-        const movieTitle = button.getAttribute('data-movie-title');
-        const action = button.getAttribute('data-action');
-        if (!movieTitle) return;
-        button.disabled = true;
-        const url = action === 'add' ? '/user/favourites/add/' + encodeURIComponent(movieTitle) : '/user/favourites/remove/' + encodeURIComponent(movieTitle);
-        const method = action === 'add' ? 'POST' : 'GET';
-        fetch(url, { method: method, redirect: 'manual' })
-            .then(response => {
-                if (response.type === 'opaqueredirect' || response.status === 302) {
-                    const newAction = action === 'add' ? 'remove' : 'add';
-                    button.setAttribute('data-action', newAction);
-                    const span = button.querySelector('span');
-                    span.textContent = newAction === 'add' ? '♡' : '♥';
-                    button.classList.toggle('active');
-                    const badge = document.querySelector('.favourites-btn .count-badge');
-                    let current = parseInt(badge.textContent) || 0;
-                    if (action === 'add') current++; else current--;
-                    if (current > 0) {
-                        badge.textContent = current;
-                        badge.style.display = 'flex';
-                    } else {
-                        badge.style.display = 'none';
-                    }
-                    showFlashMessage(action === 'add' ? 'Добавлено в избранное' : 'Удалено из избранного', 'success', true);
-                } else { throw new Error(); }
-            })
-            .catch(() => showFlashMessage('Ошибка', 'error', true))
-            .finally(() => button.disabled = false);
-    }
-    function addToCart(button) {
-        const movieTitle = button.getAttribute('data-movie-title');
-        if (!movieTitle) return;
-        button.disabled = true;
-        fetch('/user/cart/add/' + encodeURIComponent(movieTitle), { method: 'POST', redirect: 'manual' })
-            .then(response => {
-                if (response.type === 'opaqueredirect' || response.status === 302) {
-                    const badge = document.querySelector('.cart-btn .count-badge');
-                    let current = parseInt(badge.textContent) || 0;
-                    current++;
-                    badge.textContent = current;
-                    badge.style.display = 'flex';
-                    showFlashMessage('Фильм добавлен в корзину', 'success', true);
-                    button.outerHTML = '<button class="cart-button in-cart-btn-details" onclick="window.location.href=\'/user/cart\'">В корзине<br/><span class="go-to-cart">Перейти</span></button>';
-                } else { throw new Error(); }
-            })
-            .catch(() => showFlashMessage('Ошибка при добавлении', 'error', true))
-            .finally(() => button.disabled = false);
-    }
-    function showFlashMessage(message, type, isJs = false) {
-        if (!isJs) return;
-        const existingJsMessages = document.querySelectorAll('.js-flash');
-        existingJsMessages.forEach(msg => msg.remove());
-        const flash = document.createElement('div');
-        flash.className = `flash-message ${type} js-flash`;
-        flash.innerHTML = `<span>${message}</span>`;
-        document.body.appendChild(flash);
-        setTimeout(() => {
-            flash.style.animation = 'fadeOut 0.3s ease forwards';
-            setTimeout(() => flash.remove(), 300);
-        }, 3000);
-    }
-    document.addEventListener('DOMContentLoaded', function() {
-        document.getElementById('buyModal').addEventListener('click', function(e) { if (e.target === this) hideBuyModal(); });
-        document.getElementById('ratingModal').addEventListener('click', function(e) { if (e.target === this) hideRatingModal(); });
-        setTimeout(() => {
-            document.querySelectorAll('.flash-message').forEach(msg => {
-                if (!msg.classList.contains('js-flash')) {
-                    setTimeout(() => msg.remove(), 5000);
-                }
-            });
-        }, 100);
-    });
-</script>
+<th:block th:replace="~{fragments/modals :: buyModal}"></th:block>
+<th:block th:replace="~{fragments/modals :: ratingModal}"></th:block>
+<script th:src="@{/js/main.js}" defer></script>
 </body>
 </html>

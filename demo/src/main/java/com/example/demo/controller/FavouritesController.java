@@ -1,11 +1,11 @@
 package com.example.demo.controller;
 
 import com.example.demo.dto.user.UserForOwnerViewDTO;
-import com.example.demo.exception.cart.EmptyException;
-import com.example.demo.exception.user.NotAuthorizedUserException;
 import com.example.demo.service.FavouritesService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.AllArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -27,62 +27,44 @@ public class FavouritesController {
     }
 
     @PostMapping("/add/{title}")
-    public String addToFavourites(HttpServletRequest httpServletRequest,
-                                  RedirectAttributes redirectAttributes,
-                                  @PathVariable String title,
-                                  @SessionAttribute(required = false)
-                                  UserForOwnerViewDTO userForOwnerViewDTO) {
+    @ResponseBody
+    public ResponseEntity<?> addToFavourites(@PathVariable String title,
+                                             @SessionAttribute(required = false)
+                                             UserForOwnerViewDTO userForOwnerViewDTO) {
         if (userForOwnerViewDTO == null) {
-            redirectAttributes.addFlashAttribute("notAuthorizedUserExceptionMessage", new NotAuthorizedUserException().getMessage());
-        } else {
-            favouriteService.addToFavourites(title, userForOwnerViewDTO.username());
-            redirectAttributes.addFlashAttribute("successMessage", "Добавлено в избранное!");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body("{\"message\": \"Не авторизован\"}");
         }
-        return "redirect:" + httpServletRequest.getHeader("Referer");
+        favouriteService.addToFavourites(title, userForOwnerViewDTO.username());
+        return ResponseEntity.ok().body("{\"message\": \"Добавлено в избранное\"}");
     }
 
-    @GetMapping("/remove/{title}")
-    public String removeFromFavourites(HttpServletRequest httpServletRequest,
-                                       RedirectAttributes redirectAttributes,
-                                       @PathVariable String title,
-                                       @SessionAttribute(required = false)
-                                       UserForOwnerViewDTO userForOwnerViewDTO) {
+    @PostMapping("/remove/{title}")
+    @ResponseBody
+    public ResponseEntity<?> removeFromFavourites(@PathVariable String title,
+                                                  @SessionAttribute(required = false)
+                                                  UserForOwnerViewDTO userForOwnerViewDTO) {
         if (userForOwnerViewDTO == null) {
-            redirectAttributes.addFlashAttribute("notAuthorizedUserExceptionMessage", new NotAuthorizedUserException().getMessage());
-        } else {
-            favouriteService.removeFromFavourites(title, userForOwnerViewDTO.username());
-            redirectAttributes.addFlashAttribute("successMessage", "Удалено из избранного!");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body("{\"message\": \"Не авторизован\"}");
         }
-        return "redirect:" + httpServletRequest.getHeader("Referer");
+        favouriteService.removeFromFavourites(title, userForOwnerViewDTO.username());
+        return ResponseEntity.ok().body("{\"message\": \"Удалено из избранного\"}");
     }
 
-    @GetMapping("/clear")
+    @PostMapping("/clear")
     public String clearFavourites(HttpServletRequest httpServletRequest,
                                   RedirectAttributes redirectAttributes,
-                                  @SessionAttribute(required = false)
-                                  UserForOwnerViewDTO userForOwnerViewDTO) {
-        try {
-            if (userForOwnerViewDTO == null) throw new NotAuthorizedUserException();
-            favouriteService.removeAllFromFavourites(userForOwnerViewDTO.username());
-            redirectAttributes.addFlashAttribute("successMessage", "Избранное очищено!");
-        } catch (NotAuthorizedUserException e) {
-            redirectAttributes.addFlashAttribute("notAuthorizedUserExceptionMessage", e.getMessage());
-        } catch (EmptyException e) {
-            redirectAttributes.addFlashAttribute("emptyCartExceptionMessage", e.getMessage());
-        }
+                                  @SessionAttribute UserForOwnerViewDTO userForOwnerViewDTO) {
+        favouriteService.removeAllFromFavourites(userForOwnerViewDTO.username());
+        redirectAttributes.addFlashAttribute("successMessage", "Избранное очищено!");
         return "redirect:" + httpServletRequest.getHeader("Referer");
     }
 
     @GetMapping
     public String getFavourites(HttpServletRequest httpServletRequest,
                                 Model model,
-                                @SessionAttribute(required = false)
-                                UserForOwnerViewDTO userForOwnerViewDTO,
-                                RedirectAttributes ra) {
-        if (userForOwnerViewDTO == null) {
-            ra.addFlashAttribute("notAuthorizedUserExceptionMessage", new NotAuthorizedUserException().getMessage());
-            return "redirect:" + httpServletRequest.getHeader("Referer");
-        }
+                                @SessionAttribute UserForOwnerViewDTO userForOwnerViewDTO) {
         model.addAttribute("favourites", favouriteService.getAllInFavouritesOfUser(userForOwnerViewDTO.username()));
         badgeUpdater.updateBadges(userForOwnerViewDTO, model);
         return "for_user/for_owner/favourites";

@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="">
+<body>
+<div th:fragment="buyModal">
+    <div id="buyModal" class="modal">
+        <div class="modal-content">
+            <button class="modal-close" onclick="hideBuyModal()">×</button>
+            <h2>Подтверждение покупки</h2>
+            <p>Вы уверены, что хотите купить фильм:</p>
+            <p style="font-weight:600;" id="modalMovieTitle"></p>
+            <div class="modal-price" id="modalMoviePrice"></div>
+            <div class="modal-buttons">
+                <button class="modal-cancel-btn" onclick="hideBuyModal()">Отмена</button>
+                <button class="modal-confirm-btn" onclick="confirmPurchase()">Купить</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div th:fragment="ratingModal">
+    <div id="ratingModal" class="modal">
+        <div class="modal-content">
+            <button class="modal-close" onclick="hideRatingModal()">×</button>
+            <h2>Оценить фильм</h2>
+            <p style="font-weight:600;" id="ratingModalMovieTitle"></p>
+            <form id="ratingForm" method="post">
+                <input type="hidden" name="title" id="ratingFormTitle" value="">
+                <div class="rating-input">
+                    <label for="ratingValue">Оценка (0.0–10.0):</label>
+                    <input type="number" id="ratingValue" name="rating" step="0.1" min="0" max="10" value="5.0"
+                           required>
+                </div>
+                <div class="comment-input">
+                    <label for="ratingComment">Комментарий (необязательно):</label>
+                    <textarea id="ratingComment" name="review" rows="3" placeholder="Ваш отзыв..."
+                              maxlength="2000"></textarea>
+                </div>
+                <div class="modal-buttons">
+                    <button type="button" class="modal-cancel-btn" onclick="hideRatingModal()">Отмена</button>
+                    <button type="submit" class="modal-confirm-btn">Отправить</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+</body>
+</html>

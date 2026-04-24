@@ -7,133 +7,80 @@
     <link rel="icon" type="image/x-icon" th:href="@{/favicon.ico}">
     <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&display=swap"
           rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/main.css}">
     <style>
-        /* все твои стили, без изменений, скопируй их из предыдущего ответа */
-        * { margin:0; padding:0; box-sizing:border-box; }
-        body { font-family: 'Inter', system-ui, sans-serif; background: radial-gradient(circle at 10% 20%, #0b0f1c, #05070f); color: #eef2ff; line-height: 1.5; min-height: 100vh; }
-        :root { --glass-bg: rgba(18, 25, 45, 0.65); --glass-border: rgba(72, 187, 255, 0.25); --glow-primary: #3b82f6; --glow-success: #10b981; --glow-danger: #f43f5e; --text-light: #e2e8f0; --text-muted: #94a3b8; --card-bg: rgba(15, 23, 42, 0.75); --shadow-xl: 0 25px 45px -12px rgba(0,0,0,0.5); --radius-xl: 28px; }
-        header { position: sticky; top: 0; z-index: 50; display: flex; justify-content: space-between; align-items: center; padding: 1rem 2rem; background: rgba(8, 12, 24, 0.7); backdrop-filter: blur(16px); border-bottom: 1px solid var(--glass-border); box-shadow: 0 8px 20px rgba(0,0,0,0.2); }
-        .logo-link a { display: flex; align-items: center; gap: 0.75rem; text-decoration: none; font-weight: 700; font-size: 1.5rem; background: linear-gradient(135deg, #c084fc, #60a5fa); -webkit-background-clip: text; background-clip: text; color: transparent; }
-        .logo-link img { width: 32px; height: 32px; border-radius: 12px; }
-        .header-actions { display: flex; align-items: center; gap: 1rem; }
-        .user-menu { position: relative; }
-        .user-menu-toggle { display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem 1rem; background: var(--glass-bg); border: 1px solid var(--glass-border); border-radius: 60px; cursor: pointer; backdrop-filter: blur(4px); }
-        .user-menu-toggle:hover { border-color: var(--glow-primary); }
-        .user-icon { width: 28px; height: 28px; border-radius: 50%; }
-        .toggle-icon { font-size: 0.8rem; transition: transform 0.2s; }
-        .user-menu.show .toggle-icon { transform: rotate(180deg); }
-        .user-dropdown { position: absolute; top: calc(100% + 0.75rem); right: 0; min-width: 200px; background: rgba(10, 15, 30, 0.95); backdrop-filter: blur(16px); border: 1px solid var(--glass-border); border-radius: 24px; box-shadow: var(--shadow-xl); opacity: 0; visibility: hidden; transform: translateY(-10px); transition: all 0.2s; z-index: 100; }
-        .user-menu.show .user-dropdown { opacity: 1; visibility: visible; transform: translateY(0); }
-        .user-dropdown a, .user-dropdown button { display: block; width: 100%; padding: 0.75rem 1.5rem; text-align: left; background: none; border: none; color: var(--text-light); text-decoration: none; border-bottom: 1px solid rgba(255,255,255,0.05); cursor: pointer; transition: background 0.15s; }
-        .user-dropdown a:hover, .user-dropdown button:hover { background: rgba(59,130,246,0.2); }
-        .logout-btn { color: var(--glow-danger) !important; }
-        .flash-message { position: fixed; top: 90px; right: 20px; z-index: 1100; display: flex; align-items: center; gap: 0.75rem; padding: 1rem 1.5rem; border-radius: 60px; background: rgba(0,0,0,0.8); backdrop-filter: blur(12px); font-weight: 500; max-width: 400px; border-left: 4px solid; animation: slideIn 0.3s ease, fadeOut 0.3s ease 5s forwards; }
-        .flash-message.success { border-color: var(--glow-success); color: #a7f3d0; }
-        .flash-message.error { border-color: var(--glow-danger); color: #fecdd3; }
-        @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
-        @keyframes fadeOut { to { opacity: 0; visibility: hidden; } }
-        .profile-container { max-width: 1200px; margin: 2rem auto; padding: 0 2rem; }
-        .profile-grid { display: grid; grid-template-columns: 1fr 2fr; gap: 2rem; }
-        .profile-card { background: var(--card-bg); backdrop-filter: blur(8px); border-radius: var(--radius-xl); padding: 2rem; border: 1px solid var(--glass-border); height: fit-content; }
-        .profile-avatar { text-align: center; margin-bottom: 1.5rem; }
-        .profile-avatar-img { width: 120px; height: 120px; border-radius: 50%; object-fit: cover; border: 2px solid var(--glow-primary); }
-        .profile-name { font-size: 1.5rem; font-weight: 600; text-align: center; margin: 0.5rem 0 0.25rem; display: flex; align-items: center; justify-content: center; gap: 0.5rem; }
-        .edit-icon { cursor: pointer; font-size: 1.1rem; background: rgba(59,130,246,0.2); padding: 4px 8px; border-radius: 40px; transition: 0.2s; line-height: 1; }
-        .edit-icon:hover { background: var(--glow-primary); color: white; }
-        .profile-detail-item { display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 0; border-bottom: 1px solid rgba(255,255,255,0.05); }
-        .detail-label { font-weight: 500; color: var(--text-muted); min-width: 80px; }
-        .detail-value { color: var(--text-light); word-break: break-word; flex:1; }
-        .detail-edit { cursor: pointer; background: none; border: none; color: var(--text-muted); font-size: 1rem; padding: 0 4px; transition: 0.2s; }
-        .detail-edit:hover { color: var(--glow-primary); transform: scale(1.1); }
-        .stats-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; margin: 1.5rem 0; }
-        .stat-card { background: rgba(0,0,0,0.3); border-radius: 20px; padding: 1rem; text-align: center; border: 1px solid var(--glass-border); }
-        .stat-value { font-size: 1.8rem; font-weight: 700; color: #c084fc; }
-        .stat-label { font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase; }
-        .sections-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; margin-top: 1.5rem; }
-        .section-link { background: rgba(0,0,0,0.3); border-radius: 20px; padding: 1rem; text-decoration: none; color: inherit; display: flex; flex-direction: column; align-items: center; gap: 0.5rem; transition: 0.2s; border: 1px solid var(--glass-border); }
-        .section-link:hover { transform: translateY(-4px); border-color: var(--glow-primary); box-shadow: 0 12px 24px -10px rgba(0,0,0,0.4); }
-        .section-icon { font-size: 2rem; }
-        .section-title { font-weight: 600; }
-        .section-desc { font-size: 0.75rem; color: var(--text-muted); text-align: center; }
-        .delete-account-btn { margin-top: 1.5rem; width: 100%; padding: 0.75rem; background: transparent; border: 1px solid var(--glow-danger); color: var(--glow-danger); border-radius: 60px; font-weight: 600; cursor: pointer; transition: 0.2s; text-align: center; }
-        .delete-account-btn:hover { background: var(--glow-danger); color: white; transform: translateY(-2px); box-shadow: 0 8px 20px rgba(244,63,94,0.4); }
-        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); backdrop-filter: blur(5px); z-index: 1000; justify-content: center; align-items: center; }
-        .modal.show { display: flex; }
-        .modal-content { background: var(--card-bg); border-radius: 32px; padding: 2rem; width: 90%; max-width: 450px; border: 1px solid var(--glass-border); box-shadow: var(--shadow-xl); }
-        .modal-content h3 { margin-bottom: 1.5rem; font-size: 1.5rem; background: linear-gradient(135deg, #e0e7ff, #c084fc); -webkit-background-clip: text; background-clip: text; color: transparent; }
-        .modal-content input { width: 100%; padding: 0.8rem 1rem; margin-bottom: 1.2rem; background: rgba(0,0,0,0.4); border: 1px solid var(--glass-border); border-radius: 48px; color: white; font-size: 1rem; }
-        .modal-content button { background: var(--glow-primary); border: none; padding: 0.7rem 1.5rem; border-radius: 40px; color: white; font-weight: 600; cursor: pointer; transition: 0.2s; }
-        .modal-content button:hover { opacity: 0.9; transform: translateY(-2px); }
-        .modal-close { background: transparent; border: 1px solid var(--glass-border); margin-left: 0.5rem; }
-        .modal-close:hover { background: rgba(255,255,255,0.1); }
-        .error-msg { color: var(--glow-danger); font-size: 0.75rem; margin-top: -0.8rem; margin-bottom: 0.8rem; display: none; }
-        .modal-buttons { display: flex; justify-content: flex-end; gap: 0.75rem; margin-top: 1.5rem; }
-        @media (max-width: 768px) { .profile-grid { grid-template-columns: 1fr; } .stats-grid { grid-template-columns: repeat(2, 1fr); } header { flex-direction: column; align-items: stretch; } .header-actions { justify-content: center; } }
-        footer { text-align: center; padding: 1.5rem; color: var(--text-muted); border-top: 1px solid var(--glass-border); margin-top: 2rem; }
-        #phoneDisplayEmpty:hover { text-decoration: underline; color: var(--glow-primary); }
-        .delete-phone-btn { cursor: pointer; margin-left: 8px; color: var(--glow-danger); transition: 0.2s; }
-        .delete-phone-btn:hover { color: #fecdd3; transform: scale(1.1); }
+        .profile-container{max-width:1200px;margin:2rem auto;padding:0 2rem;}
+        .profile-grid{display:grid;grid-template-columns:1fr 2fr;gap:2rem;}
+        .profile-card{background:var(--card-bg);backdrop-filter:blur(8px);border-radius:var(--radius-xl);padding:2rem;border:1px solid var(--glass-border);height:fit-content;}
+        .profile-avatar{text-align:center;margin-bottom:1.5rem;}
+        .profile-avatar-img{width:120px;height:120px;border-radius:50%;object-fit:cover;border:2px solid var(--glow-primary);}
+        .profile-name{font-size:1.5rem;font-weight:600;text-align:center;margin:0.5rem 0 0.25rem;display:flex;align-items:center;justify-content:center;gap:0.5rem;}
+        .edit-icon{cursor:pointer;font-size:1.1rem;background:rgba(59,130,246,0.2);padding:4px 8px;border-radius:40px;transition:0.2s;line-height:1;}
+        .edit-icon:hover{background:var(--glow-primary);color:white;}
+        .profile-detail-item{display:flex;align-items:center;gap:0.75rem;padding:0.75rem 0;border-bottom:1px solid rgba(255,255,255,0.05);}
+        .detail-label{font-weight:500;color:var(--text-muted);min-width:80px;}
+        .detail-value{color:var(--text-light);word-break:break-word;flex:1;}
+        .detail-edit{cursor:pointer;background:none;border:none;color:var(--text-muted);font-size:1rem;padding:0 4px;transition:0.2s;}
+        .detail-edit:hover{color:var(--glow-primary);transform:scale(1.1);}
+        .stats-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:1rem;margin:1.5rem 0;}
+        .stat-card{background:rgba(0,0,0,0.3);border-radius:20px;padding:1rem;text-align:center;border:1px solid var(--glass-border);}
+        .stat-value{font-size:1.8rem;font-weight:700;color:#c084fc;}
+        .stat-label{font-size:0.8rem;color:var(--text-muted);text-transform:uppercase;}
+        .sections-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:1rem;margin-top:1.5rem;}
+        .section-link{background:rgba(0,0,0,0.3);border-radius:20px;padding:1rem;text-decoration:none;color:inherit;display:flex;flex-direction:column;align-items:center;gap:0.5rem;transition:0.2s;border:1px solid var(--glass-border);}
+        .section-link:hover{transform:translateY(-4px);border-color:var(--glow-primary);box-shadow:0 12px 24px -10px rgba(0,0,0,0.4);}
+        .section-icon{font-size:2rem;}
+        .section-title{font-weight:600;}
+        .section-desc{font-size:0.75rem;color:var(--text-muted);text-align:center;}
+        .delete-account-btn{margin-top:1.5rem;width:100%;padding:0.75rem;background:transparent;border:1px solid var(--glow-danger);color:var(--glow-danger);border-radius:60px;font-weight:600;cursor:pointer;transition:0.2s;text-align:center;}
+        .delete-account-btn:hover{background:var(--glow-danger);color:white;transform:translateY(-2px);box-shadow:0 8px 20px rgba(244,63,94,0.4);}
+        .modal{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.7);backdrop-filter:blur(5px);z-index:1000;justify-content:center;align-items:center;}
+        .modal.show{display:flex;}
+        .modal-content{background:var(--card-bg);border-radius:32px;padding:2rem;width:90%;max-width:450px;border:1px solid var(--glass-border);box-shadow:var(--shadow-xl);}
+        .modal-content h3{margin-bottom:1.5rem;font-size:1.5rem;background:linear-gradient(135deg,#e0e7ff,#c084fc);-webkit-background-clip:text;background-clip:text;color:transparent;}
+        .modal-content input{width:100%;padding:0.8rem 1rem;margin-bottom:1.2rem;background:rgba(0,0,0,0.4);border:1px solid var(--glass-border);border-radius:48px;color:white;font-size:1rem;}
+        .modal-content button{background:var(--glow-primary);border:none;padding:0.7rem 1.5rem;border-radius:40px;color:white;font-weight:600;cursor:pointer;transition:0.2s;}
+        .modal-content button:hover{opacity:0.9;transform:translateY(-2px);}
+        .modal-close{background:transparent;border:1px solid var(--glass-border);margin-left:0.5rem;}
+        .modal-close:hover{background:rgba(255,255,255,0.1);}
+        .error-msg{color:var(--glow-danger);font-size:0.75rem;margin-top:-0.8rem;margin-bottom:0.8rem;display:none;}
+        .modal-buttons{display:flex;justify-content:flex-end;gap:0.75rem;margin-top:1.5rem;}
+        @media (max-width:768px){.profile-grid{grid-template-columns:1fr;}.stats-grid{grid-template-columns:repeat(2,1fr);}header{flex-direction:column;align-items:stretch;}.header-actions{justify-content:center;}}
+        footer{text-align:center;padding:1.5rem;color:var(--text-muted);border-top:1px solid var(--glass-border);margin-top:2rem;}
+        #phoneDisplayEmpty:hover{text-decoration:underline;color:var(--glow-primary);}
+        .delete-phone-btn{cursor:pointer;margin-left:8px;color:var(--glow-danger);transition:0.2s;}
+        .delete-phone-btn:hover{color:#fecdd3;transform:scale(1.1);}
     </style>
 </head>
 <body>
-<header>
-    <h1 class="logo-link"><a href="/user/movies"><img src="/static/favicon.ico" alt="">Cinema Service</a></h1>
-    <div class="header-actions">
-        <div class="user-menu" id="userMenu">
-            <div class="user-menu-toggle" onclick="toggleUserMenu()"><img th:src="@{/images/user-icon.png}"
-                                                                          alt="Пользователь" class="user-icon"><span
-                    class="toggle-icon">▼</span></div>
-            <div class="user-dropdown"><a th:href="@{/personal-account}">Личный кабинет</a><a
-                    th:href="@{/profile/settings}">Настройки⚙️</a><a th:href="@{/user/top-up}">Пополнить💰</a>
-                <form th:action="@{/logout}" method="post" style="margin:0;">
-                    <button type="submit" class="logout-btn">Выйти</button>
-                </form>
-            </div>
-        </div>
-    </div>
-</header>
-
-<div th:if="${successMessage}" class="flash-message success" th:text="${successMessage}"></div>
-<div th:if="${notAuthorizedUserExceptionMessage}" class="flash-message error"
-     th:text="${notAuthorizedUserExceptionMessage}"></div>
-<div th:if="${frozenBuyerExceptionMessage}" class="flash-message error" th:text="${frozenBuyerExceptionMessage}"></div>
-<div th:if="${insufficientFundsExceptionMessage}" class="flash-message error"
-     th:text="${insufficientFundsExceptionMessage}"></div>
-<div th:if="${errorMessage}" class="flash-message error" th:text="${errorMessage}"></div>
-<div th:if="${infoMessage}" class="flash-message success" th:text="${infoMessage}"></div>
-
+<th:block th:replace="~{fragments/header :: header}"></th:block>
+<th:block th:replace="~{fragments/flash-messages :: flashMessages}"></th:block>
 <main class="profile-container">
     <div th:if="${userForOwner}" class="profile-grid">
         <div class="profile-card">
             <div class="profile-avatar"><img src="/images/user-icon.png" alt="Avatar" class="profile-avatar-img"></div>
-            <div class="profile-name">
-                <span id="usernameDisplay" th:text="${userForOwner.username}">username</span>
-                <span class="edit-icon" onclick="openModal('usernameModal')">✏️</span>
+            <div class="profile-name"><span id="usernameDisplay" th:text="${userForOwner.username}">username</span><span
+                    class="edit-icon" onclick="openModal('usernameModal')">✏️</span></div>
+            <div class="profile-detail-item"><span class="detail-label">Email</span><span id="emailDisplay"
+                                                                                          class="detail-value"
+                                                                                          th:text="${userForOwner.email}">email@example.com</span><span
+                    class="detail-edit" onclick="openModal('emailModal')">✏️</span></div>
+            <div class="profile-detail-item" id="phoneRow"><span class="detail-label">Телефон</span><input type="hidden"
+                                                                                                           id="initialPhone"
+                                                                                                           th:value="${userForOwner.phone}"/><span
+                    id="phoneDisplay" class="detail-value"></span><span id="phoneDisplayEmpty" class="detail-value"
+                                                                        style="color: var(--text-muted); font-style: italic; cursor: pointer;"
+                                                                        onclick="openModal('phoneModal')">➕ Добавить номер телефона</span><span
+                    class="detail-edit" onclick="openModal('phoneModal')">✏️</span><span id="deletePhoneBtn"
+                                                                                         class="delete-phone-btn"
+                                                                                         style="display: none;"
+                                                                                         onclick="openDeletePhoneModal()">🗑️</span>
             </div>
-            <div class="profile-detail-item">
-                <span class="detail-label">Email</span>
-                <span id="emailDisplay" class="detail-value" th:text="${userForOwner.email}">email@example.com</span>
-                <span class="detail-edit" onclick="openModal('emailModal')">✏️</span>
-            </div>
-            <div class="profile-detail-item" id="phoneRow">
-                <span class="detail-label">Телефон</span>
-                <input type="hidden" id="initialPhone" th:value="${userForOwner.phone}"/>
-                <span id="phoneDisplay" class="detail-value"></span>
-                <span id="phoneDisplayEmpty" class="detail-value"
-                      style="color: var(--text-muted); font-style: italic; cursor: pointer;"
-                      onclick="openModal('phoneModal')">➕ Добавить номер телефона</span>
-                <span class="detail-edit" onclick="openModal('phoneModal')">✏️</span>
-                <span id="deletePhoneBtn" class="delete-phone-btn" style="display: none;"
-                      onclick="openDeletePhoneModal()">🗑️</span>
-            </div>
-            <div class="profile-detail-item">
-                <span class="detail-label">Баланс</span>
-                <span class="detail-value"
-                      th:text="${userForOwner.balance} + ' ' + (${userForOwner.currencyCode} ?: '')">0</span>
+            <div class="profile-detail-item"><span class="detail-label">Баланс</span><span class="detail-value"
+                                                                                           th:text="${userForOwner.balance} + ' ' + (${userForOwner.currencyCode} ?: '')">0</span>
             </div>
             <button class="delete-account-btn" onclick="openDeleteAccountModal()">🗑️ Удалить аккаунт</button>
         </div>
-
         <div>
             <div class="profile-card"><h2 style="margin-bottom:1rem; font-size:1.5rem;">Статистика</h2>
                 <div class="stats-grid">
@@ -153,23 +100,24 @@
             </div>
             <div class="profile-card" style="margin-top:2rem;"><h2 style="margin-bottom:1rem; font-size:1.5rem;">Мои
                 разделы</h2>
-                <div class="sections-grid">
-                    <a th:href="@{/history}" class="section-link"><span class="section-icon">📜</span><span
-                            class="section-title">История покупок</span><span class="section-desc">Просмотр приобретённых фильмов</span></a>
-                    <a th:href="@{/user/purchases/library}" class="section-link"><span
-                            class="section-icon">📚</span><span class="section-title">Библиотека</span><span
-                            class="section-desc">Все купленные фильмы</span></a>
-                    <a th:href="@{/rated-history}" class="section-link"><span class="section-icon">⭐</span><span
-                            class="section-title">Мои оценки</span><span
-                            class="section-desc">История оценённых фильмов</span></a>
-                    <a th:href="@{/profile/settings}" class="section-link"><span class="section-icon">⚙️</span><span
-                            class="section-title">Настройки</span><span class="section-desc">Изменить профиль</span></a>
-                    <a th:href="@{/user/top-up}" class="section-link"><span class="section-icon">💰</span><span
-                            class="section-title">Кошелек</span><span class="section-desc">Пополнить баланс</span></a>
-                    <a th:href="@{/profile/settings/change/pwd}" class="section-link"><span
-                            class="section-icon">🔒</span><span class="section-title">Сменить пароль</span><span
-                            class="section-desc">Обновить пароль доступа</span></a>
-                </div>
+                <div class="sections-grid"><a th:href="@{/history}" class="section-link"><span
+                        class="section-icon">📜</span><span class="section-title">История покупок</span><span
+                        class="section-desc">Просмотр приобретённых фильмов</span></a><a
+                        th:href="@{/user/purchases/library}" class="section-link"><span
+                        class="section-icon">📚</span><span class="section-title">Библиотека</span><span
+                        class="section-desc">Все купленные фильмы</span></a><a th:href="@{/rated-history}"
+                                                                               class="section-link"><span
+                        class="section-icon">⭐</span><span class="section-title">Мои оценки</span><span
+                        class="section-desc">История оценённых фильмов</span></a><a th:href="@{/profile/settings}"
+                                                                                    class="section-link"><span
+                        class="section-icon">⚙️</span><span class="section-title">Настройки</span><span
+                        class="section-desc">Изменить профиль</span></a><a th:href="@{/user/top-up}"
+                                                                           class="section-link"><span
+                        class="section-icon">💰</span><span class="section-title">Кошелек</span><span
+                        class="section-desc">Пополнить баланс</span></a><a th:href="@{/profile/settings/change/pwd}"
+                                                                           class="section-link"><span
+                        class="section-icon">🔒</span><span class="section-title">Сменить пароль</span><span
+                        class="section-desc">Обновить пароль доступа</span></a></div>
             </div>
         </div>
     </div>
@@ -179,10 +127,8 @@
                                                                                                      style="display: inline-block; margin-top: 1.5rem; padding: 0.8rem 2rem; background: var(--glow-primary); color: white; border-radius: 60px; text-decoration: none;">На
             главную</a></div>
 </main>
-
 <div id="deleteAccountModal" class="modal">
-    <div class="modal-content">
-        <h3>Удаление аккаунта</h3>
+    <div class="modal-content"><h3>Удаление аккаунта</h3>
         <p>Вы уверены, что хотите удалить свой аккаунт? Это действие необратимо.</p>
         <p>Все данные будут потеряны.</p>
         <div class="modal-buttons">
@@ -192,10 +138,8 @@
         </div>
     </div>
 </div>
-
 <div id="deletePhoneModal" class="modal">
-    <div class="modal-content">
-        <h3>Удаление номера телефона</h3>
+    <div class="modal-content"><h3>Удаление номера телефона</h3>
         <p>Вы уверены, что хотите удалить номер телефона?</p>
         <p>Это действие можно будет отменить, добавив новый номер.</p>
         <div class="modal-buttons">
@@ -204,7 +148,6 @@
         </div>
     </div>
 </div>
-
 <div id="usernameModal" class="modal">
     <div class="modal-content"><h3>Изменить логин</h3>
         <form id="usernameForm"><input type="text" name="username" id="newUsername"
@@ -241,9 +184,8 @@
         </form>
     </div>
 </div>
-
 <footer>© 2025 Cinema Service</footer>
-
+<script th:src="@{/js/main.js}" defer></script>
 <script>
     function initPhoneDisplay() {
         const initialPhone = document.getElementById('initialPhone').value;
@@ -261,7 +203,6 @@
             deleteBtn.style.display = 'none';
         }
     }
-
     function updatePhoneUI(phoneNumber) {
         const phoneSpan = document.getElementById('phoneDisplay');
         const emptySpan = document.getElementById('phoneDisplayEmpty');
@@ -279,37 +220,23 @@
             document.getElementById('initialPhone').value = '';
         }
     }
-
     function openModal(id) { document.getElementById(id).classList.add('show'); }
     function closeModal(id) { document.getElementById(id).classList.remove('show'); }
     window.onclick = function(event) { if (event.target.classList.contains('modal')) event.target.classList.remove('show'); };
     document.addEventListener('keydown', function(e) { if (e.key === 'Escape') document.querySelectorAll('.modal.show').forEach(modal => modal.classList.remove('show')); });
-
-    let userMenu = document.getElementById('userMenu');
-    function toggleUserMenu() { userMenu.classList.toggle('show'); }
-    document.addEventListener('click', function(event) { if (!userMenu.contains(event.target)) userMenu.classList.remove('show'); });
-
     function openDeleteAccountModal() { document.getElementById('deleteAccountModal').classList.add('show'); }
     function closeDeleteAccountModal() { document.getElementById('deleteAccountModal').classList.remove('show'); }
-
     function openDeletePhoneModal() { document.getElementById('deletePhoneModal').classList.add('show'); }
     function closeDeletePhoneModal() { document.getElementById('deletePhoneModal').classList.remove('show'); }
-
     function deletePhone() {
         fetch('/profile/settings/delete/phone', { method: 'GET' })
             .then(response => {
-                if (response.redirected) {
-                    window.location.href = response.url;
-                } else {
-                    showFlashMessage('Номер телефона удалён', 'success');
-                    updatePhoneUI(null);
-                    closeDeletePhoneModal();
-                }
+                if (response.redirected) { window.location.href = response.url; }
+                else { showFlashMessage('Номер телефона удалён', 'success'); updatePhoneUI(null); closeDeletePhoneModal(); }
             })
             .catch(() => showFlashMessage('Ошибка при удалении', 'error'));
     }
     document.getElementById('confirmDeletePhoneBtn')?.addEventListener('click', deletePhone);
-
     function showFlashMessage(message, type) {
         const div = document.createElement('div');
         div.className = `flash-message ${type}`;
@@ -317,11 +244,9 @@
         document.body.appendChild(div);
         setTimeout(() => { div.style.animation = 'fadeOut 0.3s ease forwards'; setTimeout(() => div.remove(), 300); }, 5000);
     }
-
     const usernameRegex = /^[a-zA-Z0-9_]{6,20}$/;
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     const phoneRegex = /^\+\d{1,3}\s?\(?\d{1,3}\)?\s?\d{3}[\s\-]?\d{2}[\s\-]?\d{2}$/;
-
     function validateUsername() {
         const input = document.getElementById('newUsername');
         const error = document.getElementById('usernameError');
@@ -355,7 +280,6 @@
         error.style.display = 'none';
         return true;
     }
-
     async function handleSubmit(formId, url, validator, successCallback) {
         const form = document.getElementById(formId);
         form.addEventListener('submit', async (e) => {
@@ -363,44 +287,24 @@
             if (validator && !validator()) return;
             const data = Object.fromEntries(new FormData(form).entries());
             try {
-                const res = await fetch(url, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(data)
-                });
+                const res = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) });
                 const result = await res.json();
                 if (res.ok) {
                     showFlashMessage(result.message || 'Успешно', 'success');
                     if (successCallback && result.newValue) successCallback(result.newValue);
                     closeModal(formId.replace('Form', 'Modal'));
                     form.reset();
-                } else {
-                    showFlashMessage(result.message || 'Ошибка', 'error');
-                }
-            } catch (err) {
-                showFlashMessage('Ошибка соединения', 'error');
-            }
+                } else { showFlashMessage(result.message || 'Ошибка', 'error'); }
+            } catch (err) { showFlashMessage('Ошибка соединения', 'error'); }
         });
     }
-
-    handleSubmit('usernameForm', '/profile/settings/change/username', validateUsername, (newVal) => {
-        document.getElementById('usernameDisplay').textContent = newVal;
-    });
-    handleSubmit('emailForm', '/profile/settings/change/email', validateEmail, (newVal) => {
-        document.getElementById('emailDisplay').textContent = newVal;
-    });
-    handleSubmit('phoneForm', '/profile/settings/change/phone', validatePhone, (newVal) => {
-        if (newVal && newVal.trim() !== '') {
-            updatePhoneUI(newVal);
-        }
-    });
-
+    handleSubmit('usernameForm', '/profile/settings/change/username', validateUsername, (newVal) => { document.getElementById('usernameDisplay').textContent = newVal; });
+    handleSubmit('emailForm', '/profile/settings/change/email', validateEmail, (newVal) => { document.getElementById('emailDisplay').textContent = newVal; });
+    handleSubmit('phoneForm', '/profile/settings/change/phone', validatePhone, (newVal) => { if (newVal && newVal.trim() !== '') updatePhoneUI(newVal); });
     document.addEventListener('DOMContentLoaded', function() {
         initPhoneDisplay();
         const initialPhone = document.getElementById('initialPhone').value;
-        if (initialPhone && initialPhone.trim() !== '') {
-            updatePhoneUI(initialPhone);
-        }
+        if (initialPhone && initialPhone.trim() !== '') updatePhoneUI(initialPhone);
     });
 </script>
 </body>

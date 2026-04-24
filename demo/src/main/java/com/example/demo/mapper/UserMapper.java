@@ -2,7 +2,6 @@ package com.example.demo.mapper;
 
 import com.example.demo.dto.authorize.RegisterFormDTO;
 import com.example.demo.dto.user.*;
-import com.example.demo.dto.wallet.TopUpFormDTO;
 import com.example.demo.dto.wallet.WalletForOwnerViewDTO;
 import com.example.demo.model.User;
 import org.mapstruct.Mapper;
@@ -59,9 +58,6 @@ public interface UserMapper {
 
     @Mapping(target = "phone", expression = "java(user.getPhone() == null || user.getPhone().isBlank() ? null : user.getPhone())")
     PhoneChangingDTO toPhoneChangingForm(User user);
-
-    @Mapping(target = "balance", source = "amount", qualifiedByName = "fromAmountToBalance")
-    void updateFromTopUpForm(TopUpFormDTO topUpFormDTO, @MappingTarget User user);
 
     WalletForOwnerViewDTO toWalletView(User user);
 

@@ -28,7 +28,7 @@ public class MovieController {
                     sort = "releaseDate",
                     direction = Sort.Direction.DESC) Pageable pageable,
             Model model, HttpServletRequest httpServletRequest) {
-        logoutController.invalidate(httpServletRequest);
+        logoutController.logout(httpServletRequest);
         Page<MovieCardViewDTO> cards = movieService.getMovieCards(pageable);
         model.addAttribute("cardsPage", cards);
         return "movie/index";
@@ -37,7 +37,7 @@ public class MovieController {
     @GetMapping("/{title}")
     public String showMovie(@PathVariable("title") String title,
                             Model model, HttpServletRequest httpServletRequest) {
-        logoutController.invalidate(httpServletRequest);
+        logoutController.logout(httpServletRequest);
         model.addAttribute("card", movieService.getCard(title));
         return "movie/show";
     }

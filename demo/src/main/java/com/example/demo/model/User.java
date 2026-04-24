@@ -81,9 +81,6 @@ public class User extends AbstractEntity {
     }
 
     public void addMoney(BigDecimal amount) {
-        if (amount.compareTo(BigDecimal.ZERO) <= 0) {
-            throw new IllegalArgumentException("Amount must be positive");
-        }
         this.balance = this.balance.add(amount);
     }
 
