@@ -1,5 +1,6 @@
 package com.example.demo.mapper;
 
+import com.example.demo.dto.joined_to_user.RatedMovieForOwnerFormDTO;
 import com.example.demo.dto.joined_to_user.RatedMovieForOwnerViewDTO;
 import com.example.demo.dto.joined_to_user.ReviewForUserViewDTO;
 import com.example.demo.model.RatedMovie;
@@ -16,13 +17,19 @@ public interface RatedMapper {
     @Mapping(target = "genre", source = "movie.genre")
     @Mapping(target = "rating", source = "movie.rating")
     @Mapping(target = "description", source = "movie.description")
-    @Mapping(target = "ratingsCount", source = "movie.ratingsCount", qualifiedByName = "nullableNumberToLong")
+    @Mapping(target = "ratingsCount", source = "movie.ratingsCount",
+            qualifiedByName = "nullableNumberToLong")
     @Mapping(target = "ratedAt", source = "ratedAt")
     @Mapping(target = "ratingValue", source = "ratingValue")
     @Mapping(target = "reviewText", source = "review")
     RatedMovieForOwnerViewDTO toOwnerView(RatedMovie ratedMovie);
 
     @Mapping(target = "username", source = "user.username")
+    @Mapping(target = "title", source = "movie.title")
     @Mapping(target = "reviewText", source = "review")
     ReviewForUserViewDTO toReviewForUserView(RatedMovie ratedMovie);
+
+    @Mapping(target = "title", source = "movie.title")
+    @Mapping(target = "review", source = "review")
+    RatedMovieForOwnerFormDTO toFormView(RatedMovie ratedMovie);
 }

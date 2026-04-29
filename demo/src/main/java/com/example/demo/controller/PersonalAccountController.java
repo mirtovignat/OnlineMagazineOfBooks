@@ -114,10 +114,11 @@ public class PersonalAccountController {
     @PostMapping(value = "/profile/settings/change/username", consumes = "application/json")
     @ResponseBody
     public ResponseEntity<?> changeUsernameAjax(@Valid @RequestBody UsernameChangingDTO usernameChangingDTO,
-                                                @SessionAttribute("userForOwnerViewDTO") UserForOwnerViewDTO sessionUser,
+                                                @SessionAttribute("userForOwnerViewDTO")
+                                                UserForOwnerViewDTO userForOwnerViewDTO,
                                                 HttpSession session) {
         try {
-            User user = userService.findUserByUsername(sessionUser.username());
+            User user = userService.findUserByUsername(userForOwnerViewDTO.username());
             userService.changeUsername(usernameChangingDTO, user);
             session.setAttribute("userForOwnerViewDTO", userMapper.toOwnerView(user));
             return ResponseEntity.ok(Map.of("message", "Никнейм успешно обновлен!", "newValue", usernameChangingDTO.username()));
@@ -129,10 +130,11 @@ public class PersonalAccountController {
     @PostMapping(value = "/profile/settings/change/email", consumes = "application/json")
     @ResponseBody
     public ResponseEntity<?> changeEmailAjax(@Valid @RequestBody EmailChangingDTO emailChangingDTO,
-                                             @SessionAttribute("userForOwnerViewDTO") UserForOwnerViewDTO sessionUser,
+                                             @SessionAttribute("userForOwnerViewDTO")
+                                             UserForOwnerViewDTO userForOwnerViewDTO,
                                              HttpSession session) {
         try {
-            User user = userService.findUserByUsername(sessionUser.username());
+            User user = userService.findUserByUsername(userForOwnerViewDTO.username());
             userService.changeEmail(emailChangingDTO, user);
             session.setAttribute("userForOwnerViewDTO", userMapper.toOwnerView(user));
             return ResponseEntity.ok(Map.of("message", "Почта успешно обновлен!", "newValue", emailChangingDTO.email()));
@@ -144,10 +146,10 @@ public class PersonalAccountController {
     @PostMapping(value = "/profile/settings/change/phone", consumes = "application/json")
     @ResponseBody
     public ResponseEntity<?> changePhoneAjax(@Valid @RequestBody PhoneChangingDTO phoneChangingDTO,
-                                             @SessionAttribute("userForOwnerViewDTO") UserForOwnerViewDTO sessionUser,
+                                             @SessionAttribute("userForOwnerViewDTO") UserForOwnerViewDTO userForOwnerViewDTO,
                                              HttpSession session) {
         try {
-            User user = userService.findUserByUsername(sessionUser.username());
+            User user = userService.findUserByUsername(userForOwnerViewDTO.username());
             userService.changePhone(phoneChangingDTO, user);
             session.setAttribute("userForOwnerViewDTO", userMapper.toOwnerView(user));
             return ResponseEntity.ok(Map.of("message", "Телефон успешно обновлен!", "newValue", phoneChangingDTO.phone()));

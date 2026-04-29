@@ -27,13 +27,11 @@
                 <input type="hidden" name="title" id="ratingFormTitle" value="">
                 <div class="rating-input">
                     <label for="ratingValue">Оценка (0.0–10.0):</label>
-                    <input type="number" id="ratingValue" name="rating" step="0.1" min="0" max="10" value="5.0"
-                           required>
+                    <input type="number" id="ratingValue" name="rating" step="0.1" min="0" max="10" value="5.0" required>
                 </div>
                 <div class="comment-input">
                     <label for="ratingComment">Комментарий (необязательно):</label>
-                    <textarea id="ratingComment" name="review" rows="3" placeholder="Ваш отзыв..."
-                              maxlength="2000"></textarea>
+                    <textarea id="ratingComment" name="review" rows="3" placeholder="Ваш отзыв..." maxlength="2000"></textarea>
                 </div>
                 <div class="modal-buttons">
                     <button type="button" class="modal-cancel-btn" onclick="hideRatingModal()">Отмена</button>
@@ -43,5 +41,21 @@
         </div>
     </div>
 </div>
+
+<div th:fragment="confirmDeleteModal">
+    <div id="confirmDeleteModal" class="modal">
+        <div class="modal-content">
+            <button class="modal-close" onclick="hideConfirmDeleteModal()">×</button>
+            <h2>Удаление отзыва</h2>
+            <p>Вы уверены, что хотите удалить свою оценку и отзыв?</p>
+            <p>Это действие нельзя отменить.</p>
+            <div class="modal-buttons">
+                <button class="modal-cancel-btn" onclick="hideConfirmDeleteModal()">Отмена</button>
+                <button class="modal-confirm-btn" id="confirmDeleteBtn">Удалить</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 </body>
 </html>

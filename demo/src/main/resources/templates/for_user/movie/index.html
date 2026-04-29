@@ -21,9 +21,11 @@
             <div class="movie-card-content">
                 <h3><a th:href="@{/user/movies/{title}(title=${movie.title})}" th:text="${movie.title}">Название</a>
                 </h3>
-                <div class="badges"><span class="badge rating" th:text="${movie.rating}">8.2</span><span
-                        class="badge year" th:text="${movie.releaseYear}">2013</span><span class="badge genre"
-                                                                                           th:text="${movie.genre}">Комедия</span>
+                <div class="badges">
+                    <span class="badge rating" th:attr="data-movie-title=${movie.title}"
+                          th:text="${movie.rating != null ? movie.rating : '-'}">-</span>
+                    <span class="badge year" th:text="${movie.releaseYear}">2013</span>
+                    <span class="badge genre" th:text="${movie.genre}">Комедия</span>
                 </div>
                 <p class="price" th:text="${movie.price + ' ₽'}">329.99 ₽</p>
                 <div class="movie-actions">
@@ -33,7 +35,7 @@
                             title="Добавить в избранное"><span th:text="${movie.inFavourites} ? '♥' : '♡'"></span>
                     </button>
                     <button class="icon-btn rating-btn" th:data-movie-title="${movie.title}"
-                            onclick="showRatingModal(this)" title="Оценить фильм">☆
+                            onclick="showRatingModal(this, 'add', 5.0, '')" title="Оценить фильм">☆
                     </button>
                     <a th:href="@{/user/rated/{title}/reviews(title=${movie.title})}" class="icon-btn comment-btn"
                        title="Отзывы">💬</a>
@@ -74,8 +76,28 @@
            th:href="@{/user/movies(page=${cardsPage.number + 1}, size=${cardsPage.size})}">Следующая »</a>
     </div>
 </main>
+
 <th:block th:replace="~{fragments/modals :: buyModal}"></th:block>
 <th:block th:replace="~{fragments/modals :: ratingModal}"></th:block>
+
 <script th:src="@{/js/main.js}" defer></script>
+<script th:src="@{/js/main.js}" defer>
+    document.addEventListener('submit', function(e) {
+        if (e.target && e.target.id === 'ratingForm') {
+            e.preventDefault();
+            e.stopPropagation();
+            return false;
+        }
+    }, true);
+
+    if (typeof submitRating === 'function') {
+        const originalSubmitRating = submitRating;
+        window.submitRating = function(...args) {
+            const result = originalSubmitRating(...args);
+            if (result && result.catch) result.catch(console.warn);
+            return false;
+        };
+    }
+</script>
 </body>
 </html>

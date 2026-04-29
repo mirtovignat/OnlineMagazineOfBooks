@@ -102,7 +102,7 @@
         .payment-info h4 { margin: 0 0 5px 0; color: #333; }
         .payment-info p { margin: 0; color: #666; font-size: 12px; }
         .form-actions { display: flex; gap: 15px; }
-        .btn-confirm, .btn-cancel {
+        .btn-confirm, .btn-menu {
             flex: 1;
             padding: 14px;
             border: none;
@@ -111,11 +111,14 @@
             font-weight: 600;
             cursor: pointer;
             transition: all 0.3s;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
         }
         .btn-confirm { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; }
         .btn-confirm:hover { transform: translateY(-2px); box-shadow: 0 10px 20px rgba(102, 126, 234, 0.2); }
-        .btn-cancel { background: #f8f9fa; color: #666; border: 2px solid #e1e5e9; }
-        .btn-cancel:hover { background: #e9ecef; }
+        .btn-menu { background: #f8f9fa; color: #666; border: 2px solid #e1e5e9; line-height: 46px; }
+        .btn-menu:hover { background: #e9ecef; }
         .error-message { color: #dc3545; font-size: 12px; margin-top: 5px; display: none; }
         .error-message.show { display: block; }
         .has-error { border-color: #dc3545 !important; }
@@ -132,14 +135,12 @@
 </head>
 <body>
 <div class="deposit-container">
-    <div th:if="${validationError}" class="flash-message"><span th:text="${validationError}"></span></div>
-    <div th:if="${notAuthorizedUserExceptionMessage}" class="flash-message"><span
-            th:text="${notAuthorizedUserExceptionMessage}"></span></div>
-    <div th:if="${notAuthorizedWalletExceptionMessage}" class="flash-message"><span
-            th:text="${notAuthorizedWalletExceptionMessage}"></span></div>
-    <div th:if="${successMessage}" class="flash-message success"><span th:text="${successMessage}"></span></div>
-    <div class="deposit-header"><h2>Пополнение кошелька</h2>
-        <p>Выберите сумму и способ оплаты</p></div>
+    <div th:replace="~{fragments/flash-messages :: flashMessages}"></div>
+
+    <div class="deposit-header">
+        <h2>Пополнение кошелька</h2>
+        <p>Выберите сумму и способ оплаты</p>
+    </div>
     <div class="balance-info">
         <div class="balance-label">Текущий баланс</div>
         <div class="balance-amount" th:text="${wallet.balance + ' ' + wallet.currencyCode}"></div>
@@ -150,8 +151,7 @@
             <div class="amount-input">
                 <span class="currency-symbol"
                       th:text="${wallet.currencyCode == 'RUB' ? '₽' : (wallet.currencyCode == 'USD' ? '$' : '€')}"></span>
-                <input type="number" id="amount" th:field="*{amount}" min="10" max="100000" step="0.01"
-                       placeholder="0.00" required>
+                <input type="number" id="amount" th:field="*{amount}" min="0.01" step="0.01" placeholder="0.00" required>
             </div>
             <div th:if="${#fields.hasErrors('amount')}" th:errors="*{amount}" class="error-message"></div>
             <div class="error-message" id="amountError"></div>
@@ -181,7 +181,7 @@
             </label>
         </div>
         <div class="form-actions">
-            <button type="button" class="btn-cancel" onclick="window.location.href='/user/movies'">Назад</button>
+            <a href="/user/movies" class="btn-menu">В меню</a>
             <button type="submit" class="btn-confirm">Пополнить</button>
         </div>
     </form>
@@ -209,13 +209,8 @@
         amountError.classList.remove('show');
         amountInput.classList.remove('has-error');
         const amount = parseFloat(amountInput.value);
-        if (!amount || amount < 10) {
-            amountError.textContent = 'Минимальная сумма пополнения: 10';
-            amountError.classList.add('show');
-            amountInput.classList.add('has-error');
-            isValid = false;
-        } else if (amount > 100000) {
-            amountError.textContent = 'Максимальная сумма пополнения: 100 000';
+        if (!amount || amount < 0.01) {
+            amountError.textContent = 'Минимальная сумма пополнения: 0.01';
             amountError.classList.add('show');
             amountInput.classList.add('has-error');
             isValid = false;
@@ -230,6 +225,9 @@
             setTimeout(() => { if (flashMessage.parentNode) flashMessage.parentNode.removeChild(flashMessage); }, 500);
         });
     }, 5000);
+    if (document.querySelector('.flash-message.success')) {
+        history.replaceState(null, null, window.location.href);
+    }
 </script>
 </body>
 </html>

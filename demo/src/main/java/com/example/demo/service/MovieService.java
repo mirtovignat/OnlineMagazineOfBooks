@@ -55,4 +55,8 @@ public class MovieService {
         }
         return movieMapper.toDetailsForUserWithStatus(movie, bought, inCart, inFavourites);
     }
+
+    public Movie findByTitleOrThrow(String title) {
+        return movieRepository.findFullByTitleOrThrow(title);
+    }
 }

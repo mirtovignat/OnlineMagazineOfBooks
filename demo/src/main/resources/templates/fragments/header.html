@@ -1,23 +1,19 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org" lang="">
+<html xmlns:th="http://www.thymeleaf.org">
 <body>
 <div th:fragment="header">
     <header>
-        <h1 class="logo-link"><a href="/user/movies"><img src="/static/favicon.ico" alt="">Cinema Service</a></h1>
+        <h1 class="logo-link"><a href="/user/movies">🎬 Cinema Service</a></h1>
         <div class="header-actions">
             <a th:href="@{/user/favourites}" class="action-button favourites-btn" title="Избранное">♥
-                <span class="count-badge"
-                      th:style="${favouritesCount != null and favouritesCount > 0} ? 'display: flex' : 'display: none'"
-                      th:text="${favouritesCount != null ? favouritesCount : 0}">0</span>
+                <span id="favourites-count" class="count-badge">0</span>
             </a>
             <a th:href="@{/user/cart}" class="action-button cart-btn" title="Корзина">🛒
-                <span class="count-badge"
-                      th:style="${cartCount != null and cartCount > 0} ? 'display: flex' : 'display: none'"
-                      th:text="${cartCount != null ? cartCount : 0}">0</span>
+                <span id="cart-count" class="count-badge">0</span>
             </a>
             <div class="user-menu" id="userMenu">
                 <div class="user-menu-toggle" onclick="toggleUserMenu()">
-                    <img th:src="@{/images/user-icon.png}" alt="Пользователь" class="user-icon" src="">
+                    <img th:src="@{/images/user-icon.png}" alt="Пользователь" class="user-icon">
                     <span class="toggle-icon">▼</span>
                 </div>
                 <div class="user-dropdown">
@@ -32,5 +28,43 @@
         </div>
     </header>
 </div>
+
+<script>
+    function updateBadges() {
+        fetch('/user/cart/count')
+            .then(r => r.text())
+            .then(c => {
+                let badge = document.getElementById('cart-count');
+                if (badge) {
+                    badge.innerText = c;
+                    badge.style.display = c !== '0' ? 'flex' : 'none';
+                }
+            })
+            .catch(e => console.warn);
+        fetch('/user/favourites/count')
+            .then(r => r.text())
+            .then(c => {
+                let badge = document.getElementById('favourites-count');
+                if (badge) {
+                    badge.innerText = c;
+                    badge.style.display = c !== '0' ? 'flex' : 'none';
+                }
+            })
+            .catch(e => console.warn);
+    }
+
+    function toggleUserMenu() {
+        let menu = document.getElementById('userMenu');
+        if (menu) menu.classList.toggle('show');
+    }
+
+    updateBadges();
+    window.addEventListener('pageshow', updateBadges);
+    window.addEventListener('popstate', updateBadges);
+    document.addEventListener('click', function(e) {
+        let menu = document.getElementById('userMenu');
+        if (menu && !menu.contains(e.target)) menu.classList.remove('show');
+    });
+</script>
 </body>
 </html>

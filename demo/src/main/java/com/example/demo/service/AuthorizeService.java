@@ -38,7 +38,6 @@ public class AuthorizeService {
         User user = userMapper.fromRegisterForm(dto);
         user = userRepository.save(user);
         return userMapper.toOwnerView(user);
-
     }
 
     public User validateLogin(LoginFormDTO dto) {

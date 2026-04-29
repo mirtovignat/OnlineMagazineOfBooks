@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" lang="">
 <body>
-<div th:fragment="flashMessages">
+<div id="flash-messages-container" th:fragment="flashMessages">
     <div th:if="${successMessage}" class="flash-message success" th:text="${successMessage}"></div>
     <div th:if="${errorMessage}" class="flash-message error" th:text="${errorMessage}"></div>
     <div th:if="${infoMessage}" class="flash-message info" th:text="${infoMessage}"></div>
@@ -19,6 +19,8 @@
          th:text="${invalidPasswordExceptionMessage}"></div>
     <div th:if="${userNotFoundExceptionMessage}" class="flash-message error"
          th:text="${userNotFoundExceptionMessage}"></div>
+    <div th:if="${balanceLimitExceededExceptionMessage}" class="flash-message error"
+         th:text="${balanceLimitExceededExceptionMessage}"></div>
 </div>
 </body>
 </html>

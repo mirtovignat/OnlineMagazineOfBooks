@@ -6,11 +6,14 @@ import java.time.LocalDateTime;
 public record ReviewForUserViewDTO(
         String username,
 
+        String title,
+
         LocalDateTime ratedAt,
 
         BigDecimal ratingValue,
 
         String reviewText,
+
         boolean inCart,
 
         boolean inFavourites

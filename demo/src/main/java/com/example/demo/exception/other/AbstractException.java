@@ -14,5 +14,4 @@ public class AbstractException extends RuntimeException {
         this.message = message;
     }
 
-
 }

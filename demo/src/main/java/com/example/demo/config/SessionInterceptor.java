@@ -10,13 +10,16 @@ public class SessionInterceptor implements HandlerInterceptor {
     @Override
     public boolean preHandle(HttpServletRequest httpServletRequest,
                              @NonNull HttpServletResponse httpServletResponse,
-                             @NonNull Object handler)
-            throws Exception {
+                             @NonNull Object handler) throws Exception {
         String uri = httpServletRequest.getRequestURI();
-        if (uri.startsWith("/user/") && !uri.equals("/user/movies") && !uri.equals("/user/cart/count") && !uri.equals("/user/favourites/count")) {
-            UserForOwnerViewDTO user = (UserForOwnerViewDTO) httpServletRequest
+        if (uri.startsWith("/user/") &&
+                !uri.equals("/user/movies") &&
+                !uri.equals("/user/cart/count") &&
+                !uri.equals("/user/favourites/count") &&
+                !uri.matches("/user/rated/(add|edit|remove/.*)")) {
+            UserForOwnerViewDTO userForOwnerViewDTO = (UserForOwnerViewDTO) httpServletRequest
                     .getSession().getAttribute("userForOwnerViewDTO");
-            if (user == null) {
+            if (userForOwnerViewDTO == null) {
                 httpServletResponse.sendRedirect("/login");
                 return false;
             }

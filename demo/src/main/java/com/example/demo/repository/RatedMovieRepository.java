@@ -5,7 +5,10 @@ import com.example.demo.model.RatedMovie;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.repository.*;
+import org.springframework.data.jpa.repository.EntityGraph;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
@@ -14,8 +17,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface RatedMovieRepository extends JpaRepository<RatedMovie, Long>,
-        JpaSpecificationExecutor<RatedMovie> {
+public interface RatedMovieRepository extends JpaRepository<RatedMovie, Long> {
 
     @EntityGraph(attributePaths = {
             "movie",
@@ -64,20 +66,20 @@ public interface RatedMovieRepository extends JpaRepository<RatedMovie, Long>,
             FROM RatedMovie ratedMovie
             JOIN FETCH ratedMovie.movie
             JOIN FETCH ratedMovie.user
-            WHERE ratedMovie.user.username = :userUsername
-            AND ratedMovie.movie.title = :movieTitle
+            WHERE ratedMovie.user.username = :username
+            AND ratedMovie.movie.title = :title
             """)
-    Optional<RatedMovie> findByUserUsernameAndMovieTitle(@Param("userUsername") String userUsername,
-                                                         @Param("movieTitle") String movieTitle);
+    Optional<RatedMovie> findByUsernameAndTitle(@Param("username") String username,
+                                                @Param("title") String title);
 
-    default RatedMovie findByUserUsernameAndMovieTitleOrThrow(
-            String userUsername, String movieTitle) {
-        return findByUserUsernameAndMovieTitle(userUsername,
-                movieTitle)
+    default RatedMovie findByUsernameAndTitleOrThrow(
+            String username, String title) {
+        return findByUsernameAndTitle(username,
+                title)
                 .orElseThrow(() -> new EntityNotFoundException(
                         "Оценённый фильм не найден: пользователь '"
-                                + userUsername + "', фильм '"
-                                + movieTitle + "'"));
+                                + username + "', фильм '"
+                                + title + "'"));
     }
 
     boolean existsByUserUsernameAndMovieTitle(String userUsername, String movieTitle);

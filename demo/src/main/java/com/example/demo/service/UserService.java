@@ -4,9 +4,9 @@ import com.example.demo.config.SecurityConfig;
 import com.example.demo.dto.user.*;
 import com.example.demo.dto.wallet.TopUpFormDTO;
 import com.example.demo.dto.wallet.WalletForOwnerViewDTO;
+import com.example.demo.exception.purchased.BalanceLimitExceededException;
 import com.example.demo.exception.user.DataCoincidenceException;
 import com.example.demo.exception.user.InvalidPasswordException;
-import com.example.demo.exception.user.UserNotFoundException;
 import com.example.demo.mapper.UserMapper;
 import com.example.demo.model.User;
 import com.example.demo.repository.UserRepository;
@@ -24,8 +24,7 @@ public class UserService {
     private final SecurityConfig securityConfig;
 
     public User findUserByUsername(String username) {
-        return userRepository.findByUsername(username)
-                .orElseThrow(UserNotFoundException::new);
+        return userRepository.findByUsernameOrThrow(username);
     }
 
     public boolean isProfileUnchanged(ProfileSettingsDTO profileSettingsDTO, User user) {
@@ -109,8 +108,18 @@ public class UserService {
         if (topUpFormDTO.amount() == null || topUpFormDTO.amount() <= 0) {
             throw new IllegalArgumentException("Сумма пополнения должна быть положительной");
         }
-        BigDecimal addAmount = BigDecimal.valueOf(topUpFormDTO.amount());
-        user.addMoney(addAmount);
+
+        double currentBalance = user.getBalance().doubleValue();
+        double addAmount = topUpFormDTO.amount();
+        double newBalance = currentBalance + addAmount;
+        double MAX_BALANCE = 100_000.0;
+
+        if (newBalance > MAX_BALANCE) {
+            throw new BalanceLimitExceededException(currentBalance, addAmount);
+        }
+
+        BigDecimal addAmountBD = BigDecimal.valueOf(addAmount);
+        user.addMoney(addAmountBD);
         userRepository.save(user);
     }
 

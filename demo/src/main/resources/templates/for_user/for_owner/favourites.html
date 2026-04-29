@@ -21,16 +21,20 @@
 </head>
 <body>
 <th:block th:replace="~{fragments/header :: header}"></th:block>
-<div class="favourites-header"><h2>❤️ Избранное</h2>
+<div class="favourites-header">
+    <h2>❤️ Избранное</h2>
     <div class="favourites-count">Фильмов в избранном: <span th:text="${favouritesCount}">0</span></div>
 </div>
-<div th:if="${favourites != null and !favourites.isEmpty()}">
-    <div style="text-align:center; margin:1rem 0 0;">
-        <button class="clear-favourites-btn" onclick="showClearFavouritesModal()">🗑️ Очистить всё избранное</button>
-    </div>
-</div>
+
 <th:block th:replace="~{fragments/flash-messages :: flashMessages}"></th:block>
+
 <main>
+    <div th:if="${favourites != null and !favourites.isEmpty()}">
+        <div style="text-align:center; margin:1rem 0 0;">
+            <button class="clear-favourites-btn" onclick="showClearFavouritesModal()">🗑️ Очистить всё избранное</button>
+        </div>
+    </div>
+
     <div class="movies-grid" th:if="${favourites != null and !favourites.isEmpty()}">
         <div class="movie-card" th:each="movie : ${favourites}"
              th:style="'animation-delay: ' + (${movieStat.index} * 0.05) + 's'">
@@ -40,9 +44,11 @@
             <div class="movie-card-content">
                 <h3><a th:href="@{/user/movies/show/{title}(title=${movie.title})}"
                        th:text="${movie.title}">Название</a></h3>
-                <div class="badges"><span class="badge rating" th:text="${movie.rating}">8.2</span><span
-                        class="badge year" th:text="${#temporals.year(movie.releaseDate)}">2013</span><span
-                        class="badge genre" th:text="${movie.genre}">Комедия</span></div>
+                <div class="badges">
+                    <span class="badge rating" th:text="${movie.rating}">8.2</span>
+                    <span class="badge year" th:text="${#temporals.year(movie.releaseDate)}">2013</span>
+                    <span class="badge genre" th:text="${movie.genre}">Комедия</span>
+                </div>
                 <p class="price" th:text="${movie.price + ' ₽'}">329.99 ₽</p>
                 <div class="movie-actions">
                     <button class="icon-btn rating-btn" th:data-movie-title="${movie.title}"
@@ -60,21 +66,25 @@
                             корзине<br/><span class="go-to-cart">Перейти</span></button>
                     </div>
                     <button class="buy-now-btn" th:data-movie-title="${movie.title}"
-                            th:data-movie-price="${movie.price}" onclick="showBuyModal(this)">Купить сейчас
+                            th:data-movie-price="${movie.price}"
+                            onclick="showBuyModal(this)">Купить сейчас
                     </button>
                     <button class="remove-from-favourites-btn" th:data-movie-title="${movie.title}"
-                            onclick="removeFromFavourites(this)">🗑️ Удалить из избранного
+                            onclick="showRemoveModal(this.getAttribute('data-movie-title'))">🗑️ Удалить из избранного
                     </button>
                 </div>
             </div>
         </div>
     </div>
-    <div th:if="${favourites == null or favourites.isEmpty()}" class="empty-message"><h2>😔 В избранном пока ничего
-        нет</h2>
-        <p style="color: var(--text-muted);">Перейдите в каталог, чтобы добавить фильмы</p><a th:href="@{/user/movies}"
-                                                                                              class="browse-movies-btn">Перейти
-            в каталог</a></div>
+
+    <div th:if="${favourites == null or favourites.isEmpty()}" class="empty-message">
+        <h2>😔 В избранном пока ничего нет</h2>
+        <p style="color: var(--text-muted);">Перейдите в каталог, чтобы добавить фильмы</p>
+        <a th:href="@{/user/movies}" class="browse-movies-btn">Перейти в каталог</a>
+    </div>
 </main>
+
+<!-- Модалка очистки всего избранного -->
 <div id="clearFavouritesModal" class="modal">
     <div class="modal-content">
         <button class="modal-close" onclick="hideClearFavouritesModal()">×</button>
@@ -87,6 +97,8 @@
         </div>
     </div>
 </div>
+
+<!-- Модалка удаления одного фильма -->
 <div id="removeFavouritesModal" class="modal">
     <div class="modal-content">
         <button class="modal-close" onclick="hideRemoveModal()">×</button>
@@ -99,39 +111,113 @@
         </div>
     </div>
 </div>
+
 <th:block th:replace="~{fragments/modals :: buyModal}"></th:block>
 <th:block th:replace="~{fragments/modals :: ratingModal}"></th:block>
+
 <script th:src="@{/js/main.js}" defer></script>
 <script>
     let movieToRemove = '';
-    function removeFromFavourites(button) {
-        const movieTitle = button.getAttribute('data-movie-title');
-        if (!movieTitle) return;
-        button.disabled = true;
-        fetch('/user/favourites/remove/' + encodeURIComponent(movieTitle), { method: 'POST' })
-            .then(response => response.json())
-            .then(data => {
-                const movieCard = button.closest('.movie-card');
-                if (movieCard) movieCard.remove();
-                updateFavouritesCount();
-                showFlashMessage(data.message, 'success', true);
-                if (document.querySelectorAll('.movie-card').length === 0) window.location.reload();
-            })
-            .catch(() => showFlashMessage('Ошибка при удалении', 'error', true))
-            .finally(() => button.disabled = false);
+
+    function showRemoveModal(movieTitle) {
+        movieToRemove = movieTitle;
+        document.getElementById('removeMovieTitle').textContent = movieToRemove;
+        document.getElementById('removeFavouritesModal').style.display = 'flex';
     }
-    function showClearFavouritesModal() { document.getElementById('clearFavouritesModal').style.display = 'flex'; }
-    function hideClearFavouritesModal() { document.getElementById('clearFavouritesModal').style.display = 'none'; }
+
+    function hideRemoveModal() {
+        document.getElementById('removeFavouritesModal').style.display = 'none';
+        movieToRemove = '';
+    }
+
+    function confirmRemove() {
+        if (!movieToRemove) return;
+
+        const confirmBtn = document.querySelector('#removeFavouritesModal .modal-confirm-btn');
+        if (confirmBtn) {
+            confirmBtn.disabled = true;
+            confirmBtn.textContent = 'Удаляем...';
+        }
+
+        fetch('/user/favourites/remove/' + encodeURIComponent(movieToRemove), {
+            method: 'POST',
+            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+        })
+        .then(handleResponse)
+        .then(data => {
+            const cards = document.querySelectorAll('.movie-card');
+            for (let card of cards) {
+                const titleLink = card.querySelector('h3 a');
+                if (titleLink && titleLink.innerText === movieToRemove) {
+                    card.remove();
+                    break;
+                }
+            }
+
+            updateFavouritesCount();
+            const remaining = document.querySelectorAll('.movie-card').length;
+            const pageCountSpan = document.querySelector('.favourites-count span');
+            if (pageCountSpan) pageCountSpan.innerText = remaining;
+            const clearModalSpan = document.getElementById('favouritesItemsCount');
+            if (clearModalSpan) clearModalSpan.innerText = remaining;
+
+            showFlashMessage(data.message, 'success', true);
+            hideRemoveModal();
+
+            if (remaining === 0) {
+                window.location.reload();
+            }
+        })
+        .catch(error => showFlashMessage(error.message || 'Ошибка при удалении', 'error', true))
+        .finally(() => {
+            if (confirmBtn) {
+                confirmBtn.disabled = false;
+                confirmBtn.textContent = 'Удалить';
+            }
+        });
+    }
+
+    function showClearFavouritesModal() {
+        // Берём актуальное количество фильмов на странице
+        const currentCount = document.querySelectorAll('.movie-card').length;
+        const countSpan = document.getElementById('favouritesItemsCount');
+        if (countSpan) countSpan.innerText = currentCount;
+        document.getElementById('clearFavouritesModal').style.display = 'flex';
+    }
+
+    function hideClearFavouritesModal() {
+        document.getElementById('clearFavouritesModal').style.display = 'none';
+    }
+
     function clearFavourites() {
         const confirmBtn = document.querySelector('#clearFavouritesModal .modal-confirm-btn');
-        if (confirmBtn) { confirmBtn.textContent = 'Очищаем...'; confirmBtn.disabled = true; }
-        fetch('/user/favourites/clear', { method: 'POST' })
-            .then(response => { if (!response.ok) throw new Error(); showFlashMessage('Избранное успешно очищено!', 'success', true); setTimeout(() => window.location.href = '/user/favourites', 500); })
-            .catch(error => { showFlashMessage('Не удалось очистить избранное', 'error', true); if (confirmBtn) { confirmBtn.textContent = 'Очистить избранное'; confirmBtn.disabled = false; } hideClearFavouritesModal(); });
+        if (confirmBtn) {
+            confirmBtn.textContent = 'Очищаем...';
+            confirmBtn.disabled = true;
+        }
+
+        fetch('/user/favourites/clear', {
+            method: 'POST',
+            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+        })
+        .then(handleResponse)
+        .then(data => {
+            showFlashMessage(data.message || 'Избранное успешно очищено!', 'success', true);
+            document.querySelectorAll('.movie-card').forEach(card => card.remove());
+            updateFavouritesCount();
+            const pageCountSpan = document.querySelector('.favourites-count span');
+            if (pageCountSpan) pageCountSpan.innerText = 0;
+            window.location.reload();
+        })
+        .catch(error => {
+            showFlashMessage(error.message || 'Не удалось очистить избранное', 'error', true);
+            if (confirmBtn) {
+                confirmBtn.textContent = 'Очистить избранное';
+                confirmBtn.disabled = false;
+            }
+            hideClearFavouritesModal();
+        });
     }
-    function showRemoveModal(movieTitle) { movieToRemove = movieTitle; document.getElementById('removeMovieTitle').textContent = movieToRemove; document.getElementById('removeFavouritesModal').style.display = 'flex'; }
-    function hideRemoveModal() { document.getElementById('removeFavouritesModal').style.display = 'none'; movieToRemove = ''; }
-    function confirmRemove() { if (movieToRemove) { var form = document.createElement('form'); form.method = 'POST'; form.action = '/user/favourites/remove/' + encodeURIComponent(movieToRemove); document.body.appendChild(form); form.submit(); } }
 </script>
 </body>
 </html>

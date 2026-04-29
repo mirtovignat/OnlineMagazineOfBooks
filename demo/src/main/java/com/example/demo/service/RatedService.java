@@ -3,6 +3,7 @@ package com.example.demo.service;
 import com.example.demo.dto.joined_to_user.RatedMovieForOwnerFormDTO;
 import com.example.demo.dto.joined_to_user.RatedMovieForOwnerViewDTO;
 import com.example.demo.dto.joined_to_user.ReviewForUserViewDTO;
+import com.example.demo.exception.user.DataCoincidenceException;
 import com.example.demo.mapper.RatedMapper;
 import com.example.demo.model.Movie;
 import com.example.demo.model.RatedMovie;
@@ -30,66 +31,78 @@ public class RatedService {
     private final UserRepository userRepository;
     private final RatedMapper ratedMapper;
 
-    public boolean isRatedByUser(String title, String username) {
-        return ratedMovieRepository
-                .existsByUserUsernameAndMovieTitle(
-                        username,
-                        title
-                );
+    private boolean isUnchanged(RatedMovieForOwnerFormDTO ratedMovieForOwnerFormDTO, RatedMovie ratedMovie) {
+        return ratedMovieForOwnerFormDTO.rating().compareTo(ratedMovie.getRatingValue()) == 0
+                && (ratedMovieForOwnerFormDTO.review() == null ? ratedMovie.getReview() == null : ratedMovieForOwnerFormDTO.review().equals(ratedMovie.getReview()));
     }
 
+    private void throwIfNoChanges(boolean unchanged) {
+        if (unchanged) throw new DataCoincidenceException();
+    }
+
+    @Transactional(readOnly = true)
+    public RatedMovie findRatedMovieByUsernameAndTitle(String username, String title) {
+        return ratedMovieRepository.findByUsernameAndTitleOrThrow(username, title);
+    }
+
+    @Transactional(readOnly = true)
+    public boolean isRatedByUser(String title, String username) {
+        return ratedMovieRepository.existsByUserUsernameAndMovieTitle(username, title);
+    }
+
+    @Transactional(readOnly = true)
     public Page<RatedMovieForOwnerViewDTO> getRatedHistory(Pageable pageable, String username) {
         return ratedMovieRepository.findAllByUsername(pageable, username)
                 .map(ratedMapper::toOwnerView);
     }
 
+    @Transactional(readOnly = true)
     public List<ReviewForUserViewDTO> getMovieReviewsForUser(String title) {
         return ratedMovieRepository.findAllByMovieTitle(title)
-                .stream().map(ratedMapper::toReviewForUserView).collect(Collectors.toList());
+                .stream()
+                .map(ratedMapper::toReviewForUserView)
+                .collect(Collectors.toList());
     }
 
     @Transactional
-    public RatedMovieForOwnerViewDTO rate(RatedMovieForOwnerFormDTO dto, String username) {
-        Movie movie = movieRepository.findFullByTitleOrThrow(dto.title());
+    public void rate(RatedMovieForOwnerFormDTO ratedMovieForOwnerFormDTO, String username) {
+        Movie movie = movieRepository.findFullByTitleOrThrow(ratedMovieForOwnerFormDTO.title());
         User user = userRepository.findByUsernameOrThrow(username);
+
         RatedMovie ratedMovie = ratedMovieRepository
-                .findByUserUsernameAndMovieTitle(username, movie.getTitle())
+                .findByUsernameAndTitle(username, movie.getTitle())
                 .orElseGet(() -> {
-                    RatedMovie rm = new RatedMovie();
-                    rm.setMovie(movie);
-                    rm.setUser(user);
-                    return rm;
+                    RatedMovie newRatedMovie = new RatedMovie();
+                    newRatedMovie.setMovie(movie);
+                    newRatedMovie.setUser(user);
+                    return newRatedMovie;
                 });
+
         boolean isNew = ratedMovie.getId() == null;
-        ratedMovie.setRatingValue(dto.rating());
-        ratedMovie.setReview(dto.review());
-        ratedMovie = ratedMovieRepository.save(ratedMovie);
-        updateMovieRating(movie);
+        if (!isNew) {
+            throwIfNoChanges(isUnchanged(ratedMovieForOwnerFormDTO, ratedMovie));
+        }
+
+        ratedMovie.setRatingValue(ratedMovieForOwnerFormDTO.rating());
+        ratedMovie.setReview(ratedMovieForOwnerFormDTO.review());
+        ratedMovieRepository.save(ratedMovie);
+
         if (isNew) {
             movie.setRatingsCount(movie.getRatingsCount() + 1);
             movieRepository.save(movie);
         }
-        return ratedMapper.toOwnerView(ratedMovie);
+
+        updateMovieRating(movie);
     }
 
     @Transactional
-    public RatedMovieForOwnerViewDTO updateRating(RatedMovieForOwnerFormDTO ratedMovieForOwnerFormDTO,
-                                                  String username) {
-        RatedMovie ratedMovie = ratedMovieRepository.findByUserUsernameAndMovieTitleOrThrow(
-                username, ratedMovieForOwnerFormDTO.title());
+    public void updateRating(RatedMovieForOwnerFormDTO ratedMovieForOwnerFormDTO, String username) {
+        RatedMovie ratedMovie = findRatedMovieByUsernameAndTitle(username, ratedMovieForOwnerFormDTO.title());
+        throwIfNoChanges(isUnchanged(ratedMovieForOwnerFormDTO, ratedMovie));
         ratedMovie.setRatingValue(ratedMovieForOwnerFormDTO.rating());
         ratedMovie.setReview(ratedMovieForOwnerFormDTO.review());
-        ratedMovie = ratedMovieRepository.save(ratedMovie);
+        ratedMovieRepository.save(ratedMovie);
         updateMovieRating(ratedMovie.getMovie());
-        return ratedMapper.toOwnerView(ratedMovie);
-    }
-
-    @Transactional
-    private void updateMovieRating(Movie movie) {
-        BigDecimal avg = ratedMovieRepository.calculateAverageRating(movie);
-        if (avg != null) movie.setRating(avg.setScale(1, RoundingMode.HALF_UP));
-        else movie.setRating(null);
-        movieRepository.save(movie);
     }
 
     @Transactional
@@ -101,4 +114,13 @@ public class RatedService {
         movieRepository.save(movie);
     }
 
+    private void updateMovieRating(Movie movie) {
+        BigDecimal avg = ratedMovieRepository.calculateAverageRating(movie);
+        if (avg != null) {
+            movie.setRating(avg.setScale(1, RoundingMode.HALF_UP));
+        } else {
+            movie.setRating(null);
+        }
+        movieRepository.save(movie);
+    }
 }

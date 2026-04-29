@@ -1,7 +1,6 @@
 package com.example.demo.repository;
 
 import com.example.demo.model.Movie;
-import jakarta.persistence.EntityNotFoundException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;
@@ -27,9 +26,11 @@ public interface MovieRepository extends JpaRepository<Movie, Long>, JpaSpecific
     Optional<Movie> findFullByTitle(@Param("title") String title);
 
     default Movie findFullByTitleOrThrow(String title) {
-        return findFullByTitle(title)
-                .orElseThrow(() -> new EntityNotFoundException("Фильм не найден по названию: "
-                        + title));
+//        return findFullByTitle(title)
+//                .orElseThrow(() -> new EntityNotFoundException(
+//                        "Фильм не найден по названию: "
+//                                + title));
+        return findFullByTitle(title).get();
     }
 
     @EntityGraph(attributePaths = {"purchases"})

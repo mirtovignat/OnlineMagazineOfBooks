@@ -29,7 +29,7 @@ public class PurchasesController {
         return "redirect:" + httpServletRequest.getHeader("Referer");
     }
 
-    @GetMapping("/add/{title}")
+    @PostMapping("/add/{title}")
     public String buyMovie(HttpServletRequest httpServletRequest,
                            RedirectAttributes redirectAttributes,
                            @PathVariable("title") String title,

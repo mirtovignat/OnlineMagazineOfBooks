@@ -5,8 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title th:text="${card.title}">Фильм — Cinema Service</title>
     <link rel="icon" type="image/x-icon" th:href="@{/favicon.ico}">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700&display=swap"
-          rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" th:href="@{/css/main.css}">
     <style>
         .movie-details{max-width:1200px;margin:2rem auto;padding:0 2rem;display:flex;gap:3rem;}
@@ -18,58 +17,42 @@
         .action-buttons{display:flex;gap:1rem;margin-top:0.5rem;width:100%;}
         .cart-button,.buy-button,.bought-message{display:inline-block;padding:0.9rem 1.5rem;border-radius:60px;font-weight:600;font-size:1rem;text-align:center;border:none;cursor:pointer;transition:0.2s;text-decoration:none;}
         .to-cart-btn-details{background:linear-gradient(135deg,var(--glow-primary),#1d4ed8);color:white;}
-        .to-cart-btn-details:hover{transform:translateY(-2px);box-shadow:0 10px 20px rgba(59,130,246,0.4);}
         .in-cart-btn-details{background:linear-gradient(135deg,var(--glow-success),#059669);color:white;}
-        .in-cart-btn-details:hover{transform:translateY(-2px);box-shadow:0 10px 20px rgba(16,185,129,0.4);}
         .buy-button{background:linear-gradient(135deg,var(--glow-success),#059669);color:white;}
-        .buy-button:hover{transform:translateY(-2px);box-shadow:0 10px 20px rgba(16,185,129,0.4);}
         .bought-message{background:#64748b;color:white;cursor:default;}
         @media (max-width:900px){.movie-details{flex-direction:column;align-items:center;}.movie-poster-placeholder{width:300px;}}
         @media (max-width:600px){.action-buttons{flex-direction:column;}header{flex-direction:column;align-items:stretch;}.header-actions{justify-content:center;}}
     </style>
 </head>
 <body>
-
 <th:block th:replace="~{fragments/header :: header}"></th:block>
 <th:block th:replace="~{fragments/flash-messages :: flashMessages}"></th:block>
-
 <main class="movie-details">
     <div class="movie-poster-placeholder"><span>📽️ Постер</span></div>
     <div class="movie-info">
         <h1 class="movie-title" th:text="${card.title}">Название</h1>
-        <div class="badges"><span class="badge rating" th:text="${card.rating ?: '-'}">8.2</span><span
-                class="badge year" th:text="${card.releaseYear ?: '-'}">2013</span><span class="badge genre"
-                                                                                         th:text="${card.genre ?: '-'}">Комедия</span>
+        <div class="badges">
+            <span class="badge rating" th:attr="data-movie-title=${card.title}" th:text="${card.rating != null ? card.rating : '-'}">-</span>
+            <span class="badge year" th:text="${card.releaseYear ?: '-'}">2013</span>
+            <span class="badge genre" th:text="${card.genre ?: '-'}">Комедия</span>
         </div>
         <div class="director-block"><span class="director-name" th:text="${card.director}">Мартин Скорсезе</span></div>
-        <p class="movie-duration"><strong>Длительность:</strong> <span
-                th:text="${card.formattedDuration}">3:00:00</span></p>
+        <p class="movie-duration"><strong>Длительность:</strong> <span th:text="${card.formattedDuration}">3:00:00</span></p>
         <p class="movie-price" th:text="${card.price + ' ₽'}">329.99 ₽</p>
         <div class="icon-group">
-            <button class="icon-btn favourite-btn" th:classappend="${card.inFavourites} ? 'active' : ''"
-                    th:data-movie-title="${card.title}" th:data-action="${card.inFavourites} ? 'remove' : 'add'"
-                    onclick="toggleFavourite(this)" title="Добавить в избранное"><span
-                    th:text="${card.inFavourites} ? '♥' : '♡'"></span></button>
-            <button class="icon-btn rating-btn" th:data-movie-title="${card.title}" onclick="showRatingModal(this)"
-                    title="Оценить фильм">☆
-            </button>
-            <a th:href="@{/user/rated/{title}/reviews(title=${card.title})}" class="icon-btn comment-btn"
-               title="Отзывы">💬</a>
+            <button class="icon-btn favourite-btn" th:classappend="${card.inFavourites} ? 'active' : ''" th:data-movie-title="${card.title}" th:data-action="${card.inFavourites} ? 'remove' : 'add'" onclick="toggleFavourite(this)" title="Добавить в избранное"><span th:text="${card.inFavourites} ? '♥' : '♡'"></span></button>
+            <button class="icon-btn rating-btn" th:data-movie-title="${card.title}" onclick="showRatingModal(this, 'add', 5.0, '')" title="Оценить фильм">☆</button>
+            <a th:href="@{/user/rated/{title}/reviews(title=${card.title})}" class="icon-btn comment-btn" title="Отзывы">💬</a>
         </div>
         <p class="movie-description" th:text="${card.description}">Описание фильма...</p>
         <div class="action-buttons" th:if="${!card.bought}">
             <div th:if="${!card.inCart}">
-                <button class="cart-button to-cart-btn-details" th:data-movie-title="${card.title}"
-                        onclick="addToCart(this)">В корзину
-                </button>
+                <button class="cart-button to-cart-btn-details" th:data-movie-title="${card.title}" onclick="addToCart(this)">В корзину</button>
             </div>
             <div th:if="${card.inCart}">
-                <button class="cart-button in-cart-btn-details" onclick="window.location.href='/user/cart'">В
-                    корзине<br/><span class="go-to-cart">Перейти</span></button>
+                <button class="cart-button in-cart-btn-details" onclick="window.location.href='/user/cart'">В корзине<br/><span class="go-to-cart">Перейти</span></button>
             </div>
-            <button class="buy-button" th:data-movie-title="${card.title}" th:data-movie-price="${card.price}"
-                    onclick="showBuyModal(this)">Купить сейчас
-            </button>
+            <button class="buy-button" th:data-movie-title="${card.title}" th:data-movie-price="${card.price}" onclick="showBuyModal(this)">Купить сейчас</button>
         </div>
         <span th:if="${card.bought}" class="bought-message">✓ У вас уже куплен этот фильм</span>
     </div>

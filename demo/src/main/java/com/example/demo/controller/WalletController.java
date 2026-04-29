@@ -40,16 +40,22 @@ public class WalletController {
                         @SessionAttribute UserForOwnerViewDTO userForOwnerViewDTO,
                         HttpSession session,
                         RedirectAttributes redirectAttributes) {
+
         if (bindingResult.hasErrors()) {
-            redirectAttributes.addFlashAttribute("errorMessage", "Некорректная сумма. Введите число больше 0.");
+            redirectAttributes.addFlashAttribute("errorMessage", "Сумма должна быть положительной (минимум 0.01)");
             return "redirect:/user/top-up";
         }
+
         User user = userService.findUserByUsername(userForOwnerViewDTO.username());
-        userService.topUp(topUpFormDTO, user);
-        User updatedUser = userRepository.findByUsernameOrThrow(userForOwnerViewDTO.username());
-        UserForOwnerViewDTO updatedDTO = userMapper.toOwnerView(updatedUser);
-        session.setAttribute("userForOwnerViewDTO", updatedDTO);
-        redirectAttributes.addFlashAttribute("successMessage", "Счёт успешно пополнен!");
+        try {
+            userService.topUp(topUpFormDTO, user);
+            User updatedUser = userRepository.findByUsernameOrThrow(userForOwnerViewDTO.username());
+            UserForOwnerViewDTO updatedDTO = userMapper.toOwnerView(updatedUser);
+            session.setAttribute("userForOwnerViewDTO", updatedDTO);
+            redirectAttributes.addFlashAttribute("successMessage", "Счёт успешно пополнен!");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
+        }
         return "redirect:/user/top-up";
     }
 }
