@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>История покупок — Cinema Service</title>
+    <link rel="icon" type="image/x-icon" th:href="@{/favicon.ico}">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700&display=swap"
+          rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/main.css}">
+    <style>
+        .history-container{max-width:1200px;margin:2rem auto;padding:0 2rem;}
+        .history-container h1{font-size:2.5rem;font-weight:700;background:linear-gradient(135deg,#e0e7ff,#a78bfa);-webkit-background-clip:text;background-clip:text;color:transparent;margin-bottom:2rem;}
+        .history-table{width:100%;border-collapse:separate;border-spacing:0 0.75rem;}
+        .history-table thead th{text-align:left;padding:1rem 0.5rem;font-weight:600;color:var(--text-muted);text-transform:uppercase;font-size:0.8rem;letter-spacing:0.5px;}
+        .history-table tbody tr{background:var(--card-bg);backdrop-filter:blur(4px);border-radius:20px;transition:all 0.2s;}
+        .history-table tbody tr:hover{transform:scale(1.005);box-shadow:0 8px 20px rgba(0,0,0,0.3);}
+        .history-table td{padding:1rem 0.5rem;border-top:1px solid rgba(255,255,255,0.05);vertical-align:middle;}
+        .history-table td:first-child{border-top-left-radius:20px;border-bottom-left-radius:20px;}
+        .history-table td:last-child{border-top-right-radius:20px;border-bottom-right-radius:20px;}
+        .movie-link{color:#c084fc;font-weight:600;text-decoration:none;}.movie-link:hover{text-decoration:underline;}
+        .price{font-weight:700;color:var(--glow-success);}
+        .poster-thumb{width:50px;height:75px;object-fit:cover;border-radius:8px;background:#2d3748;}
+        .poster-placeholder{width:50px;height:75px;background:#2d3748;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:0.6rem;color:#718096;}
+        .movie-meta-info{font-size:0.75rem;color:#7e8a98;margin-top:4px;}
+        .movie-meta-info span{margin-right:6px;}
+        .empty-state{text-align:center;padding:4rem 2rem;background:var(--card-bg);border-radius:32px;border:1px solid var(--glass-border);}
+        .empty-state p{color:var(--text-muted);font-size:1.2rem;margin-bottom:2rem;}
+        .btn{background:var(--glow-primary);color:white;padding:0.9rem 2.2rem;border-radius:60px;text-decoration:none;font-weight:600;display:inline-block;transition:0.2s;}
+        .btn:hover{transform:translateY(-3px);box-shadow:0 8px 20px rgba(59,130,246,0.4);}
+        @media (max-width:768px){
+            .history-table,.history-table thead,.history-table tbody,.history-table tr,.history-table td{display:block;}
+            .history-table thead{display:none;}
+            .history-table tbody tr{margin-bottom:1rem;padding:1rem;border-radius:20px;}
+            .history-table td{padding:0.5rem 0;border:none;display:flex;justify-content:space-between;align-items:center;}
+            .history-table td::before{content:attr(data-label);font-weight:600;color:var(--text-muted);width:40%;flex-shrink:0;}
+            .poster-thumb,.poster-placeholder{width:40px;height:60px;}
+        }
+    </style>
+</head>
+<body>
+<th:block th:replace="~{fragments/header :: header}"></th:block>
+<th:block th:replace="~{fragments/flash-messages :: flashMessages}"></th:block>
+<main class="history-container">
+    <h1>История покупок</h1>
+    <div th:if="${history != null and not history.empty}">
+        <table class="history-table">
+            <thead>
+            <tr>
+                <th>Постер</th>
+                <th>Название</th>
+                <th>Рейтинг</th>
+                <th>Оценок</th>
+                <th>Дата покупки</th>
+                <th>Цена</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="purchase : ${history.content}">
+                <td data-label="Постер">
+                    <img th:if="${purchase.posterUrl != null and !purchase.posterUrl.isEmpty()}"
+                         th:src="${purchase.posterUrl}" class="poster-thumb" alt="Постер"/>
+                    <div th:unless="${purchase.posterUrl != null and !purchase.posterUrl.isEmpty()}"
+                         class="poster-placeholder">Нет
+                    </div>
+                </td>
+                <td data-label="Название">
+                    <a th:href="@{/movies/{id}(id=${purchase.id})}" class="movie-link" th:text="${purchase.title}">Название</a>
+                    <div class="movie-meta-info">
+                        <span th:if="${purchase.releaseDate != null}" th:text="${purchase.releaseDate.year}">2026</span>
+                        <span th:if="${purchase.genre != null}" th:text="|• ${purchase.genre}|">• Комедия</span>
+                        <span th:if="${purchase.formattedDuration != null}" th:text="|• ${purchase.formattedDuration}|">• 1ч 45мин</span>
+                        <span th:if="${purchase.director != null and !purchase.director.isEmpty()}"
+                              th:text="|• Реж. ${purchase.director}|">• Реж. Имя</span>
+                    </div>
+                </td>
+                <td data-label="Рейтинг"
+                    th:text="${purchase.rating != null} ? ${#numbers.formatDecimal(purchase.rating, 1, 1)} : '—'">7.9
+                </td>
+                <td data-label="Оценок" th:text="${purchase.ratingsCount != null} ? ${purchase.ratingsCount} : '0'">0
+                </td>
+                <td data-label="Дата покупки"
+                    th:text="${#temporals.format(purchase.purchasedAt, 'dd MMM yyyy, HH:mm')}">1 янв 2026, 15:30
+                </td>
+                <td data-label="Цена" class="price" th:text="${purchase.priceSnapshot + ' ₽'}">329.99 ₽</td>
+            </tr>
+            </tbody>
+        </table>
+        <th:block th:replace="~{fragments/pagination :: pager(page=${history}, url='/history')}"></th:block>
+    </div>
+    <div th:if="${history == null or history.empty}" class="empty-state"><p>У вас пока нет купленных фильмов</p><a
+            href="/" class="btn">Перейти к каталогу</a></div>
+</main>
+
+<script th:src="@{/js/main.js}" defer></script>
+
+
+<th:block th:replace="~{fragments/footer :: footer}"></th:block>
+
+</body>
+</html>

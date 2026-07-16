@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="">
+<body>
+
+<div th:fragment="pager(page, url)" class="pagination" th:if="${page != null and page.totalPages > 1}">
+    <a th:if="${page.hasPrevious()}"
+       th:href="@{{path}(path=${url}, page=${page.number - 1})}"
+       class="page-nav">&larr; Предыдущая</a>
+
+    <div class="page-info">
+        Страница <strong th:text="${page.number + 1}">1</strong> из <span th:text="${page.totalPages}">1</span>
+    </div>
+
+    <a th:if="${page.hasNext()}"
+       th:href="@{{path}(path=${url}, page=${page.number + 1})}"
+       class="page-nav">Следующая &rarr;</a>
+</div>
+
+</body>
+</html>

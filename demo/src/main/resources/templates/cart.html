@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Корзина — Cinema Service</title>
+    <link rel="icon" type="image/x-icon" th:href="@{/favicon.ico}">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700&display=swap"
+          rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/main.css}">
+    <style>
+        .cart-header{text-align:center;padding:2rem 1rem 1rem;}
+        .cart-header h2{font-size:2.5rem;font-weight:700;background:linear-gradient(135deg,#e0e7ff,#a78bfa);-webkit-background-clip:text;background-clip:text;color:transparent;}
+        .cart-count{display:inline-block;background:var(--card-bg);padding:0.5rem 1.5rem;border-radius:60px;border:1px solid var(--glass-border);}
+        .clear-cart-section{text-align:center;margin:2rem 0;}
+        .clear-cart-btn{background:transparent;border:1px solid var(--glow-danger);color:var(--glow-danger);padding:0.75rem 2rem;border-radius:60px;font-weight:600;cursor:pointer;transition:0.2s;}
+        .clear-cart-btn:hover{background:var(--glow-danger);color:white;box-shadow:0 0 12px #f43f5e;}
+        .checkout-btn{background:linear-gradient(135deg,var(--glow-primary),#1d4ed8);color:white;border:none;padding:1rem 3rem;border-radius:60px;font-weight:700;font-size:1.2rem;cursor:pointer;margin:2rem auto;display:inline-flex;align-items:center;gap:0.75rem;transition:0.2s;}
+        .checkout-btn:hover{transform:translateY(-3px);box-shadow:0 12px 28px rgba(59,130,246,0.5);}
+        .empty-cart-message{text-align:center;padding:5rem 1rem;}
+        .empty-cart-message h3{font-size:2rem;color:var(--text-muted);}
+        .browse-movies-btn{background:var(--glow-primary);color:white;padding:1rem 2.5rem;border-radius:60px;text-decoration:none;font-weight:600;display:inline-block;margin-top:2rem;}
+        .movie-poster-img{width:100%;aspect-ratio:2/3;object-fit:cover;border-bottom:1px solid var(--glass-border);transition:opacity 0.2s;}
+        .movie-poster-link:hover .movie-poster-img{opacity:0.8;}
+        .movie-attributes {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.4rem 1rem;
+            margin-bottom: 0.8rem;
+        }
+        .attr-item { display: flex; flex-direction: column; }
+        .attr-label { font-size: 0.6rem; text-transform: uppercase; letter-spacing: 0.5px; color: #94a3b8; }
+        .attr-value { font-size: 0.9rem; font-weight: 500; color: #eef2ff; }
+        .badge-rating { background: rgba(251,191,36,0.2); color: #fde047; padding: 0.1rem 0.6rem; border-radius: 40px; display: inline-block; }
+        .badge-year { background: rgba(52,211,153,0.2); color: #6ee7b7; padding: 0.1rem 0.6rem; border-radius: 40px; display: inline-block; }
+        .badge-genre { background: rgba(96,165,250,0.2); color: #93c5fd; padding: 0.1rem 0.6rem; border-radius: 40px; display: inline-block; }
+        .price-label { font-size: 0.75rem; color: #94a3b8; margin-top: 0.5rem; }
+        .price { font-size: 1.6rem; font-weight: 700; color: #c084fc; margin: 0.2rem 0 0.8rem; }
+        .movie-added-at {
+            font-size:0.75rem;
+            color:#94a3b8;
+            margin-top:0.25rem;
+        }
+        .movie-added-at strong {
+            color:#c084fc;
+            font-weight:500;
+        }
+    </style>
+</head>
+<body>
+<th:block th:replace="~{fragments/header :: header}"></th:block>
+<div class="cart-header"><h2>🛒 Ваша корзина</h2>
+    <div class="cart-count">Количество фильмов: <span th:text="${cartCount}">0</span></div>
+</div>
+<th:block th:replace="~{fragments/flash-messages :: flashMessages}"></th:block>
+<main>
+    <div th:if="${cart == null or cart.isEmpty()}" class="empty-cart-message">
+        <h3>😔 Корзина пуста</h3>
+        <p style="color: var(--text-muted);">Вы еще не добавили ни одного фильма.</p>
+        <a th:href="@{/}" class="browse-movies-btn">Перейти к каталогу</a>
+    </div>
+    <div th:unless="${cart == null or cart.isEmpty()}">
+        <div class="clear-cart-section">
+            <button class="clear-cart-btn" onclick="showClearCartModal()">🗑️ Очистить всю корзину</button>
+        </div>
+
+        <form th:action="@{/orders/add/bulk}" method="post" style="text-align:center;"
+              th:with="totalPrice=${#aggregates.sum(cart.![unitPriceSnapshot()])}">
+            <input type="hidden" name="movieIds" th:each="cartMovie : ${cart}" th:value="${cartMovie.id}"/>
+            <button type="submit" class="checkout-btn">
+                <span class="btn-text">🛒 Оформить заказ</span>
+                <span class="btn-price" th:text="${totalPrice} + ' ₽'">0 ₽</span>
+            </button>
+        </form>
+
+        <div class="movies-grid">
+            <div class="movie-card" th:each="cartMovie : ${cart}"
+                 th:style="'animation-delay: ' + (${cartMovieStat.index} * 0.05) + 's'">
+                <a class="movie-poster-link" th:href="@{/movies/{id}(id=${cartMovie.id})}">
+                    <img th:if="${cartMovie.posterUrl != null and !cartMovie.posterUrl.isEmpty()}"
+                         th:src="${cartMovie.posterUrl}" class="movie-poster-img" alt="Постер" src=""/>
+                    <div th:unless="${cartMovie.posterUrl != null and !cartMovie.posterUrl.isEmpty()}"
+                         class="movie-poster-placeholder"><span>📽️ Постер</span></div>
+                </a>
+                <div class="movie-card-content">
+                    <h3><a th:href="@{/movies/{id}(id=${cartMovie.id})}" th:text="${cartMovie.title}">Название
+                        фильма</a></h3>
+
+                    <div class="movie-attributes">
+                        <div class="attr-item">
+                            <span class="attr-label">Рейтинг</span>
+                            <span class="attr-value badge-rating"
+                                  th:data-movie-id="${cartMovie.id}"
+                                  th:text="${cartMovie.rating != null ? '★ ' + #numbers.formatDecimal(cartMovie.rating, 1, 1) + ' / 10' : '-'}">-</span>
+                        </div>
+                        <div class="attr-item">
+                            <span class="attr-label">Год</span>
+                            <span class="attr-value badge-year" th:text="${cartMovie.releaseYear}">-</span>
+                        </div>
+                        <div class="attr-item">
+                            <span class="attr-label">Жанр</span>
+                            <span class="attr-value badge-genre" th:text="${cartMovie.genre}">-</span>
+                        </div>
+                        <div class="attr-item" th:if="${cartMovie.director != null}">
+                            <span class="attr-label">Режиссёр</span>
+                            <span class="attr-value" th:text="${cartMovie.director}">-</span>
+                        </div>
+                        <div class="attr-item" th:if="${cartMovie.formattedDuration != null}">
+                            <span class="attr-label">Длительность</span>
+                            <span class="attr-value" th:text="${cartMovie.formattedDuration}">-</span>
+                        </div>
+                    </div>
+
+                    <div class="price-label">Стоимость</div>
+                    <div class="price" th:text="${cartMovie.unitPriceSnapshot + ' ₽'}">329.99 ₽</div>
+
+                    <div class="movie-added-at" th:if="${cartMovie.addedAt != null}">
+                        <strong>Добавлен:</strong>
+                        <span th:text="${#temporals.format(cartMovie.addedAt, 'dd MMM yyyy, HH:mm')}">15 мар 2026, 18:30</span>
+                    </div>
+
+                    <div class="movie-actions">
+                        <button class="icon-btn favourite-btn" th:data-movie-id="${cartMovie.id}"
+                                th:data-action="${cartMovie.inFavourites ? 'remove' : 'add'}"
+                                onclick="toggleFavourite(this)" title="Добавить в избранное">
+                            <span th:text="${cartMovie.inFavourites ? '♥' : '♡'}"></span>
+                        </button>
+                        <button class="icon-btn remove-btn" th:data-movie-id="${cartMovie.id}"
+                                th:data-movie-title="${cartMovie.title}"
+                                onclick="showRemoveCartModal(this.getAttribute('data-movie-id'), this.getAttribute('data-movie-title'))"
+                                title="Удалить из корзины">🗑️
+                        </button>
+                    </div>
+                    <div class="purchase-buttons">
+                        <button class="buy-now-btn" th:data-movie-id="${cartMovie.id}"
+                                th:data-movie-price="${cartMovie.unitPriceSnapshot}" onclick="showBuyModal(this)">
+                            Купить сейчас
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<div id="clearCartModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>Очистка корзины</h2>
+            <button class="modal-x" onclick="hideClearCartModal()">✕</button>
+        </div>
+        <p>Вы уверены, что хотите очистить всю корзину?</p>
+        <p>Будет удалено <span id="cartItemsCount" th:text="${cartCount}">0</span> фильмов.</p>
+        <div class="modal-buttons">
+            <button class="modal-cancel-btn" onclick="hideClearCartModal()">Отмена</button>
+            <button class="modal-confirm-btn" onclick="clearCart()">Очистить корзину</button>
+        </div>
+    </div>
+</div>
+
+<div id="removeCartItemModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>Удаление из корзины</h2>
+            <button class="modal-x" onclick="hideRemoveCartModal()">✕</button>
+        </div>
+        <p>Вы уверены, что хотите удалить этот фильм из корзины?</p>
+        <p style="font-weight:600; margin-top:0.5rem;" id="removeCartMovieTitle"></p>
+        <div class="modal-buttons">
+            <button class="modal-cancel-btn" onclick="hideRemoveCartModal()">Отмена</button>
+            <button class="modal-confirm-btn" onclick="confirmRemoveCart()">Удалить</button>
+        </div>
+    </div>
+</div>
+
+<th:block th:replace="~{fragments/modals :: buyModal}"></th:block>
+<th:block th:replace="~{fragments/modals :: ratingModal}"></th:block>
+
+<script th:src="@{/js/main.js}" defer></script>
+<script>
+    let cartItemToRemoveId = '';
+
+    function showRemoveCartModal(movieId, movieTitle) {
+        cartItemToRemoveId = movieId;
+        document.getElementById('removeCartMovieTitle').textContent = movieTitle;
+        document.getElementById('removeCartItemModal').classList.add('show');
+    }
+
+    function hideRemoveCartModal() {
+        document.getElementById('removeCartItemModal').classList.remove('show');
+        cartItemToRemoveId = '';
+    }
+
+    function confirmRemoveCart() {
+        if (!cartItemToRemoveId) return;
+        const btn = document.querySelector('#removeCartItemModal .modal-confirm-btn');
+        if (btn) { btn.textContent = 'Удаляем...'; btn.disabled = true; }
+
+        fetch('/cart/remove/' + encodeURIComponent(cartItemToRemoveId), {
+            method: 'POST',
+            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+        })
+        .then(handleResponse)
+        .then(data => {
+            sessionStorage.setItem('flashMessage', JSON.stringify({ message: data.message || 'Фильм удалён из корзины', type: 'success' }));
+            hideRemoveCartModal();
+            window.location.reload();
+        })
+        .catch(error => {
+            showFlashMessage(error.message || 'Не удалось удалить', 'error', true);
+            if (btn) { btn.textContent = 'Удалить'; btn.disabled = false; }
+            hideRemoveCartModal();
+        });
+    }
+
+    function showClearCartModal() {
+        document.getElementById('clearCartModal').classList.add('show');
+    }
+
+    function hideClearCartModal() {
+        document.getElementById('clearCartModal').classList.remove('show');
+    }
+
+    function clearCart() {
+        const confirmBtn = document.querySelector('#clearCartModal .modal-confirm-btn');
+        if (confirmBtn) { confirmBtn.textContent = 'Очищаем...'; confirmBtn.disabled = true; }
+        fetch('/cart/clear', {
+            method: 'POST',
+            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+        })
+        .then(handleResponse)
+        .then(data => {
+            sessionStorage.setItem('flashMessage', JSON.stringify({ message: data.message || 'Корзина успешно очищена!', type: 'success' }));
+            hideClearCartModal();
+            window.location.reload();
+        })
+        .catch(error => {
+            showFlashMessage(error.message || 'Не удалось очистить корзину', 'error', true);
+            if (confirmBtn) { confirmBtn.textContent = 'Очистить корзину'; confirmBtn.disabled = false; }
+            hideClearCartModal();
+        });
+    }
+</script>
+
+<th:block th:replace="~{fragments/footer :: footer}"></th:block>
+
+</body>
+</html>

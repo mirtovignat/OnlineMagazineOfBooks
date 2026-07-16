@@ -1,0 +1,17 @@
+<div th:fragment="flashMessages" xmlns:th="http://www.w3.org/1999/xhtml">
+    <div class="flash-messages-container" id="flash-messages-container">
+        <div th:if="${successMessage}" class="flash-message success" th:text="${successMessage}"></div>
+        <div th:if="${errorMessage}" class="flash-message error" th:text="${errorMessage}"></div>
+        <div th:if="${infoMessage}" class="flash-message info" th:text="${infoMessage}"></div>
+    </div>
+
+    <script>
+        setTimeout(() => {
+            document.querySelectorAll('#flash-messages-container .flash-message').forEach(msg => {
+                msg.style.transition = 'opacity 0.5s ease';
+                msg.style.opacity = '0';
+                setTimeout(() => msg.remove(), 500);
+            });
+        }, 5000);
+    </script>
+</div>

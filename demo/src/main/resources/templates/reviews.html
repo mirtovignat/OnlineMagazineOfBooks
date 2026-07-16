@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Отзывы — Cinema Service</title>
+    <link rel="icon" type="image/x-icon" th:href="@{/favicon.ico}">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700&display=swap"
+          rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/main.css}">
+    <style>
+        .reviews-container {
+            max-width: 860px;
+            margin: 2rem auto;
+            padding: 2rem;
+            background: rgba(15,23,42,0.6);
+            border-radius: 32px;
+            border: 1px solid rgba(72,187,255,0.2);
+            backdrop-filter: blur(4px);
+        }
+        .reviews-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+        .reviews-header h1 {
+            font-size: 2rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #e0e7ff, #a78bfa);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            margin: 0;
+        }
+        .movie-rating-summary {
+            background: rgba(251,191,36,0.15);
+            border: 1px solid rgba(251,191,36,0.3);
+            border-radius: 60px;
+            padding: 0.4rem 1.2rem;
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            font-weight: 600;
+            color: #fcd34d;
+            font-size: 1.1rem;
+        }
+        .movie-rating-summary .count {
+            color: #94a3b8;
+            font-weight: 400;
+            font-size: 0.85rem;
+        }
+        .add-review-btn {
+            background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+            color: white;
+            border: none;
+            padding: 0.8rem 2rem;
+            border-radius: 60px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.2s;
+            margin-bottom: 0.5rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 1rem;
+        }
+        .add-review-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(59,130,246,0.4);
+        }
+        .review-card {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 24px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            transition: all 0.25s ease;
+            backdrop-filter: blur(2px);
+            animation: fadeSlideUp 0.4s ease forwards;
+            opacity: 0;
+            transform: translateY(12px);
+        }
+        .review-card:hover {
+            background: rgba(255,255,255,0.06);
+            border-color: rgba(96,165,250,0.3);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+        }
+        @keyframes fadeSlideUp {
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .review-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.8rem;
+        }
+        .review-user {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+        }
+        .avatar {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #4f46e5, #7c3aed);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 1.2rem;
+            color: white;
+            text-transform: uppercase;
+            flex-shrink: 0;
+            box-shadow: 0 4px 12px rgba(79,70,229,0.3);
+        }
+        .review-username {
+            font-weight: 600;
+            color: #e2e8f0;
+            font-size: 1.05rem;
+        }
+        .review-meta {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        .review-rating {
+            background: rgba(251,191,36,0.2);
+            color: #fbbf24;
+            padding: 0.2rem 0.8rem;
+            border-radius: 40px;
+            font-weight: 700;
+            font-size: 0.9rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.3rem;
+        }
+        .review-date {
+            color: #94a3b8;
+            font-size: 0.8rem;
+            white-space: nowrap;
+        }
+        .review-text {
+            color: #e2e8f0;
+            line-height: 1.7;
+            font-size: 0.98rem;
+            margin-top: 0.4rem;
+            padding-right: 0.5rem;
+        }
+        .review-actions {
+            margin-top: 1rem;
+            display: flex;
+            gap: 0.75rem;
+            justify-content: flex-end;
+            border-top: 1px solid rgba(255,255,255,0.05);
+            padding-top: 1rem;
+        }
+        .btn-edit, .btn-delete {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            padding: 0.35rem 1.2rem;
+            border-radius: 40px;
+            font-weight: 500;
+            font-size: 0.85rem;
+            text-decoration: none;
+            border: none;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .btn-edit {
+            background: rgba(59,130,246,0.15);
+            color: #60a5fa;
+            border: 1px solid rgba(59,130,246,0.25);
+        }
+        .btn-edit:hover {
+            background: #3b82f6;
+            color: white;
+            transform: scale(1.03);
+        }
+        .btn-delete {
+            background: rgba(239,68,68,0.12);
+            color: #f87171;
+            border: 1px solid rgba(239,68,68,0.2);
+        }
+        .btn-delete:hover {
+            background: #ef4444;
+            color: white;
+            transform: scale(1.03);
+        }
+        .no-reviews {
+            text-align: center;
+            padding: 3rem 1rem;
+            color: #94a3b8;
+            font-size: 1.1rem;
+            border: 1px dashed rgba(255,255,255,0.1);
+            border-radius: 24px;
+            background: rgba(0,0,0,0.15);
+        }
+        .no-reviews span {
+            font-size: 2.5rem;
+            display: block;
+            margin-bottom: 0.5rem;
+        }
+        .login-prompt-block {
+            text-align: center;
+            padding: 2rem;
+            background: rgba(255,255,255,0.02);
+            border: 1px dashed rgba(72,187,255,0.3);
+            border-radius: 24px;
+            margin-top: 2rem;
+        }
+        .login-prompt-btn {
+            display: inline-block;
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+            padding: 0.8rem 2.5rem;
+            border-radius: 60px;
+            font-weight: 600;
+            text-decoration: none;
+            margin-top: 1rem;
+            transition: 0.2s;
+        }
+        .login-prompt-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(16,185,129,0.4);
+        }
+        @media (max-width: 640px) {
+            .reviews-header { flex-direction: column; align-items: stretch; text-align: center; }
+            .reviews-header h1 { font-size: 1.6rem; }
+            .review-header { flex-wrap: wrap; gap: 0.5rem; }
+            .review-meta { flex-wrap: wrap; }
+            .review-date { font-size: 0.7rem; }
+        }
+    </style>
+</head>
+<body>
+<header th:replace="~{fragments/header :: header}"></header>
+<th:block th:replace="~{fragments/flash-messages :: flashMessages}"></th:block>
+<main>
+    <div class="reviews-container">
+
+        <div class="reviews-header">
+            <h1 th:text="${'🎬 ' + title}">Отзывы к фильму</h1>
+            <div class="movie-rating-summary" th:if="${reviewsPage != null and !reviewsPage.empty}">
+                <span class="count" th:text="'(' + ${reviewsPage.totalElements} + ' отзывов)'">(0)</span>
+            </div>
+        </div>
+
+        <div th:if="${session.userForOwnerViewDTO != null and !isRatedByCurrentUser}">
+            <button class="add-review-btn"
+                    th:attr="data-movie-id=${ratedForm.id}, data-movie-title=${title}"
+                    onclick="showRatingModal(this.getAttribute('data-movie-id'), this.getAttribute('data-movie-title'), 'add', 5.0, '')">
+                ✏️ Написать отзыв
+            </button>
+        </div>
+
+        <div class="reviews-list" th:if="${reviewsPage != null and !reviewsPage.empty}">
+            <div class="review-card" th:each="review, iter : ${reviewsPage.content}"
+                 th:style="'animation-delay: ' + (${iter.index} * 0.06) + 's'">
+                <div class="review-header">
+                    <div class="review-user">
+                        <div class="avatar" th:text="${#strings.substring(review.username, 0, 1)}">U</div>
+                        <span class="review-username" th:text="${review.username}">Пользователь</span>
+                    </div>
+                    <div class="review-meta">
+                        <span class="review-rating">
+                            <span>★</span>
+                            <span th:text="${#numbers.formatDecimal(review.ratingValue, 1, 1)}">10.0</span>
+                        </span>
+
+                        <span class="review-date" th:if="${review.ratedAt != null}"
+                              th:text="${#temporals.format(review.ratedAt, 'dd MMM yyyy, HH:mm')}">15 мар 2026, 18:30</span>
+                        <span class="review-date" th:unless="${review.ratedAt != null}">—</span>
+                    </div>
+                </div>
+                <p class="review-text" th:text="${review.reviewText}">Текст отзыва...</p>
+
+                <div th:if="${review.own}" class="review-actions">
+                    <button class="btn-edit"
+                            th:attr="data-movie-id=${ratedForm.id}, data-movie-title=${title}, data-review-rating=${review.ratingValue}, data-review-text=${review.reviewText}"
+                            onclick="showRatingModal(this.getAttribute('data-movie-id'), this.getAttribute('data-movie-title'), 'edit', parseFloat(this.getAttribute('data-review-rating')), this.getAttribute('data-review-text') || '')">
+                        ✏️ Редактировать
+                    </button>
+                    <button class="btn-delete"
+                            th:attr="data-movie-id=${ratedForm.id}"
+                            onclick="deleteRating(this.getAttribute('data-movie-id'))">
+                        🗑 Удалить
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div th:unless="${reviewsPage != null and !reviewsPage.empty}" class="no-reviews">
+            <span>💬</span>
+            У этого фильма пока нет отзывов. Будьте первым!
+        </div>
+
+        <th:block th:if="${reviewsPage != null and reviewsPage.totalPages > 1}">
+            <th:block
+                    th:replace="~{fragments/pagination :: pager(page=${reviewsPage}, url=${'/rated/' + ratedForm.id + '/reviews'})}"></th:block>
+        </th:block>
+
+        <div th:if="${session.userForOwnerViewDTO == null}" class="login-prompt-block">
+            <p style="color: #94a3b8;">Хотите поделиться своим мнением о фильме?</p>
+            <a th:href="@{/login}" class="login-prompt-btn">Войти и написать отзыв</a>
+        </div>
+
+    </div>
+</main>
+
+<th:block th:replace="~{fragments/modals :: ratingModal}"></th:block>
+<th:block th:replace="~{fragments/modals :: confirmDeleteModal}"></th:block>
+
+<script th:src="@{/js/main.js}" defer></script>
+<th:block th:replace="~{fragments/footer :: footer}"></th:block>
+
+</body>
+</html>

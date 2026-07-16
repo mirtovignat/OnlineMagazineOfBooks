@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="ru">
+<head>
+    <title>Шапка Cinema Service</title>
+</head>
+<body>
+<header th:fragment="header">
+    <style>
+        /* Стили фильтров (исправлены) */
+        .filters-toggle-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.6rem 1.2rem;
+            border-radius: 2rem;
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            color: var(--text-light);
+            cursor: pointer;
+            font-size: 0.95rem;
+            font-weight: 600;
+            transition: all 0.25s ease;
+            backdrop-filter: blur(4px);
+        }
+        .filters-toggle-btn:hover {
+            border-color: var(--glow-accent);
+            color: #c084fc;
+            box-shadow: 0 0 12px rgba(168, 85, 247, 0.3);
+            transform: translateY(-2px);
+        }
+        .filters-modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(8, 10, 25, 0.8);
+            backdrop-filter: blur(12px);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.25s ease, visibility 0.25s ease;
+        }
+        .filters-modal-overlay.show {
+            opacity: 1;
+            visibility: visible;
+        }
+        .filters-modal-content {
+            width: min(500px, calc(100vw - 32px));
+            background: linear-gradient(180deg, rgba(25, 29, 53, 0.98), rgba(15, 18, 35, 0.98));
+            border: 1px solid rgba(110, 150, 255, 0.25);
+            border-radius: 24px;
+            padding: 2rem;
+            box-shadow: 0 20px 70px rgba(0, 0, 0, 0.55), 0 0 40px rgba(90, 120, 255, 0.15);
+            transform: translateY(30px) scale(0.96);
+            transition: transform 0.25s ease;
+            max-height: 85vh;
+            display: flex;
+            flex-direction: column;
+        }
+        .filters-modal-overlay.show .filters-modal-content {
+            transform: translateY(0) scale(1);
+        }
+        .filters-modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            flex-shrink: 0;
+        }
+        .filters-modal-header h3 {
+            font-size: 1.4rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #e0e7ff, #c084fc);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            margin: 0;
+        }
+        .filters-modal-close {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            font-size: 1.8rem;
+            cursor: pointer;
+            transition: 0.2s;
+            line-height: 1;
+        }
+        .filters-modal-close:hover {
+            color: var(--glow-danger);
+            transform: rotate(90deg);
+        }
+        #filterForm {
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+            padding-right: 6px;
+        }
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.4rem;
+            margin-bottom: 1.2rem;
+            text-align: left;
+            position: relative; /* КЛЮЧЕВОЙ ФИКС */
+        }
+        .filter-group label {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        .filter-row {
+            display: flex;
+            gap: 0.75rem;
+        }
+        .filter-input {
+            width: 100%;
+            height: 44px;
+            padding: 0 1rem;
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            color: white;
+            font-size: 0.95rem;
+            outline: none;
+            transition: all 0.2s ease;
+        }
+        .filter-input:focus {
+            border-color: var(--glow-primary);
+            box-shadow: 0 0 8px rgba(59, 130, 246, 0.3);
+        }
+<!--        .custom-dropdown-container {-->
+<!--            position: absolute;-->
+<!--            top: calc(100% + 4px);-->
+<!--            left: 0;-->
+<!--            right: 0;-->
+<!--            z-index: 10001;-->
+<!--            max-height: 200px;-->
+<!--            overflow-y: auto;-->
+<!--            background: #131730;-->
+<!--            border: 1px solid var(&#45;&#45;glass-border);-->
+<!--            border-radius: 12px;-->
+<!--            box-shadow: 0 10px 25px rgba(0,0,0,0.5);-->
+<!--            padding: 0.5rem;-->
+<!--            display: none;-->
+<!--        }-->
+<!--        .custom-dropdown-container.active {-->
+<!--            display: block;-->
+<!--        }-->
+<!--        .dropdown-item {-->
+<!--            display: flex;-->
+<!--            align-items: center;-->
+<!--            gap: 0.75rem;-->
+<!--            padding: 0.5rem 0.75rem;-->
+<!--            color: white;-->
+<!--            cursor: pointer;-->
+<!--            border-radius: 8px;-->
+<!--            transition: background 0.2s;-->
+<!--            user-select: none;-->
+<!--        }-->
+<!--        .dropdown-item:hover {-->
+<!--            background: rgba(255, 255, 255, 0.08);-->
+<!--        }-->
+
+        /* Удалите старый .custom-dropdown-container и всё, что с ним связано,
+   либо оставьте, если он используется только внутри фильтров — но проще заменить */
+
+/* Новые стили аккордеона */
+.accordion-trigger {
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.75rem 1rem;
+    background: rgba(0,0,0,0.4);
+    border: 1px solid var(--glass-border);
+    border-radius: 12px;
+    color: white;
+    font-weight: 600;
+    user-select: none;
+    transition: border-color 0.2s;
+}
+.accordion-trigger:hover {
+    border-color: var(--glow-primary);
+}
+.accordion-dropdown {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    z-index: 10001;
+    max-height: 220px;
+    overflow-y: auto;
+    background: #131730;
+    border: 1px solid var(--glass-border);
+    border-radius: 12px;
+    padding: 0.5rem;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+}
+.accordion-group.active .accordion-dropdown {
+    display: block;
+}
+.accordion-checkbox {
+    accent-color: var(--glow-accent);
+    margin-right: 0.5rem;
+}
+.accordion-item {
+    display: flex;
+    align-items: center;
+    padding: 0.4rem 0.6rem;
+    border-radius: 8px;
+    color: white;
+    font-size: 0.9rem;
+    cursor: pointer;
+}
+.accordion-item:hover {
+    background: rgba(255,255,255,0.08);
+}
+
+        .checkbox-round {
+            width: 18px;
+            height: 18px;
+            border: 2px solid var(--glass-border);
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+            flex-shrink: 0;
+        }
+<!--        .dropdown-item.selected .checkbox-round {-->
+<!--            border-color: var(&#45;&#45;glow-accent);-->
+<!--            background: var(&#45;&#45;glow-accent);-->
+<!--            box-shadow: 0 0 8px rgba(192, 132, 252, 0.6);-->
+<!--        }-->
+        .checkbox-round::after {
+            content: '';
+            width: 8px;
+            height: 8px;
+            background: white;
+            border-radius: 50%;
+            transform: scale(0);
+            transition: transform 0.2s ease;
+        }
+<!--        .dropdown-item.selected .checkbox-round::after {-->
+<!--            transform: scale(1);-->
+<!--        }-->
+        .filters-modal-footer {
+            display: flex;
+            gap: 1rem;
+            margin-top: 0.75rem;
+            flex-shrink: 0;
+        }
+    </style>
+
+    <h1 class="logo-link"><a href="/">🎬 Cinema Service</a></h1>
+    <div class="header-actions">
+        <button type="button" class="filters-toggle-btn" onclick="toggleFiltersModal(true)">
+            🎛️ Фильтры
+        </button>
+
+        <div class="search-container">
+            <form id="headerSearchForm" action="/" method="get" class="search-form">
+                <label for="headerSearchInput">Поиск по названию</label>
+                <input type="text"
+                       id="headerSearchInput"
+                       name="title"
+                       autocomplete="off"
+                       placeholder="Поиск фильмов...">
+                <button type="submit" class="search-btn">Найти</button>
+            </form>
+            <div id="headerSuggestions" class="header-suggestions"></div>
+        </div>
+        <a th:href="@{/favourites}" class="action-button favourites-btn" title="Избранное">
+            ♥ <span id="favourites-count" class="count-badge">0</span>
+        </a>
+        <a th:href="@{/cart}" class="action-button cart-btn" title="Корзина">
+            🛒 <span id="cart-count" class="count-badge">0</span>
+        </a>
+
+        <div th:if="${session.userForOwnerViewDTO != null}" class="user-menu" id="userMenu">
+            <div class="user-menu-toggle" onclick="toggleUserMenu()">
+                <div class="user-avatar-letter"
+                     th:text="${#strings.substring(session.userForOwnerViewDTO.username, 0, 1).toUpperCase()}"
+                     style="display:inline-flex; align-items:center; justify-content:center; width:32px; height:32px; border-radius:50%; background:linear-gradient(135deg, #4f46e5, #7c3aed); color:white; font-weight:700; font-size:1.2rem; text-transform:uppercase; flex-shrink:0; border:2px solid var(--glow-primary);">
+                </div>
+                <span class="toggle-icon">▼</span>
+            </div>
+            <div class="user-dropdown">
+                <a th:href="@{/personal-account}">Личный кабинет</a>
+                <a th:href="@{/profile/settings}">Настройки⚙️</a>
+                <a th:href="@{/wallet/top-up}">Пополнить💰</a>
+                <form th:action="@{/logout}" method="post" style="margin:0;">
+                    <button type="submit" class="logout-btn">Выйти</button>
+                </form>
+            </div>
+        </div>
+
+        <a th:if="${session.userForOwnerViewDTO == null}" th:href="@{/login}" class="login-button">👤 Войти</a>
+    </div>
+
+    <div id="filtersModalOverlay" class="filters-modal-overlay" onclick="handleOverlayClick(event)">
+        <div class="filters-modal-content">
+            <div class="filters-modal-header">
+                <h3>Поиск по фильтрам</h3>
+                <button type="button" class="filters-modal-close" onclick="toggleFiltersModal(false)">&times;</button>
+            </div>
+
+            <form action="/search-by-filters" method="get" id="filterForm">
+                <div class="filter-group">
+                    <label for="priceFrom">Цена (₽)</label>
+                    <div class="filter-row">
+                        <input type="number" id="priceFrom" name="priceFrom" class="filter-input" placeholder="От">
+                        <label for="priceTo"></label><input type="number" id="priceTo" name="priceTo"
+                                                            class="filter-input" placeholder="До">
+                    </div>
+                </div>
+
+                <div class="filter-group">
+                    <label th:for="ratingFrom">Рейтинг Кинопоиска</label>
+                    <div class="filter-row">
+                        <input type="number" id="ratingFrom" name="ratingFrom" step="0.1" min="0" max="10"
+                               class="filter-input" placeholder="От 0.0">
+                        <label for="ratingTo"></label><input type="number" id="ratingTo" name="ratingTo" step="0.1"
+                                                             min="0" max="10"
+                                                             class="filter-input" placeholder="До 10.0">
+                    </div>
+                </div>
+
+                <!-- Режиссер -->
+                <div class="filter-group accordion-group">
+                    <label class="accordion-trigger" data-target="directorsDropdown">
+                        Режиссер ▾
+                    </label>
+                    <input type="hidden" name="directors" id="directorsHiddenInput">
+                    <div class="accordion-dropdown" id="directorsDropdown">
+                        <!-- заполнится динамически -->
+                    </div>
+                </div>
+
+                <!-- Жанр -->
+                <div class="filter-group accordion-group">
+                    <label class="accordion-trigger" data-target="genresDropdown">
+                        Жанр кино ▾
+                    </label>
+                    <input type="hidden" name="genres" id="genresHiddenInput">
+                    <div class="accordion-dropdown" id="genresDropdown">
+                        <!-- заполнится динамически -->
+                    </div>
+                </div>
+
+                <div class="filter-group">
+                    <label th:for="releaseDateFrom">Дата премьеры</label>
+                    <div class="filter-row">
+                        <input type="date" id="releaseDateFrom" name="releaseDateFrom" class="filter-input">
+                        <label for="releaseDateTo"></label><input type="date" id="releaseDateTo" name="releaseDateTo"
+                                                                  class="filter-input">
+                    </div>
+                </div>
+
+                <div class="filter-group">
+                    <label th:for="minsFrom">Хронометраж (минуты)</label>
+                    <div class="filter-row">
+                        <input type="number" id="minsFrom" class="filter-input" placeholder="От">
+                        <label for="minsTo"></label><input type="number" id="minsTo" class="filter-input"
+                                                           placeholder="До">
+                    </div>
+                    <input type="hidden" name="durationFrom" id="durationFrom">
+                    <input type="hidden" name="durationTo" id="durationTo">
+                </div>
+
+                <div class="filters-modal-footer">
+                    <button type="submit" class="btn btn-primary" style="flex:2; height:46px; border-radius:12px;">
+                        Применить
+                    </button>
+                    <a href="/" class="btn btn-secondary"
+                       style="flex:1; height:46px; border-radius:12px; text-align:center; line-height:44px; padding:0;">Сброс</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</header>
+
+<script>
+    function updateBadges() {
+        fetch('/cart/count').then(r => r.text()).then(c => {
+            let badge = document.getElementById('cart-count');
+            if (badge) {
+                badge.innerText = c;
+                badge.style.display = c !== '0' ? 'flex' : 'none';
+            }
+        }).catch(console.error);
+        fetch('/favourites/count').then(r => r.text()).then(c => {
+            let badge = document.getElementById('favourites-count');
+            if (badge) {
+                badge.innerText = c;
+                badge.style.display = c !== '0' ? 'flex' : 'none';
+            }
+        }).catch(console.error);
+    }
+
+    function toggleUserMenu() {
+        document.getElementById('userMenu')?.classList.toggle('show');
+    }
+
+    function toggleFiltersModal(show) {
+        const overlay = document.getElementById('filtersModalOverlay');
+        if (show) {
+            overlay?.classList.add('show');
+            document.body.style.overflow = 'hidden';
+        } else {
+            overlay?.classList.remove('show');
+            document.body.style.overflow = '';
+            // Закрываем все открытые аккордеоны
+            document.querySelectorAll('.accordion-group.active').forEach(g => g.classList.remove('active'));
+        }
+    }
+
+    function handleOverlayClick(e) {
+        if (e.target.id === 'filtersModalOverlay') {
+            toggleFiltersModal(false);
+        }
+    }
+
+    (function() {
+        const input = document.getElementById('headerSearchInput');
+        const suggestionsDiv = document.getElementById('headerSuggestions');
+        const searchForm = document.getElementById('headerSearchForm');
+        if (!input || !suggestionsDiv || !searchForm) return;
+        let debounceTimer;
+
+        function escapeHtml(str) {
+            if (!str) return '';
+            return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+        }
+
+        input.addEventListener('input', function() {
+            clearTimeout(debounceTimer);
+            const query = this.value.trim();
+            if (query.length === 0) {
+                suggestionsDiv.style.display = 'none';
+                return;
+            }
+            debounceTimer = setTimeout(() => {
+                fetch('/search-suggestions?movieSearchQuery=' + encodeURIComponent(query))
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data && data.length > 0) {
+                            suggestionsDiv.innerHTML = data.map((item) => {
+                                let text = escapeHtml(item.title);
+                                if (item.releaseYear) text += ` (${item.releaseYear})`;
+                                if (item.director) text += ` · ${escapeHtml(item.director)}`;
+                                if (item.genre) text += ` · ${escapeHtml(item.genre)}`;
+                                return `<div class="suggestion-item" data-id="${item.id}" data-title="${escapeHtml(item.title)}">${text}</div>`;
+                            }).join('');
+                            suggestionsDiv.style.display = 'block';
+                        } else {
+                            suggestionsDiv.style.display = 'none';
+                        }
+                    })
+                    .catch(() => { suggestionsDiv.style.display = 'none'; });
+            }, 200);
+        });
+
+        input.addEventListener('blur', () => {
+            setTimeout(() => { suggestionsDiv.style.display = 'none'; }, 300);
+        });
+
+        suggestionsDiv.addEventListener('click', (e) => {
+            const item = e.target.closest('.suggestion-item');
+            if (!item) return;
+
+            const movieId = item.getAttribute('data-id');
+            if (movieId) {
+                window.location.href = '/movies/' + movieId;
+            } else {
+                input.value = item.getAttribute('data-title');
+                suggestionsDiv.style.display = 'none';
+                searchForm.submit();
+            }
+        });
+
+        // --------------------------------------------------------------
+        // Аккордеон с чекбоксами для режиссёров и жанров
+        // --------------------------------------------------------------
+        function setupAccordionMultiselect(triggerSelector, dropdownId, hiddenInputId, url) {
+            const trigger = document.querySelector(triggerSelector);
+            const dropdown = document.getElementById(dropdownId);
+            const hiddenInput = document.getElementById(hiddenInputId);
+            if (!trigger || !dropdown || !hiddenInput) return;
+
+            const group = trigger.closest('.accordion-group');
+            let selected = new Set();
+
+            trigger.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const isActive = group.classList.contains('active');
+                // Закрыть все другие аккордеоны
+                document.querySelectorAll('.accordion-group.active').forEach(g => g.classList.remove('active'));
+                if (!isActive) {
+                    group.classList.add('active');
+                    // Загрузить данные при первом открытии
+                    if (!dropdown.dataset.loaded) {
+                        fetch(url)
+                            .then(r => r.json())
+                            .then(data => {
+                                dropdown.innerHTML = data.map(item => `
+                                    <label class="accordion-item">
+                                        <input type="checkbox" value="${escapeHtml(item)}" class="accordion-checkbox">
+                                        ${escapeHtml(item)}
+                                    </label>
+                                `).join('');
+                                dropdown.dataset.loaded = 'true';
+
+                                // Синхронизировать ранее выбранные
+                                dropdown.querySelectorAll('input[type="checkbox"]').forEach(cb => {
+                                    cb.addEventListener('change', updateSelection);
+                                    if (selected.has(cb.value)) cb.checked = true;
+                                });
+                            })
+                            .catch(console.error);
+                    }
+                }
+            });
+
+            function updateSelection() {
+                selected.clear();
+                dropdown.querySelectorAll('input[type="checkbox"]:checked').forEach(cb => selected.add(cb.value));
+                hiddenInput.value = Array.from(selected).join(',');
+            }
+
+            // Закрытие аккордеона при клике вне его группы
+            document.addEventListener('click', (e) => {
+                if (!group.contains(e.target)) {
+                    group.classList.remove('active');
+                }
+            });
+        }
+
+        // Инициализация аккордеонов
+        setupAccordionMultiselect('[data-target="directorsDropdown"]', 'directorsDropdown', 'directorsHiddenInput', '/directors');
+        setupAccordionMultiselect('[data-target="genresDropdown"]', 'genresDropdown', 'genresHiddenInput', '/genres');
+
+        // --------------------------------------------------------------
+        // Форма фильтров: преобразование минут в длительность
+        // --------------------------------------------------------------
+        const filterForm = document.getElementById('filterForm');
+        if (filterForm) {
+            filterForm.addEventListener('submit', function() {
+                const f = document.getElementById('minsFrom').value;
+                const t = document.getElementById('minsTo').value;
+                document.getElementById('durationFrom').value = f ? 'PT' + f + 'M' : '';
+                document.getElementById('durationTo').value = t ? 'PT' + t + 'M' : '';
+            });
+        }
+    })();
+
+    updateBadges();
+    window.addEventListener('pageshow', updateBadges);
+    window.addEventListener('popstate', updateBadges);
+    document.addEventListener('click', function(e) {
+        let menu = document.getElementById('userMenu');
+        if (menu && !menu.contains(e.target)) menu.classList.remove('show');
+    });
+</script>
+</body>
+</html>
