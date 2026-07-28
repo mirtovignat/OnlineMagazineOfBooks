@@ -1,5 +1,6 @@
 package com.example.demo.service;
 
+import com.example.demo.dto.joined_to_user.CartMovieForOwnerViewDTO;
 import com.example.demo.dto.joined_to_user.HistoricalMovieForOwnerViewDTO;
 import com.example.demo.dto.joined_to_user.LibrarianMovieForOwnerViewDTO;
 import com.example.demo.exception.BusinessException;
@@ -30,14 +31,14 @@ public class PurchasedService {
     private final PurchasedMovieRepository purchasedMovieRepository;
     private final MovieRepository movieRepository;
     private final UserRepository userRepository;
-    private final CartService cartService;
+    private final AbstractLinkedCollectionService<CartItem, CartMovieForOwnerViewDTO> cartService;
     private final PurchasedMapper purchasedMapper;
     private final CartItemRepository cartItemRepository;
 
     @Transactional(readOnly = true)
     public void validatePurchase(Long movieId, String username) {
         User user = userRepository.findByUsernameOrThrow(username);
-        Movie movie = movieRepository.findFullByIdOrThrow(movieId);
+        Movie movie = movieRepository.findByIdOrThrow(movieId);
         if (isMoviePurchasedByBuyer(movie.getId(), username)) {
             return;
         }
@@ -58,21 +59,21 @@ public class PurchasedService {
     @Transactional
     public void purchase(Long movieId, String username) {
         User user = userRepository.findByUsernameWithLock(username);
-        Movie movie = movieRepository.findFullByIdOrThrow(movieId);
+        Movie movie = movieRepository.findByIdOrThrow(movieId);
         if (isMoviePurchasedByBuyer(movie.getId(), username)) {
-            cartService.removeFromCart(movieId, username);
+            cartService.remove(movieId, username);
             return;
         }
         user.spendMoney(movie.getPrice());
         userRepository.save(user);
         purchasedMovieRepository.save(createPurchasedMovie(user, movie));
-        cartService.removeFromCart(movieId, username);
+        cartService.remove(movieId, username);
     }
 
     @Transactional
     public void purchase(String username) {
         User user = userRepository.findByUsernameWithLock(username);
-        List<CartItem> cartItems = cartItemRepository.findAllByUsernameWithLock(username);
+        List<CartItem> cartItems = cartItemRepository.findAllByUsername(username);
         List<Movie> unpurchasedMovies = getUnpurchasedMoviesFromCart(username, cartItems);
         if (unpurchasedMovies.isEmpty()) {
             cartItemRepository.deleteAllByUsername(username);

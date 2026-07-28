@@ -15,9 +15,11 @@ public class WebConfig implements WebMvcConfigurer {
                         "/cart/**",
                         "/favourites/**",
                         "/wallet/**",
-                        "/orders/**"
+                        "/orders/**",
+                        "/rated/add",
+                        "/rated/edit",
+                        "/rated/remove/**"
                 )
-
                 .excludePathPatterns(
                         "/cart/count",
                         "/favourites/count"

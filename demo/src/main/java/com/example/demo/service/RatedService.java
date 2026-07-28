@@ -38,7 +38,7 @@ public class RatedService {
 
     @Transactional(readOnly = true)
     public Page<ReviewViewDTO> getReviewsByMovieId(Long movieId, Pageable pageable, String currentUsername) {
-        Movie movie = movieRepository.findFullByIdOrThrow(movieId);
+        Movie movie = movieRepository.findByIdOrThrow(movieId);
         return ratedMovieRepository.findAllByMovieId(movie.getId(), pageable)
                 .map(ratedMovie -> ratedMapper.toReviewView(ratedMovie, currentUsername));
     }
@@ -52,7 +52,7 @@ public class RatedService {
 
     @Transactional
     public void addOrUpdateRating(Long movieId, String username, RatedMovieForOwnerFormDTO ratedMovieForOwnerFormDTO) {
-        Movie movie = movieRepository.findFullByIdOrThrow(movieId);
+        Movie movie = movieRepository.findByIdOrThrow(movieId);
         User user = userRepository.findByUsernameOrThrow(username);
 
         RatedMovie ratedMovie = ratedMovieRepository
@@ -79,7 +79,7 @@ public class RatedService {
 
     @Transactional
     public void deleteRating(Long movieId, String username) {
-        Movie movie = movieRepository.findFullByIdOrThrow(movieId);
+        Movie movie = movieRepository.findByIdOrThrow(movieId);
         ratedMovieRepository.deleteByMovieIdAndUsername(movie.getId(), username);
         movieRepository.decrementRatingsCount(movie.getId());
         movieRepository.flush();
@@ -103,6 +103,6 @@ public class RatedService {
 
     @Transactional(readOnly = true)
     public BigDecimal getMovieRating(Long movieId) {
-        return movieRepository.findFullByIdOrThrow(movieId).getRating();
+        return movieRepository.findByIdOrThrow(movieId).getRating();
     }
 }

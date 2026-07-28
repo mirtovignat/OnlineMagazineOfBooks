@@ -61,7 +61,6 @@ public class PersonalAccountController {
         }
         try {
             userService.changeProfile(profileSettingsDTO, userForOwnerViewDTO.username());
-            // Обновляем сессию
             UserForOwnerViewDTO updated = userService.getUserForOwner(profileSettingsDTO.username());
             httpSession.setAttribute("userForOwnerViewDTO", updated);
             redirectAttributes.addFlashAttribute("successMessage", "Профиль успешно обновлен!");
@@ -106,13 +105,15 @@ public class PersonalAccountController {
     @GetMapping("/profile/settings/change/pwd")
     public String getChangePasswordForm(Model model) {
         if (!model.containsAttribute("passwordChangingDTO")) {
-            model.addAttribute("passwordChangingDTO", new PasswordChangingDTO("", "", ""));
+            model.addAttribute("passwordChangingDTO", new
+                    PasswordChangingDTO("", "", ""));
         }
         return "change-password";
     }
 
     @PostMapping("/profile/settings/change/pwd")
-    public String changePassword(@Valid @ModelAttribute("passwordChangingDTO") PasswordChangingDTO passwordChangingDTO,
+    public String changePassword(@Valid @ModelAttribute("passwordChangingDTO")
+                                 PasswordChangingDTO passwordChangingDTO,
                                  BindingResult bindingResult,
                                  @SessionAttribute UserForOwnerViewDTO userForOwnerViewDTO,
                                  RedirectAttributes redirectAttributes) {
@@ -132,10 +133,10 @@ public class PersonalAccountController {
 
     @PostMapping("/profile/delete")
     public String deleteAccount(@SessionAttribute UserForOwnerViewDTO userForOwnerViewDTO,
-                                HttpSession session,
+                                HttpSession httpSession,
                                 RedirectAttributes redirectAttributes) {
         userService.deleteAccount(userForOwnerViewDTO.username());
-        session.invalidate();
+        httpSession.invalidate();
         redirectAttributes.addFlashAttribute("successMessage", "Аккаунт успешно удален");
         return "redirect:/login";
     }

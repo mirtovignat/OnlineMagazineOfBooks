@@ -6,8 +6,6 @@ import com.example.demo.dto.movie.MovieForUser;
 import com.example.demo.dto.movie.MovieSearchDTO;
 import com.example.demo.dto.user.UserForOwnerViewDTO;
 import com.example.demo.filter.MovieFilter;
-import com.example.demo.model.Movie;
-import com.example.demo.repository.MovieRepository;
 import com.example.demo.service.MovieService;
 import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -29,7 +27,6 @@ public class MovieController {
 
     private final MovieService movieService;
     private final BadgeUpdater badgeUpdater;
-    private final MovieRepository movieRepository;
 
     @GetMapping
     public String showMovies(
@@ -54,10 +51,9 @@ public class MovieController {
             @SessionAttribute(required = false) UserForOwnerViewDTO userForOwnerViewDTO,
             @PageableDefault(size = 12, sort = "releaseDate", direction = Sort.Direction.DESC) Pageable pageable,
             Model model) {
-
         String username = prepareModelAndGetUsername(userForOwnerViewDTO, model);
-        Page<MovieForUser<MovieCardViewDTO>> cardsPage = movieService.convertSearchDtoListToPage(foundMovies, pageable, username);
-
+        Page<MovieForUser<MovieCardViewDTO>> cardsPage = movieService.convertSearchDtoListToPage(
+                foundMovies, pageable, username);
         model.addAttribute("cardsPage", cardsPage);
         model.addAttribute("currentSuggestions", foundMovies);
         return "index";
@@ -68,10 +64,9 @@ public class MovieController {
                                @SessionAttribute(required = false) UserForOwnerViewDTO userForOwnerViewDTO,
                                @PageableDefault(size = 12, sort = "releaseDate", direction = Sort.Direction.DESC) Pageable pageable,
                                Model model) {
-
         String username = prepareModelAndGetUsername(userForOwnerViewDTO, model);
-        Page<MovieForUser<MovieCardViewDTO>> cardsPage = movieService.convertMovieFilterToPage(movieFilter, pageable, username);
-
+        Page<MovieForUser<MovieCardViewDTO>> cardsPage = movieService.convertMovieFilterToPage(
+                movieFilter, pageable, username);
         model.addAttribute("cardsPage", cardsPage);
         model.addAttribute("movieFilter", movieFilter);
         return "index";
@@ -82,10 +77,8 @@ public class MovieController {
             @PathVariable("id") Long id,
             @SessionAttribute(required = false) UserForOwnerViewDTO userForOwnerViewDTO,
             Model model) {
-
         String username = prepareModelAndGetUsername(userForOwnerViewDTO, model);
         MovieForUser<MovieCardDetailsViewDTO> card = movieService.getCard(id, username);
-
         model.addAttribute("card", card);
         return "show";
     }
@@ -93,8 +86,8 @@ public class MovieController {
     @GetMapping("/rating/{id}")
     @ResponseBody
     public ResponseEntity<Map<String, Object>> getMovieRating(@PathVariable Long id) {
-        Movie movie = movieRepository.findFullByIdOrThrow(id);
-        return ResponseEntity.ok(Map.of("rating", movie.getRating()));
+        Double rating = movieService.getMovieRating(id);
+        return ResponseEntity.ok(Map.of("rating", rating));
     }
 
     @GetMapping("/search-suggestions")

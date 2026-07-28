@@ -1,25 +1,35 @@
-// =====================================================
-// script.js – общие функции для всего сайта
-// =====================================================
-
-let _ratingModalMode = 'add';
-let _deletemovieId = null;
-
 function handleResponse(response) {
+    if (response.status === 401) {
+        return response.json().then(data => {
+            throw new Error(data.message || 'Авторизуйтесь!');
+        }).catch(err => {
+            throw new Error(err.message || 'Авторизуйтесь!');
+        });
+    }
+
     return response.text().then(text => {
-        let data;
-        try {
-            data = JSON.parse(text);
-        } catch (e) {
-            if (!response.ok) throw new Error('Ошибка сервера');
-            throw new Error('Некорректный ответ сервера');
+        let data = {};
+        if (text) {
+            try {
+                data = JSON.parse(text);
+            } catch (e) {
+                if (!response.ok) throw new Error('Ошибка сервера');
+                throw new Error('Некорректный ответ сервера');
+            }
         }
+
         if (!response.ok) throw new Error(data.message || 'Произошла ошибка');
+
+        if (!data.message) {
+            data.message = '';
+        }
+
         return data;
     });
 }
 
 function showFlashMessage(message, type, autoHide = true) {
+    if (!message || message === 'undefined') return;
     const container = document.getElementById('flash-messages-container');
     if (!container) {
         console.log(`[${type.toUpperCase()}]: ${message}`);
@@ -66,12 +76,7 @@ function addToCart(button) {
     .then(data => {
         showFlashMessage(data.message, 'success');
         updateCartCount();
-        const parent = button.parentNode;
-        const link = document.createElement('a');
-        link.className = 'cart-button in-cart-btn-details';
-        link.href = '/cart';
-        link.textContent = 'В корзине →';
-        parent.replaceChild(link, button);
+        window.location.reload();
     })
     .catch(err => showFlashMessage(err.message || 'Ошибка', 'error'))
     .finally(() => {});
@@ -194,6 +199,12 @@ function updateFavouritesCount() {
 }
 
 function showBuyModal(button) {
+    const userMenu = document.querySelector('.user-menu');
+    if (!userMenu) {
+        showFlashMessage('Авторизуйтесь!', 'error');
+        return;
+    }
+
     const movieId = getMovieId(button);
     if (!movieId) {
         showFlashMessage('Ошибка: не удалось определить фильм', 'error');
@@ -223,15 +234,46 @@ function confirmPurchase() {
     const modalTitle = document.getElementById('modalMovieTitle');
     if (!modalTitle) return;
     const movieId = modalTitle.dataset.movieId || modalTitle.innerText;
-    const form = document.createElement('form');
-    form.method = 'POST';
-    form.action = '/orders/add/' + encodeURIComponent(movieId);
-    document.body.appendChild(form);
-    form.submit();
+
+    const btn = document.querySelector('#buyModal .modal-confirm-btn');
+    if (btn) { btn.disabled = true; btn.textContent = 'Покупаем...'; }
+
+    fetch('/orders/add/' + encodeURIComponent(movieId), {
+        method: 'POST',
+        headers: { 'X-Requested-With': 'XMLHttpRequest' }
+    })
+    .then(handleResponse)
+    .then(data => {
+        hideBuyModal();
+        showFlashMessage(data.message, 'success');
+        if (btn) { btn.disabled = false; btn.textContent = 'Подтвердить'; }
+        const card = document.querySelector('.movie-card .bought-btn') || document.querySelector('.bought-btn-large');
+        if (card) {
+            const parent = card.parentNode;
+            const newBtn = document.createElement('button');
+            newBtn.className = 'bought-btn' + (card.classList.contains('bought-btn-large') ? '-large' : '');
+            newBtn.disabled = true;
+            newBtn.textContent = 'Куплено';
+            parent.replaceChild(newBtn, card);
+        }
+        refreshCounts();
+    })
+    .catch(error => {
+        hideBuyModal();
+        showFlashMessage(error.message || 'Ошибка при покупке', 'error');
+        if (btn) { btn.disabled = false; btn.textContent = 'Подтвердить'; }
+    });
 }
 
 function showRatingModal(movieId, movieTitle, mode = 'add', existingRating = 5.0, existingReview = '') {
     if (window.event) window.event.stopPropagation();
+
+    const userMenu = document.querySelector('.user-menu');
+    if (!userMenu) {
+        showFlashMessage('Авторизуйтесь!', 'error');
+        return;
+    }
+
     if (!movieId) {
         showFlashMessage('Ошибка: ID фильма не передан', 'error');
         return;
@@ -329,11 +371,8 @@ function submitRating() {
         }
     })
     .catch(err => {
-        const errMsg = err.message || 'Данные не изменены';
-        if (errorDiv) {
-            errorDiv.innerText = (errMsg.toLowerCase().includes('данные не изменены')) ? 'Данные не изменены' : errMsg;
-            errorDiv.style.display = 'block';
-        }
+        hideRatingModal();
+        showFlashMessage(err.message || 'Ошибка при отправке оценки', 'error');
     });
 }
 
@@ -441,27 +480,54 @@ document.addEventListener('click', function(e) {
     }
 });
 
-document.addEventListener('DOMContentLoaded', function() {
-    refreshCounts();
+function calculateRangeMinutes() {
+        const getVal = (id) => parseInt(document.getElementById(id)?.value, 10) || 0;
 
-    const delBtn = document.getElementById('confirmDeleteBtn');
-    if (delBtn) delBtn.onclick = executeDelete;
+        const fromH = getVal('durationFromHours');
+        const fromM = getVal('durationFromMinutes');
+        const fromS = getVal('durationFromSeconds');
+        const totalFrom = (fromH * 60) + fromM + Math.round(fromS / 60);
 
-    const closeFiltersBtn = document.querySelector('.filters-modal-close');
+        const toH = getVal('durationToHours');
+        const toM = getVal('durationToMinutes');
+        const toS = getVal('durationToSeconds');
+        const totalTo = (toH * 60) + toM + Math.round(toS / 60);
 
-    if (closeFiltersBtn) {
-        closeFiltersBtn.addEventListener('click', function() {
-            toggleFiltersModal(false);
+        const minEl = document.getElementById('minDuration');
+        const maxEl = document.getElementById('maxDuration');
+
+        if (minEl) minEl.value = totalFrom > 0 ? totalFrom : '';
+        if (maxEl) maxEl.value = totalTo > 0 ? totalTo : '';
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    const positiveInputs = document.querySelectorAll('.positive-int');
+
+    positiveInputs.forEach(input => {
+        input.addEventListener('keydown', (e) => {
+            if (e.ctrlKey || e.metaKey) return;
+
+            const allowedKeys = ['Backspace', 'Tab', 'ArrowLeft', 'ArrowRight', 'Delete', 'Enter', 'Escape'];
+            if (allowedKeys.includes(e.key)) return;
+
+            if (!/^[0-9]$/.test(e.key)) {
+                e.preventDefault();
+            }
         });
-    }
 
-    const stored = sessionStorage.getItem('flashMessage');
-    if (stored) {
-        try {
-            const { message, type } = JSON.parse(stored);
-            showFlashMessage(message, type);
-            sessionStorage.removeItem('flashMessage');
-        } catch (e) {}
+        input.addEventListener('input', (e) => {
+            e.target.value = e.target.value.replace(/\D/g, '');
+            calculateRangeMinutes();
+        });
+    });
+
+    calculateRangeMinutes();
+
+    const filterForm = document.getElementById('filterForm') || document.querySelector('form');
+    if (filterForm) {
+        filterForm.addEventListener('reset', () => {
+            setTimeout(calculateRangeMinutes, 0);
+        });
     }
 });
 
@@ -469,3 +535,12 @@ document.addEventListener('visibilitychange', function() {
     if (document.visibilityState === 'visible') refreshCounts();
 });
 
+function requireAuth(event, url) {
+    var userMenu = document.querySelector('.user-menu');
+    if (!userMenu) {
+        event.preventDefault();
+        showFlashMessage('Авторизуйтесь!', 'error');
+        return false;
+    }
+    return true;
+}

@@ -5,8 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Фильмы — Cinema Service</title>
     <link rel="icon" type="image/x-icon" th:href="@{/favicon.ico}">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700&display=swap"
-          rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" th:href="@{/css/main.css}">
     <style>
         .movies-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 2rem; padding: 2rem; max-width: 1400px; margin: 0 auto; }
@@ -65,7 +64,6 @@
 <body>
 
 <header th:replace="~{fragments/header :: header}"></header>
-
 <th:block th:replace="~{fragments/flash-messages :: flashMessages}"></th:block>
 
 <main>
@@ -73,7 +71,7 @@
         <div class="movie-card" th:each="card : ${cardsPage.content}">
             <a class="movie-poster-link" th:href="@{/movies/{id}(id=${card.movie.id})}">
                 <img th:if="${card.movie.posterUrl != null}" th:src="${card.movie.posterUrl}" alt="Постер"
-                     class="movie-poster-img">
+                     class="movie-poster-img" src="">
                 <div th:unless="${card.movie.posterUrl != null}" class="movie-poster-placeholder"><span>📽️ Постер</span>
                 </div>
             </a>
@@ -103,11 +101,11 @@
                         <span class="attr-value" th:text="${card.movie.formattedDuration}">-</span>
                     </div>
                 </div>
-
                 <div class="price-label">Стоимость</div>
                 <div class="price" th:text="${card.movie.price + ' ₽'}">0 ₽</div>
 
-                <div class="movie-actions" th:if="${session.userForOwnerViewDTO != null}">
+                <!-- ОДИН БЛОК ДЛЯ ВСЕХ: кнопки всегда видны -->
+                <div class="movie-actions">
                     <button class="icon-btn favourite-btn"
                             th:classappend="${card.status.inFavourites} ? 'active' : ''"
                             th:data-movie-id="${card.movie.id}"
@@ -121,17 +119,6 @@
                             onclick="showRatingModal(this.getAttribute('data-movie-id'), this.getAttribute('data-movie-title'))">
                         ☆
                     </button>
-
-                    <a th:href="@{/rated/{id}/reviews(id=${card.movie.id})}" class="icon-btn comment-btn">
-                        💬
-                        <span th:if="${card.movie.ratingsCount != null and card.movie.ratingsCount > 0}"
-                              class="reviews-badge" th:text="${card.movie.ratingsCount}">0</span>
-                    </a>
-                </div>
-
-                <div class="movie-actions" th:if="${session.userForOwnerViewDTO == null}">
-                    <a th:href="@{/login}" class="icon-btn">♡</a>
-                    <a th:href="@{/login}" class="icon-btn">☆</a>
                     <a th:href="@{/rated/{id}/reviews(id=${card.movie.id})}" class="icon-btn comment-btn">
                         💬
                         <span th:if="${card.movie.ratingsCount != null and card.movie.ratingsCount > 0}"
@@ -140,29 +127,27 @@
                 </div>
 
                 <div class="purchase-buttons">
-                    <div th:if="${session.userForOwnerViewDTO != null}">
-                        <button th:if="${!card.status.bought and !card.status.inCart}"
-                                class="cart-button to-cart-btn-details" th:data-movie-id="${card.movie.id}"
-                                onclick="addToCart(this)">В корзину
-                        </button>
-                        <a th:if="${card.status.inCart}" href="/cart" class="cart-button in-cart-btn-details">В корзине
-                            →</a>
-                        <button th:if="${!card.status.bought}" class="buy-now-btn" th:data-movie-id="${card.movie.id}"
-                                th:data-movie-price="${card.movie.price}" th:data-movie-title="${card.movie.title}"
-                                onclick="showBuyModal(this)">Купить сейчас
-                        </button>
-                        <button th:if="${card.status.bought}" class="bought-btn" disabled>Куплено</button>
-                    </div>
-                    <div th:if="${session.userForOwnerViewDTO == null}">
-                        <a th:href="@{/login}" class="cart-button to-cart-btn-details">В корзину</a>
-                        <a th:href="@{/login}" class="buy-now-btn">Купить сейчас</a>
-                    </div>
+                    <button th:if="${!card.status.bought and !card.status.inCart}"
+                            class="cart-button to-cart-btn-details"
+                            th:data-movie-id="${card.movie.id}"
+                            onclick="addToCart(this)">В корзину
+                    </button>
+                    <a th:if="${card.status.inCart}" href="/cart" class="cart-button in-cart-btn-details">В корзине →</a>
+                    <button th:if="${!card.status.bought}"
+                            class="buy-now-btn"
+                            th:data-movie-id="${card.movie.id}"
+                            th:data-movie-price="${card.movie.price}"
+                            th:data-movie-title="${card.movie.title}"
+                            onclick="showBuyModal(this)">Купить сейчас
+                    </button>
+                    <button th:if="${card.status.bought}" class="bought-btn" disabled>Куплено</button>
                 </div>
             </div>
         </div>
     </div>
 
     <th:block th:replace="~{fragments/pagination :: pager(page=${cardsPage}, url='/')}"></th:block>
+
 </main>
 
 <th:block th:replace="~{fragments/modals :: buyModal}"></th:block>
@@ -172,5 +157,5 @@
 
 <th:block th:replace="~{fragments/footer :: footer}"></th:block>
 
-</body>я
+</body>
 </html>

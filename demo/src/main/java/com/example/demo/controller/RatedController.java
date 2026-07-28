@@ -39,12 +39,12 @@ public class RatedController {
             Model model,
             @PageableDefault(sort = "ratedAt", direction = Sort.Direction.DESC) Pageable pageable,
             @RequestParam(defaultValue = "false") boolean edit) {
+
         String currentUsername = userForOwnerViewDTO != null ? userForOwnerViewDTO.username() : null;
         Page<ReviewViewDTO> reviewsPage = ratedService.getReviewsByMovieId(movieId, pageable, currentUsername);
         model.addAttribute("reviewsPage", reviewsPage);
-        model.addAttribute("title", !reviewsPage.isEmpty()
-                ? reviewsPage.getContent().get(0).title()
-                : "Фильм");
+        model.addAttribute("title", !reviewsPage.isEmpty() ? reviewsPage.getContent().get(0).title() : "Фильм");
+
         RatedMovieForOwnerFormDTO ratedMovieForOwnerFormDTO;
         boolean isRatedByCurrentUser = false;
         if (currentUsername != null) {
@@ -54,6 +54,7 @@ public class RatedController {
         } else {
             ratedMovieForOwnerFormDTO = new RatedMovieForOwnerFormDTO(movieId, null, null);
         }
+
         model.addAttribute("ratedForm", ratedMovieForOwnerFormDTO);
         model.addAttribute("editMode", edit);
         model.addAttribute("isRatedByCurrentUser", isRatedByCurrentUser);
@@ -65,12 +66,9 @@ public class RatedController {
             @PathVariable("id") Long movieId,
             @Valid @ModelAttribute("ratedForm") RatedMovieForOwnerFormDTO form,
             BindingResult bindingResult,
-            @SessionAttribute(required = false) UserForOwnerViewDTO userForOwnerViewDTO,
+            @SessionAttribute UserForOwnerViewDTO userForOwnerViewDTO,
             RedirectAttributes redirectAttributes) {
-        if (userForOwnerViewDTO == null) {
-            redirectAttributes.addFlashAttribute("notAuthorizedUserExceptionMessage", "Пожалуйста, авторизуйтесь");
-            return "redirect:/login";
-        }
+
         if (bindingResult.hasErrors()) {
             redirectAttributes.addFlashAttribute("errorMessage", "Неверный формат оценки или отзыва");
             return "redirect:/rated/" + movieId + "/reviews";
@@ -94,13 +92,9 @@ public class RatedController {
     @PostMapping("/{id}/reviews/delete")
     public String deleteReview(
             @PathVariable("id") Long movieId,
-            @SessionAttribute(required = false) UserForOwnerViewDTO userForOwnerViewDTO,
+            @SessionAttribute UserForOwnerViewDTO userForOwnerViewDTO,
             RedirectAttributes redirectAttributes) {
 
-        if (userForOwnerViewDTO == null) {
-            redirectAttributes.addFlashAttribute("notAuthorizedUserExceptionMessage", "Пожалуйста, авторизуйтесь");
-            return "redirect:/login";
-        }
         try {
             ratedService.deleteRating(movieId, userForOwnerViewDTO.username());
             redirectAttributes.addFlashAttribute("successMessage", "Отзыв удалён");
@@ -114,19 +108,14 @@ public class RatedController {
     @ResponseBody
     public ResponseEntity<Map<String, String>> addRating(
             @Valid @ModelAttribute RatedMovieForOwnerFormDTO ratedMovieForOwnerFormDTO,
-            @SessionAttribute(required = false) UserForOwnerViewDTO userForOwnerViewDTO) {
+            @SessionAttribute UserForOwnerViewDTO userForOwnerViewDTO) {
 
-        if (userForOwnerViewDTO == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(Map.of("message", "Не авторизован"));
-        }
         try {
             ratedService.addOrUpdateRating(ratedMovieForOwnerFormDTO.id(), userForOwnerViewDTO.username(), ratedMovieForOwnerFormDTO);
             return ResponseEntity.ok(Map.of("message", "Оценка сохранена"));
         } catch (BusinessException e) {
             if (e.getErrorCode() == ErrorCode.DATA_COINCIDENCE) {
-                return ResponseEntity.status(HttpStatus.CONFLICT)
-                        .body(Map.of("message", e.getMessage()));
+                return ResponseEntity.status(HttpStatus.CONFLICT).body(Map.of("message", e.getMessage()));
             }
             return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
         } catch (Exception e) {
@@ -138,19 +127,14 @@ public class RatedController {
     @ResponseBody
     public ResponseEntity<Map<String, String>> editRating(
             @Valid @ModelAttribute RatedMovieForOwnerFormDTO ratedMovieForOwnerFormDTO,
-            @SessionAttribute(required = false) UserForOwnerViewDTO userForOwnerViewDTO) {
+            @SessionAttribute UserForOwnerViewDTO userForOwnerViewDTO) {
 
-        if (userForOwnerViewDTO == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(Map.of("message", "Не авторизован"));
-        }
         try {
             ratedService.addOrUpdateRating(ratedMovieForOwnerFormDTO.id(), userForOwnerViewDTO.username(), ratedMovieForOwnerFormDTO);
             return ResponseEntity.ok(Map.of("message", "Оценка обновлена"));
         } catch (BusinessException e) {
             if (e.getErrorCode() == ErrorCode.DATA_COINCIDENCE) {
-                return ResponseEntity.status(HttpStatus.CONFLICT)
-                        .body(Map.of("message", e.getMessage()));
+                return ResponseEntity.status(HttpStatus.CONFLICT).body(Map.of("message", e.getMessage()));
             }
             return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
         } catch (Exception e) {
@@ -162,12 +146,8 @@ public class RatedController {
     @ResponseBody
     public ResponseEntity<Map<String, String>> removeRating(
             @PathVariable("id") Long movieId,
-            @SessionAttribute(required = false) UserForOwnerViewDTO userForOwnerViewDTO) {
+            @SessionAttribute UserForOwnerViewDTO userForOwnerViewDTO) {
 
-        if (userForOwnerViewDTO == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(Map.of("message", "Не авторизован"));
-        }
         try {
             ratedService.deleteRating(movieId, userForOwnerViewDTO.username());
             return ResponseEntity.ok(Map.of("message", "Оценка удалена"));

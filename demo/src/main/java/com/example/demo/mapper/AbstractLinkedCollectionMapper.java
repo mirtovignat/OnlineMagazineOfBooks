@@ -1,15 +1,14 @@
 package com.example.demo.mapper;
 
-import com.example.demo.dto.joined_to_user.CartMovieForOwnerViewDTO;
-import com.example.demo.model.CartItem;
+import com.example.demo.dto.joined_to_user.FavouriteMovieForOwnerViewDTO;
+import com.example.demo.model.AbstractLinkedCollectionItem;
 import com.example.demo.service.PresenceService;
 import org.mapstruct.Context;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
-@Mapper(componentModel = "spring", uses = {DurationMapper.class,
-        MapperUtils.class})
-public interface CartItemMapper {
+@Mapper(componentModel = "spring", uses = {MapperUtils.class, DurationMapper.class})
+public abstract class AbstractLinkedCollectionMapper {
 
     @Mapping(target = "id", source = "movie.id")
     @Mapping(target = "title", source = "movie.title")
@@ -20,13 +19,9 @@ public interface CartItemMapper {
     @Mapping(target = "rating", source = "movie.rating")
     @Mapping(target = "posterUrl", source = "movie.posterUrl")
     @Mapping(target = "director", source = "movie.director")
-    @Mapping(target = "inCart", constant = "true")
-    @Mapping(target = "inFavourites", expression =
-            "java(presenceService.isInFavourites(cartItem.getMovie().getTitle(), " +
-                    "cartItem.getUser().getUsername()))")
-    @Mapping(target = "unitPriceSnapshot", source = "unitPriceSnapshot")
-    CartMovieForOwnerViewDTO toOwnerView(
-            CartItem cartItem,
-            @Context PresenceService presenceService
-    );
+    @Mapping(target = "inCart", ignore = true)
+    @Mapping(target = "inFavourites", ignore = true)
+    public abstract FavouriteMovieForOwnerViewDTO toOwnerView
+            (AbstractLinkedCollectionItem abstractCollectionItem,
+             @Context PresenceService presenceService);
 }

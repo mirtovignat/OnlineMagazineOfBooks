@@ -7,6 +7,7 @@ import jakarta.validation.constraints.DecimalMin;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.BatchSize;
 
 import java.math.BigDecimal;
 import java.time.Duration;
@@ -20,7 +21,6 @@ import java.util.Set;
 @Entity
 @Table(name = "movies")
 public class Movie extends AbstractEntity {
-
     @Column(name = "poster_url")
     private String posterUrl;
 
@@ -53,17 +53,21 @@ public class Movie extends AbstractEntity {
     @Column(name = "director", columnDefinition = "text")
     private String director;
 
+    @BatchSize(size = 20)
     @OneToMany(mappedBy = "movie", fetch = FetchType.LAZY)
     private Set<CartItem> cartItems = new LinkedHashSet<>();
 
-
+    @BatchSize(size = 20)
     @OneToMany(mappedBy = "movie", fetch = FetchType.LAZY)
     private Set<PurchasedMovie> purchases = new LinkedHashSet<>();
 
+    @BatchSize(size = 20)
     @OneToMany(mappedBy = "movie", fetch = FetchType.LAZY)
     private Set<FavouriteMovie> favourites = new LinkedHashSet<>();
 
+    @BatchSize(size = 20)
     @OneToMany(mappedBy = "movie", fetch = FetchType.LAZY)
     private Set<RatedMovie> ratings = new LinkedHashSet<>();
+
 }
 

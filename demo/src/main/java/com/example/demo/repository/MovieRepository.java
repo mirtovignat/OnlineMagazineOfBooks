@@ -11,8 +11,15 @@ import org.springframework.data.repository.query.Param;
 import java.util.List;
 import java.util.Optional;
 
-public interface MovieRepository extends JpaRepository<Movie, Long>,
-        JpaSpecificationExecutor<Movie> {
+public interface MovieRepository extends JpaRepository<Movie, Long>, JpaSpecificationExecutor<Movie> {
+
+    default Movie findByIdOrThrow(Long id) {
+        return findById(id)
+                .orElseThrow(() -> BusinessException.of(ErrorCode.ENTITY_NOT_FOUND));
+    }
+
+    @Query("SELECT movie.rating FROM Movie movie WHERE movie.id = :id")
+    Optional<Double> findRatingById(@Param("id") Long id);
 
     @EntityGraph(attributePaths = {"purchases"})
     @Query("""
@@ -20,24 +27,6 @@ public interface MovieRepository extends JpaRepository<Movie, Long>,
             FROM Movie movie
             """)
     Page<Movie> findAllWithDirectorPurchasesAndReviews(Pageable pageable);
-
-    @EntityGraph(attributePaths = {
-            "purchases",
-            "favourites",
-            "ratings",
-            "cartItems"
-    })
-    @Query("""
-            SELECT DISTINCT movie
-            FROM Movie movie
-            WHERE movie.id = :id
-            """)
-    Optional<Movie> findFullById(@Param("id") Long id);
-
-    default Movie findFullByIdOrThrow(Long id) {
-        return findFullById(id)
-                .orElseThrow(() -> BusinessException.of(ErrorCode.ENTITY_NOT_FOUND));
-    }
 
     @Query("""
             SELECT movie
@@ -89,11 +78,11 @@ public interface MovieRepository extends JpaRepository<Movie, Long>,
     List<String> findAllDistinctGenres();
 
     @Query("""
-            SELECT m FROM Movie m
-            WHERE m.title = :title
-              AND m.director = :director
-              AND m.genre = :genre
-              AND (:releaseYear IS NULL OR YEAR(m.releaseDate) = :releaseYear)
+            SELECT movie FROM Movie movie
+            WHERE movie.title = :title
+              AND movie.director = :director
+              AND movie.genre = :genre
+              AND (:releaseYear IS NULL OR YEAR(movie.releaseDate) = :releaseYear)
             """)
     List<Movie> findByTitleAndDirectorAndGenreAndReleaseYear(
             @Param("title") String title,

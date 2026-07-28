@@ -4,6 +4,7 @@ public enum ErrorCode {
     USER_NOT_FOUND("Пользователь не найден: %s"),
     INSUFFICIENT_FUNDS("Недостаточно средств: нужно %s₽, доступно %s₽"),
     EMPTY_CART("Корзина пуста"),
+    EMPTY_FAVOURITES("Избранное пусто"),
     ALREADY_REGISTERED("Данные уже заняты"),
     PASSWORDS_MISMATCH("Пароли не совпадают"),
     PASSWORD_INVALID("Неверный пароль"),

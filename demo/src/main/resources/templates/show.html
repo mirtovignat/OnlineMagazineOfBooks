@@ -243,7 +243,6 @@
 <body>
 
 <header th:replace="~{fragments/header :: header}"></header>
-
 <th:block th:replace="~{fragments/flash-messages :: flashMessages}"></th:block>
 
 <main>
@@ -291,7 +290,8 @@
             <div class="price-label">Стоимость</div>
             <div class="price" th:text="${card.movie.price + ' ₽'}">0 ₽</div>
 
-            <div class="icon-group" th:if="${session.userForOwnerViewDTO != null}">
+            <!-- ОДИН БЛОК ДЛЯ ВСЕХ: кнопки всегда видны -->
+            <div class="icon-group">
                 <button class="icon-btn favourite-btn"
                         th:classappend="${card.status.inFavourites} ? 'active' : ''"
                         th:data-movie-id="${card.movie.id}"
@@ -305,15 +305,6 @@
                         onclick="showRatingModal(this.getAttribute('data-movie-id'), this.getAttribute('data-movie-title'))">
                     ☆
                 </button>
-                <a th:href="@{/rated/{id}/reviews(id=${card.movie.id})}" class="icon-btn">
-                    💬
-                    <span th:if="${card.movie.ratingsCount != null and card.movie.ratingsCount > 0}"
-                          class="reviews-badge" th:text="${card.movie.ratingsCount}">0</span>
-                </a>
-            </div>
-            <div class="icon-group" th:if="${session.userForOwnerViewDTO == null}">
-                <a th:href="@{/login}" class="icon-btn">♡</a>
-                <a th:href="@{/login}" class="icon-btn">☆</a>
                 <a th:href="@{/rated/{id}/reviews(id=${card.movie.id})}" class="icon-btn">
                     💬
                     <span th:if="${card.movie.ratingsCount != null and card.movie.ratingsCount > 0}"

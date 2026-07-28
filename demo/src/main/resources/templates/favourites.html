@@ -32,16 +32,6 @@
         .badge-genre { background: rgba(96,165,250,0.2); color: #93c5fd; padding: 0.1rem 0.6rem; border-radius: 40px; display: inline-block; }
         .price-label { font-size: 0.75rem; color: #94a3b8; margin-top: 0.5rem; }
         .price { font-size: 1.6rem; font-weight: 700; color: #c084fc; margin: 0.2rem 0 0.8rem; }
-        .movie-user-review {
-            background:rgba(59,130,246,0.1);
-            padding:0.5rem 0.75rem;
-            border-radius:0.75rem;
-            margin:0.5rem 0;
-            border-left:3px solid var(--glow-primary);
-            font-size:0.9rem;
-        }
-        .movie-user-review strong{color:#93c5fd;}
-        .review-date{font-size:0.75rem;color:var(--text-muted);display:block;margin-top:0.2rem;}
         .remove-favourites-btn {
             background:transparent;
             border:1px solid var(--glass-border);
@@ -99,7 +89,7 @@
                     <div class="attr-item">
                         <span class="attr-label">Год</span>
                         <span class="attr-value badge-year"
-                              th:text="${movie.releaseDate != null ? movie.releaseDate.year : '-'}">-</span>
+                              th:text="${movie.releaseYear != null ? movie.releaseYear : '-'}">-</span>
                     </div>
                     <div class="attr-item">
                         <span class="attr-label">Жанр</span>
@@ -118,14 +108,6 @@
                 <div class="price-label">Стоимость</div>
                 <div class="price" th:text="${movie.price + ' ₽'}">329.99 ₽</div>
 
-                <div class="movie-user-review"
-                     th:if="${movie.buyerReviewText != null and !movie.buyerReviewText.isEmpty()}">
-                    <strong>Ваш отзыв:</strong> <span th:text="${movie.buyerReviewText}"></span>
-                    <span class="review-date" th:if="${movie.userReviewWrittenAt != null}">
-                        (от <span th:text="${#temporals.format(movie.userReviewWrittenAt, 'dd MMM yyyy')}"></span>)
-                    </span>
-                </div>
-
                 <div class="movie-actions">
                     <button class="icon-btn rating-btn"
                             th:data-movie-id="${movie.id}"
@@ -139,18 +121,6 @@
                             title="Удалить из избранного">
                         🗑️
                     </button>
-                </div>
-
-                <div class="purchase-buttons">
-                    <button th:if="${!movie.inCart}"
-                            class="cart-button to-cart-btn-details"
-                            th:data-movie-id="${movie.id}"
-                            onclick="addToCart(this)">В корзину
-                    </button>
-                    <a th:if="${movie.inCart}"
-                       href="/cart"
-                       class="cart-button in-cart-btn-details">В корзине →</a>
-                    <button class="buy-now-btn" ...>Купить сейчас</button>
                 </div>
             </div>
         </div>
@@ -260,8 +230,6 @@
             hideClearFavouritesModal();
         });
     }
-
-
 </script>
 
 <th:block th:replace="~{fragments/footer :: footer}"></th:block>

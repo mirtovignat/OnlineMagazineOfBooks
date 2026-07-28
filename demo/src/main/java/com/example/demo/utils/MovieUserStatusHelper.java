@@ -1,11 +1,14 @@
 package com.example.demo.utils;
 
+import com.example.demo.dto.joined_to_user.CartMovieForOwnerViewDTO;
+import com.example.demo.dto.joined_to_user.FavouriteMovieForOwnerViewDTO;
 import com.example.demo.dto.movie.MovieCardViewDTO;
 import com.example.demo.dto.movie.MovieForUser;
 import com.example.demo.dto.movie.MovieUserStatus;
+import com.example.demo.model.CartItem;
+import com.example.demo.model.FavouriteMovie;
 import com.example.demo.model.Movie;
-import com.example.demo.service.CartService;
-import com.example.demo.service.FavouritesService;
+import com.example.demo.service.AbstractLinkedCollectionService;
 import com.example.demo.service.PurchasedService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -19,16 +22,17 @@ import java.util.function.Function;
 public class MovieUserStatusHelper {
 
     private final PurchasedService purchasedService;
-    private final CartService cartService;
-    private final FavouritesService favouritesService;
+    private final AbstractLinkedCollectionService<FavouriteMovie, FavouriteMovieForOwnerViewDTO> favouritesService;
+    private final AbstractLinkedCollectionService<CartItem, CartMovieForOwnerViewDTO> cartService;
+
 
     private record UserStatuses(Set<Long> bought, Set<Long> cart, Set<Long> favourites) {}
 
     private UserStatuses getUserStatuses(String username) {
         return new UserStatuses(
                 safeSet(purchasedService.getPurchasedMovieIds(username)),
-                safeSet(cartService.getCartMovieIds(username)),
-                safeSet(favouritesService.getFavouriteMovieIds(username))
+                safeSet(cartService.getMovieIds(username)),
+                safeSet(favouritesService.getMovieIds(username))
         );
     }
 

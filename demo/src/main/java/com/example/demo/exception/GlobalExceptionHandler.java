@@ -3,6 +3,7 @@ package com.example.demo.exception;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.ServletRequestBindingException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
@@ -27,6 +28,12 @@ public class GlobalExceptionHandler {
         if (uri.startsWith("/login")) {
             return "/login";
         }
+        if (uri.startsWith("/cart")) {
+            return "/cart";
+        }
+        if (uri.startsWith("/favourites")) {
+            return "/favourites";
+        }
         return "/";
     }
 
@@ -47,7 +54,6 @@ public class GlobalExceptionHandler {
             };
             return ResponseEntity.status(httpStatus).body(Map.of("message", message));
         }
-
         redirectAttributes.addFlashAttribute("errorMessage", message);
         return "redirect:" + fallbackPath(httpServletRequest);
     }
@@ -63,5 +69,18 @@ public class GlobalExceptionHandler {
         redirectAttributes.addFlashAttribute("errorMessage",
                 "Произошла ошибка: " + exception.getMessage());
         return "redirect:" + fallbackPath(httpServletRequest);
+    }
+
+    @ExceptionHandler(ServletRequestBindingException.class)
+    public Object handleMissingSessionAttribute(ServletRequestBindingException servletRequestBindingException,
+                                                HttpServletRequest request,
+                                                RedirectAttributes redirectAttributes) {
+        String message = "Авторизуйтесь!";
+        if (isAjax(request)) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(Map.of("message", message));
+        }
+        redirectAttributes.addFlashAttribute("errorMessage", message);
+        return "redirect:/login";
     }
 }

@@ -1,16 +1,13 @@
 package com.example.demo.dto.joined_to_user;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
 
 public record CartMovieForOwnerViewDTO(
+        BigDecimal unitPriceSnapshot,
+
         Long id,
 
         String title,
-
-        BigDecimal unitPriceSnapshot,
-
-        LocalDateTime addedAt,
 
         boolean inCart,
 
@@ -26,6 +23,8 @@ public record CartMovieForOwnerViewDTO(
 
         String director,
 
-        String formattedDuration
+        String formattedDuration,
+
+        BigDecimal price
 ) {
 }

@@ -36,15 +36,6 @@
         .badge-genre { background: rgba(96,165,250,0.2); color: #93c5fd; padding: 0.1rem 0.6rem; border-radius: 40px; display: inline-block; }
         .price-label { font-size: 0.75rem; color: #94a3b8; margin-top: 0.5rem; }
         .price { font-size: 1.6rem; font-weight: 700; color: #c084fc; margin: 0.2rem 0 0.8rem; }
-        .movie-added-at {
-            font-size:0.75rem;
-            color:#94a3b8;
-            margin-top:0.25rem;
-        }
-        .movie-added-at strong {
-            color:#c084fc;
-            font-weight:500;
-        }
     </style>
 </head>
 <body>
@@ -65,8 +56,9 @@
         </div>
 
         <form th:action="@{/orders/add/bulk}" method="post" style="text-align:center;"
-              th:with="totalPrice=${#aggregates.sum(cart.![unitPriceSnapshot()])}">
-            <input type="hidden" name="movieIds" th:each="cartMovie : ${cart}" th:value="${cartMovie.id}"/>
+              th:with="totalPrice=${#aggregates.sum(cart.![unitPriceSnapshot])}">
+            <input type="hidden" name="movieIds" th:each="cartMovie : ${cart}"
+                   th:value="${cartMovie.id}"/>
             <button type="submit" class="checkout-btn">
                 <span class="btn-text">🛒 Оформить заказ</span>
                 <span class="btn-price" th:text="${totalPrice} + ' ₽'">0 ₽</span>
@@ -75,64 +67,60 @@
 
         <div class="movies-grid">
             <div class="movie-card" th:each="cartMovie : ${cart}"
-                 th:style="'animation-delay: ' + (${cartMovieStat.index} * 0.05) + 's'">
-                <a class="movie-poster-link" th:href="@{/movies/{id}(id=${cartMovie.id})}">
-                    <img th:if="${cartMovie.posterUrl != null and !cartMovie.posterUrl.isEmpty()}"
-                         th:src="${cartMovie.posterUrl}" class="movie-poster-img" alt="Постер" src=""/>
-                    <div th:unless="${cartMovie.posterUrl != null and !cartMovie.posterUrl.isEmpty()}"
+                 th:style="'animation-delay: ' + (${cartMovieStat.index} * 0.05) + 's'"
+                 th:with="movie=${cartMovie}">
+                <a class="movie-poster-link" th:href="@{/movies/{id}(id=${movie.id})}">
+                    <img th:if="${movie.posterUrl != null and !movie.posterUrl.isEmpty()}"
+                         th:src="${movie.posterUrl}" class="movie-poster-img" alt="Постер" src=""/>
+                    <div th:unless="${movie.posterUrl != null and !movie.posterUrl.isEmpty()}"
                          class="movie-poster-placeholder"><span>📽️ Постер</span></div>
                 </a>
                 <div class="movie-card-content">
-                    <h3><a th:href="@{/movies/{id}(id=${cartMovie.id})}" th:text="${cartMovie.title}">Название
-                        фильма</a></h3>
+                    <h3><a th:href="@{/movies/{id}(id=${movie.id})}" th:text="${movie.title}">Название фильма</a></h3>
 
                     <div class="movie-attributes">
                         <div class="attr-item">
                             <span class="attr-label">Рейтинг</span>
                             <span class="attr-value badge-rating"
-                                  th:data-movie-id="${cartMovie.id}"
-                                  th:text="${cartMovie.rating != null ? '★ ' + #numbers.formatDecimal(cartMovie.rating, 1, 1) + ' / 10' : '-'}">-</span>
+                                  th:data-movie-id="${movie.id}"
+                                  th:text="${movie.rating != null ? '★ ' + #numbers.formatDecimal(movie.rating, 1, 1) + ' / 10' : '-'}">-</span>
                         </div>
                         <div class="attr-item">
                             <span class="attr-label">Год</span>
-                            <span class="attr-value badge-year" th:text="${cartMovie.releaseYear}">-</span>
+                            <span class="attr-value badge-year"
+                                  th:text="${movie.releaseYear != null ? movie.releaseYear : '-'}">-</span>
                         </div>
                         <div class="attr-item">
                             <span class="attr-label">Жанр</span>
-                            <span class="attr-value badge-genre" th:text="${cartMovie.genre}">-</span>
+                            <span class="attr-value badge-genre" th:text="${movie.genre}">-</span>
                         </div>
-                        <div class="attr-item" th:if="${cartMovie.director != null}">
+                        <div class="attr-item" th:if="${movie.director != null}">
                             <span class="attr-label">Режиссёр</span>
-                            <span class="attr-value" th:text="${cartMovie.director}">-</span>
+                            <span class="attr-value" th:text="${movie.director}">-</span>
                         </div>
-                        <div class="attr-item" th:if="${cartMovie.formattedDuration != null}">
+                        <div class="attr-item" th:if="${movie.formattedDuration != null}">
                             <span class="attr-label">Длительность</span>
-                            <span class="attr-value" th:text="${cartMovie.formattedDuration}">-</span>
+                            <span class="attr-value" th:text="${movie.formattedDuration}">-</span>
                         </div>
                     </div>
 
                     <div class="price-label">Стоимость</div>
                     <div class="price" th:text="${cartMovie.unitPriceSnapshot + ' ₽'}">329.99 ₽</div>
 
-                    <div class="movie-added-at" th:if="${cartMovie.addedAt != null}">
-                        <strong>Добавлен:</strong>
-                        <span th:text="${#temporals.format(cartMovie.addedAt, 'dd MMM yyyy, HH:mm')}">15 мар 2026, 18:30</span>
-                    </div>
-
                     <div class="movie-actions">
-                        <button class="icon-btn favourite-btn" th:data-movie-id="${cartMovie.id}"
-                                th:data-action="${cartMovie.inFavourites ? 'remove' : 'add'}"
+                        <button class="icon-btn favourite-btn" th:data-movie-id="${movie.id}"
+                                th:data-action="${movie.inFavourites ? 'remove' : 'add'}"
                                 onclick="toggleFavourite(this)" title="Добавить в избранное">
-                            <span th:text="${cartMovie.inFavourites ? '♥' : '♡'}"></span>
+                            <span th:text="${movie.inFavourites ? '♥' : '♡'}"></span>
                         </button>
-                        <button class="icon-btn remove-btn" th:data-movie-id="${cartMovie.id}"
-                                th:data-movie-title="${cartMovie.title}"
+                        <button class="icon-btn remove-btn" th:data-movie-id="${movie.id}"
+                                th:data-movie-title="${movie.title}"
                                 onclick="showRemoveCartModal(this.getAttribute('data-movie-id'), this.getAttribute('data-movie-title'))"
                                 title="Удалить из корзины">🗑️
                         </button>
                     </div>
                     <div class="purchase-buttons">
-                        <button class="buy-now-btn" th:data-movie-id="${cartMovie.id}"
+                        <button class="buy-now-btn" th:data-movie-id="${movie.id}"
                                 th:data-movie-price="${cartMovie.unitPriceSnapshot}" onclick="showBuyModal(this)">
                             Купить сейчас
                         </button>
@@ -246,3 +234,4 @@
 
 </body>
 </html>
+
