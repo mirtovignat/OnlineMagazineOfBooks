@@ -1,6 +1,9 @@
 package com.example.demo.exception;
 
-public enum ErrorCode {
+import lombok.Getter;
+
+@Getter
+public enum ErrorCode  {
     USER_NOT_FOUND("Пользователь не найден: %s"),
     INSUFFICIENT_FUNDS("Недостаточно средств: нужно %s₽, доступно %s₽"),
     EMPTY_CART("Корзина пуста"),

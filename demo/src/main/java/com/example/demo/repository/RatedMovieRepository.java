@@ -85,4 +85,8 @@ public interface RatedMovieRepository extends JpaRepository<RatedMovie, Long> {
     BigDecimal calculateAverageRating(Movie movie);
 
     boolean existsByMovieTitleAndUserUsername(String title, String username);
+
+    long countByUserUsername(String username);
+
+    long countByMovieId(Long movieId);
 }

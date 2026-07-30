@@ -105,4 +105,15 @@ public class RatedService {
     public BigDecimal getMovieRating(Long movieId) {
         return movieRepository.findByIdOrThrow(movieId).getRating();
     }
+
+    @Transactional(readOnly = true)
+    public long getReviewsCountForMovie(Long movieId) {
+        return movieRepository.findByIdOrThrow(movieId).getRatingsCount();
+        // Или через ratedMovieRepository.countByMovieId(movieId), смотря как у тебя в сущности
+    }
+
+    @Transactional(readOnly = true)
+    public long getReviewsCountByUsername(String username) {
+        return ratedMovieRepository.countByUserUsername(username);
+    }
 }

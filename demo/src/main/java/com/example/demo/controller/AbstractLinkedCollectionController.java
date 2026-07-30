@@ -1,13 +1,12 @@
 package com.example.demo.controller;
 
 import com.example.demo.dto.user.UserForOwnerViewDTO;
+import com.example.demo.exception.SuccessCode;
 import com.example.demo.service.AbstractLinkedCollectionService;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
 
-@Controller
 public abstract class AbstractLinkedCollectionController<DTO> {
 
     protected final AbstractLinkedCollectionService<?, DTO> linkedCollectionService;
@@ -31,35 +30,36 @@ public abstract class AbstractLinkedCollectionController<DTO> {
     @PostMapping("/add/{id}")
     @ResponseBody
     public Map<String, Object> add(@PathVariable Long id,
-                                   @SessionAttribute
-                                   UserForOwnerViewDTO userForOwnerViewDTO) {
+                                   @SessionAttribute UserForOwnerViewDTO userForOwnerViewDTO) {
         linkedCollectionService.add(id, userForOwnerViewDTO.username());
+        int count = linkedCollectionService.getCount(userForOwnerViewDTO.username());
+
         return Map.of(
-                "count", linkedCollectionService.getCount(userForOwnerViewDTO.username()),
-                "message", "Добавлено"
+                "count", count,
+                "message", SuccessCode.ADDED_SUCCESSFULLY.format(id)
         );
     }
 
     @PostMapping("/remove/{id}")
     @ResponseBody
     public Map<String, Object> remove(@PathVariable Long id,
-                                      @SessionAttribute
-                                      UserForOwnerViewDTO userForOwnerViewDTO) {
+                                      @SessionAttribute UserForOwnerViewDTO userForOwnerViewDTO) {
         linkedCollectionService.remove(id, userForOwnerViewDTO.username());
+        int count = linkedCollectionService.getCount(userForOwnerViewDTO.username());
+
         return Map.of(
-                "count", linkedCollectionService.getCount(userForOwnerViewDTO.username()),
-                "message", "Удалено"
+                "count", count,
+                "message", SuccessCode.REMOVED_SUCCESSFULLY.format(id)
         );
     }
 
     @PostMapping("/clear")
     @ResponseBody
-    public Map<String, Object> clear(@SessionAttribute
-                                     UserForOwnerViewDTO userForOwnerViewDTO) {
+    public Map<String, Object> clear(@SessionAttribute UserForOwnerViewDTO userForOwnerViewDTO) {
         linkedCollectionService.removeAll(userForOwnerViewDTO.username());
         return Map.of(
                 "count", 0,
-                "message", "Очищено"
+                "message", SuccessCode.CLEARED_SUCCESSFULLY.format()
         );
     }
 }

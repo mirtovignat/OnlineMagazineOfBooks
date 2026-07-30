@@ -2,6 +2,7 @@ package com.example.demo.controller;
 
 import com.example.demo.dto.user.UserForOwnerViewDTO;
 import com.example.demo.dto.wallet.TopUpFormDTO;
+import com.example.demo.exception.SuccessCode;
 import com.example.demo.mapper.UserMapper;
 import com.example.demo.model.User;
 import com.example.demo.repository.UserRepository;
@@ -51,9 +52,10 @@ public class WalletController {
             userService.topUp(topUpFormDTO, user);
             User updated = userRepository.findByUsernameOrThrow(userForOwnerViewDTO.username());
             httpSession.setAttribute("userForOwnerViewDTO", userMapper.toOwnerView(updated));
-            redirectAttributes.addFlashAttribute("successMessage", "Счёт успешно пополнен!");
-        } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
+            redirectAttributes.addFlashAttribute("successMessage",
+                    SuccessCode.BALANCE_HAS_BEEN_TOPPED_UP_SUCCESSFULLY.format(topUpFormDTO.amount()));
+        } catch (Exception exception) {
+            redirectAttributes.addFlashAttribute("errorMessage", exception.getMessage());
         }
         return "redirect:/wallet/top-up";
     }

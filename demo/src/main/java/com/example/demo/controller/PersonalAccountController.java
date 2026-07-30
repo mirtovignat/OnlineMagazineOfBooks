@@ -1,9 +1,11 @@
 package com.example.demo.controller;
 
+import com.example.demo.dto.ApiResponse;
 import com.example.demo.dto.user.PasswordChangingDTO;
 import com.example.demo.dto.user.ProfileSettingsDTO;
 import com.example.demo.dto.user.UserForOwnerViewDTO;
 import com.example.demo.exception.BusinessException;
+import com.example.demo.exception.SuccessCode;
 import com.example.demo.service.UserService;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
@@ -63,7 +65,8 @@ public class PersonalAccountController {
             userService.changeProfile(profileSettingsDTO, userForOwnerViewDTO.username());
             UserForOwnerViewDTO updated = userService.getUserForOwner(profileSettingsDTO.username());
             httpSession.setAttribute("userForOwnerViewDTO", updated);
-            redirectAttributes.addFlashAttribute("successMessage", "Профиль успешно обновлен!");
+            redirectAttributes.addFlashAttribute("successMessage",
+                    SuccessCode.PROFILE_HAS_BEEN_CHANGED_SUCCESSFULLY.format(updated.username()));
             return "redirect:/personal-account";
         } catch (BusinessException ex) {
             redirectAttributes.addFlashAttribute("errorMessage", ex.getMessage());
@@ -74,39 +77,46 @@ public class PersonalAccountController {
 
     @PostMapping(value = "/profile/settings/change-ajax", consumes = "application/json")
     @ResponseBody
-    public ResponseEntity<Map<String, String>> changeProfileAjax(@Valid @RequestBody ProfileSettingsDTO profileSettingsDTO,
-                                                                 @SessionAttribute UserForOwnerViewDTO userForOwnerViewDTO,
-                                                                 HttpSession httpSession) {
+    public ResponseEntity<ApiResponse> changeProfileAjax(@Valid @RequestBody
+                                                         ProfileSettingsDTO profileSettingsDTO,
+                                                         @SessionAttribute
+                                                         UserForOwnerViewDTO userForOwnerViewDTO,
+                                                         HttpSession httpSession) {
         try {
             userService.changeProfile(profileSettingsDTO, userForOwnerViewDTO.username());
             UserForOwnerViewDTO updated = userService.getUserForOwner(profileSettingsDTO.username());
             httpSession.setAttribute("userForOwnerViewDTO", updated);
-            return ResponseEntity.ok(Map.of(
-                    "message", "Изменения успешно сохранены!",
-                    "newUsername", profileSettingsDTO.username(),
-                    "newEmail", profileSettingsDTO.email(),
-                    "newPhone", profileSettingsDTO.phone() == null ? "" : profileSettingsDTO.phone()
+
+            return ResponseEntity.ok(ApiResponse.successWithData(
+                    SuccessCode.PROFILE_HAS_BEEN_CHANGED_SUCCESSFULLY,
+                    Map.of(
+                            "newUsername", profileSettingsDTO.username(),
+                            "newEmail", profileSettingsDTO.email(),
+                            "newPhone", profileSettingsDTO.phone() == null ? "" : profileSettingsDTO.phone()
+                    ),
+                    profileSettingsDTO.username()
             ));
         } catch (BusinessException ex) {
-            return ResponseEntity.badRequest().body(Map.of("message", ex.getMessage()));
+            return ResponseEntity.badRequest().body(ApiResponse.error(ex.getMessage()));
         }
     }
 
     @GetMapping("/profile/settings/delete/phone")
     @ResponseBody
-    public ResponseEntity<Map<String, String>> deletePhone(@SessionAttribute UserForOwnerViewDTO userForOwnerViewDTO,
-                                                           HttpSession httpSession) {
+    public ResponseEntity<ApiResponse> deletePhone(@SessionAttribute
+                                                   UserForOwnerViewDTO userForOwnerViewDTO,
+                                                   HttpSession httpSession) {
         userService.deletePhone(userForOwnerViewDTO.username());
         UserForOwnerViewDTO updated = userService.getUserForOwner(userForOwnerViewDTO.username());
         httpSession.setAttribute("userForOwnerViewDTO", updated);
-        return ResponseEntity.ok(Map.of("message", "Телефон успешно удален"));
+        return ResponseEntity.ok(ApiResponse.success(SuccessCode.PHONE_HAS_BEEN_REMOVED_SUCCESSFULLY, ""));
     }
 
     @GetMapping("/profile/settings/change/pwd")
     public String getChangePasswordForm(Model model) {
         if (!model.containsAttribute("passwordChangingDTO")) {
-            model.addAttribute("passwordChangingDTO", new
-                    PasswordChangingDTO("", "", ""));
+            model.addAttribute("passwordChangingDTO",
+                    new PasswordChangingDTO("", "", ""));
         }
         return "change-password";
     }
@@ -122,10 +132,11 @@ public class PersonalAccountController {
         }
         try {
             userService.changePassword(passwordChangingDTO, userForOwnerViewDTO.username());
-            redirectAttributes.addFlashAttribute("successMessage", "Пароль успешно изменен!");
+            redirectAttributes.addFlashAttribute("successMessage",
+                    SuccessCode.PASSWORD_HAS_BEEN_CHANGED_SUCCESSFULLY.format(""));
             return "redirect:/personal-account";
-        } catch (BusinessException ex) {
-            redirectAttributes.addFlashAttribute("errorMessage", ex.getMessage());
+        } catch (BusinessException businessException) {
+            redirectAttributes.addFlashAttribute("errorMessage", businessException.getMessage());
             redirectAttributes.addFlashAttribute("passwordChangingDTO", passwordChangingDTO);
             return "redirect:/profile/settings/change/pwd";
         }

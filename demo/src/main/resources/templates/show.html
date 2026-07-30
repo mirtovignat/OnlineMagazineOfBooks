@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>Детали фильма — Cinema Service</title>
+    <title th:text="${card.movie.title + ' — Cinema Service'}">Подробнее о фильме — Cinema Service</title>
     <link rel="icon" type="image/x-icon" th:href="@{/favicon.ico}">
     <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700&display=swap"
           rel="stylesheet">
@@ -11,25 +11,25 @@
     <style>
         .movie-details-container {
             display: grid;
-            grid-template-columns: 430px 1fr;
+            grid-template-columns: 380px 1fr;
             gap: 3rem;
-            max-width: 1050px;
+            max-width: 1100px;
             margin: 3rem auto;
             padding: 2.5rem;
-            background: rgba(15,23,42,0.6);
+            background: rgba(15, 23, 42, 0.6);
             border-radius: 32px;
-            border: 1px solid rgba(72,187,255,0.2);
+            border: 1px solid rgba(72, 187, 255, 0.2);
+            backdrop-filter: blur(8px);
             align-items: start;
         }
         .poster-sidebar { width: 100%; }
         .movie-poster-img,
         .movie-poster-placeholder {
             width: 100%;
-            max-width: 430px;
             aspect-ratio: 2/3;
             border-radius: 28px;
             object-fit: cover;
-            box-shadow: 0 30px 60px rgba(0,0,0,0.45);
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
         }
         .movie-poster-placeholder {
             background: #2d3748;
@@ -38,61 +38,48 @@
             align-items: center;
             justify-content: center;
             color: #718096;
-            font-size: 1rem;
+            font-size: 1.1rem;
         }
-        .movie-info-block { max-width: 560px; }
+        .movie-info-block { width: 100%; }
         .movie-title {
-            font-size: 2.8rem;
+            font-size: 2.6rem;
             font-weight: 700;
-            line-height: 1.15;
-            margin-bottom: 10px;
+            line-height: 1.2;
+            margin-bottom: 12px;
             background: linear-gradient(135deg, #fff, #94a3b8);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
         }
-        .movie-meta {
+        .movie-meta-actions {
             display: flex;
             align-items: center;
-            gap: 12px;
-            margin-bottom: 10px;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
         }
-        .rating-wrapper {
-            display: flex;
-            flex-direction: column;
-            align-items: flex-start;
-        }
+        .rating-wrapper { display: flex; flex-direction: column; }
         .rating-label {
-            font-size: 0.6rem;
+            font-size: 0.65rem;
             text-transform: uppercase;
             letter-spacing: 0.5px;
             color: #94a3b8;
             margin-bottom: 2px;
         }
-        .badge.rating {
-            background: rgba(251,191,36,0.2);
-            color: #fde047;
-            padding: 0.25rem 0.8rem;
-            border-radius: 40px;
-            display: inline-block;
-            font-weight: 600;
-            font-size: 0.9rem;
-        }
         .info-grid {
             display: grid;
-            grid-template-columns: repeat(2, minmax(140px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
             gap: 16px;
-            margin: 24px 0;
+            margin: 20px 0;
         }
         .info-item {
-            background: rgba(255,255,255,0.03);
-            border: 1px solid rgba(72,187,255,0.15);
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(72, 187, 255, 0.15);
             border-radius: 18px;
-            padding: 14px 18px;
+            padding: 12px 16px;
         }
         .info-label {
-            font-size: 0.8rem;
+            font-size: 0.75rem;
             color: #94a3b8;
-            margin-bottom: 6px;
+            margin-bottom: 4px;
             text-transform: uppercase;
             letter-spacing: 0.3px;
         }
@@ -101,142 +88,60 @@
             font-weight: 600;
             color: #eef2ff;
         }
-        .price-label {
-            font-size: 0.8rem;
-            color: #94a3b8;
-            margin-top: 10px;
+        .price-section {
+            margin: 1.5rem 0;
+            padding: 1rem 1.25rem;
+            background: rgba(192, 132, 252, 0.05);
+            border: 1px solid rgba(192, 132, 252, 0.2);
+            border-radius: 20px;
+            display: inline-block;
         }
-        .price {
-            font-size: 2.5rem;
-            font-weight: 700;
-            color: #c084fc;
-            margin: 4px 0 20px;
-        }
-        .icon-group {
+        .price-label { font-size: 0.8rem; color: #94a3b8; }
+        .price-amount { font-size: 2rem; font-weight: 700; color: #c084fc; }
+        .details-actions {
             display: flex;
-            gap: 14px;
-            margin: 10px 0 24px;
+            gap: 1rem;
+            margin-top: 1.5rem;
+            flex-wrap: wrap;
         }
         .icon-btn {
-            width: 50px;
-            height: 50px;
+            width: 46px;
+            height: 46px;
             border-radius: 50%;
-            background: rgba(255,255,255,0.05);
-            border: 1px solid rgba(72,187,255,0.25);
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(72, 187, 255, 0.25);
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.5rem;
+            font-size: 1.4rem;
             cursor: pointer;
-            text-decoration: none;
             color: inherit;
             transition: 0.2s;
-            position: relative;
         }
-        .icon-btn:hover {
-            border-color: #3b82f6;
-            color: #3b82f6;
-            transform: scale(1.1);
-        }
-        .icon-btn.active { color: #f43f5e; }
-        .reviews-badge {
-            position: absolute;
-            top: -6px;
-            right: -6px;
-            background: #3b82f6;
-            color: white;
-            border-radius: 40px;
-            min-width: 20px;
-            height: 20px;
-            font-size: 0.6rem;
-            font-weight: 700;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0 0 6px rgba(59,130,246,0.5);
-            padding: 0 4px;
-        }
-        .purchase-buttons { margin-top: 18px; }
-        .purchase-buttons > div {
-            display: flex;
-            gap: 14px;
-            align-items: center;
-        }
-        .cart-btn-large,
-        .buy-btn-large,
-        .bought-btn-large {
-            flex: 1;
-            height: 56px;
-            border-radius: 18px;
+        .icon-btn:hover { transform: scale(1.08); border-color: #f472b6; color: #f472b6; }
+        .icon-btn.active { color: #f472b6; border-color: #f472b6; }
+        .cart-button, .buy-now-btn, .bought-btn {
+            padding: 0.85rem 2rem;
+            border-radius: 60px;
+            font-weight: 600;
             font-size: 1rem;
-            font-weight: 600;
-            text-align: center;
-            border: none;
             cursor: pointer;
-            transition: 0.2s;
+            border: none;
             text-decoration: none;
-            display: flex;
+            display: inline-flex;
             align-items: center;
             justify-content: center;
+            transition: 0.2s;
         }
-        .to-cart-btn-details {
-            background: linear-gradient(135deg, #3b82f6, #1d4ed8);
-            color: white;
-        }
-        .in-cart-btn-details{
-            display:flex;
-            flex-direction:column;
-            justify-content:center;
-            align-items:center;
-            line-height:1.15;
-        }
-        .in-cart-btn-details .go-to-cart{
-            font-size:.8rem;
-            font-weight:500;
-            opacity:.75;
-            margin-top:3px;
-        }
-        .buy-btn-large {
-            background: linear-gradient(135deg, #10b981, #059669);
-            color: white;
-        }
-        .buy-btn-large:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 20px rgba(16,185,129,0.4);
-        }
-        .bought-btn-large {
-            background: #475569;
-            color: #94a3b8;
-            cursor: default;
-        }
-        .description {
-            margin-top: 20px;
-        }
-        .description h3 {
-            margin-bottom: 12px;
-            font-size: 1.1rem;
-            font-weight: 600;
-            color: #eef2ff;
-        }
-        .description p {
-            color: #d5d9e4;
-            line-height: 1.8;
-            font-size: 0.98rem;
-        }
-        @media (max-width: 900px) {
-            .movie-details-container {
-                grid-template-columns: 1fr;
-                justify-items: center;
-                padding: 1.5rem;
-            }
-            .movie-info-block { max-width: 100%; }
-            .poster-sidebar { max-width: 350px; }
-            .info-grid { grid-template-columns: 1fr 1fr; }
-        }
-        @media (max-width: 600px) {
-            .info-grid { grid-template-columns: 1fr; }
-            .purchase-buttons > div { flex-direction: column; }
-            .cart-btn-large, .buy-btn-large, .bought-btn-large { width: 100%; }
+        .to-cart-btn-details { background: linear-gradient(135deg, #3b82f6, #1d4ed8); color: white; }
+        .to-cart-btn-details:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(59, 130, 246, 0.4); }
+        .in-cart-btn-details { background: linear-gradient(135deg, #10b981, #059669); color: white; }
+        .buy-now-btn { background: linear-gradient(135deg, #10b981, #059669); color: white; }
+        .buy-now-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(16, 185, 129, 0.4); }
+        .bought-btn { background: #64748b; color: white; cursor: default; opacity: 0.8; }
+        @media (max-width: 850px) {
+            .movie-details-container { grid-template-columns: 1fr; }
+            .poster-sidebar { max-width: 320px; margin: 0 auto; }
         }
     </style>
 </head>
@@ -246,94 +151,97 @@
 <th:block th:replace="~{fragments/flash-messages :: flashMessages}"></th:block>
 
 <main>
-    <div class="movie-details-container" th:if="${card != null}">
+    <div class="movie-details-container" th:data-movie-id="${card.movie.id}">
         <div class="poster-sidebar">
-            <img th:if="${card.movie.posterUrl != null}" th:src="${card.movie.posterUrl}" alt="Постер"
-                 class="movie-poster-img">
-            <div th:unless="${card.movie.posterUrl != null}" class="movie-poster-placeholder"><span>📽️ Постер</span>
+            <img th:if="${card.movie.posterUrl != null and !card.movie.posterUrl.isEmpty()}"
+                 th:src="${card.movie.posterUrl}" class="movie-poster-img" alt="Постер" src=""/>
+            <div th:unless="${card.movie.posterUrl != null and !card.movie.posterUrl.isEmpty()}"
+                 class="movie-poster-placeholder">
+                <span>📽️ Постер отсутствует</span>
             </div>
         </div>
 
         <div class="movie-info-block">
             <h1 class="movie-title" th:text="${card.movie.title}">Название фильма</h1>
 
-            <div class="movie-meta">
+            <div class="movie-meta-actions">
                 <div class="rating-wrapper">
                     <span class="rating-label">Рейтинг</span>
                     <span class="badge rating" th:data-movie-id="${card.movie.id}"
                           th:text="${card.movie.rating != null ? '★ ' + #numbers.formatDecimal(card.movie.rating, 1, 1) + ' / 10' : '-'}">-</span>
                 </div>
-            </div>
 
-            <div class="info-grid">
-                <div class="info-item">
-                    <div class="info-label">Режиссёр</div>
-                    <div class="info-value" th:text="${card.movie.director}">-</div>
-                </div>
-                <div class="info-item">
-                    <div class="info-label">Жанр</div>
-                    <div class="info-value" th:text="${card.movie.genre}">-</div>
-                </div>
-                <div class="info-item">
-                    <div class="info-label">Дата выхода</div>
-                    <div class="info-value"
-                         th:text="${card.movie.releaseDate != null ? #temporals.format(card.movie.releaseDate, 'dd MMM yyyy') : '-'}">
-                        -
-                    </div>
-                </div>
-                <div class="info-item">
-                    <div class="info-label">Длительность</div>
-                    <div class="info-value" th:text="${card.movie.formattedDuration}">-</div>
-                </div>
-            </div>
-
-            <div class="price-label">Стоимость</div>
-            <div class="price" th:text="${card.movie.price + ' ₽'}">0 ₽</div>
-
-            <!-- ОДИН БЛОК ДЛЯ ВСЕХ: кнопки всегда видны -->
-            <div class="icon-group">
                 <button class="icon-btn favourite-btn"
                         th:classappend="${card.status.inFavourites} ? 'active' : ''"
                         th:data-movie-id="${card.movie.id}"
                         th:data-action="${card.status.inFavourites} ? 'remove' : 'add'"
-                        onclick="toggleFavourite(this)">
+                        onclick="toggleFavourite(this)" title="В избранное">
                     <span th:text="${card.status.inFavourites} ? '♥' : '♡'"></span>
                 </button>
-                <button class="icon-btn"
+
+                <button class="icon-btn rating-btn"
                         th:data-movie-id="${card.movie.id}"
                         th:data-movie-title="${card.movie.title}"
-                        onclick="showRatingModal(this.getAttribute('data-movie-id'), this.getAttribute('data-movie-title'))">
-                    ☆
+                        onclick="showRatingModal(this.getAttribute('data-movie-id'), this.getAttribute('data-movie-title'))"
+                        title="Оценить">☆
                 </button>
-                <a th:href="@{/rated/{id}/reviews(id=${card.movie.id})}" class="icon-btn">
+
+                <a th:href="@{/rated/{id}/reviews(id=${card.movie.id})}" class="icon-btn comment-btn" title="Отзывы и комментарии">
                     💬
                     <span th:if="${card.movie.ratingsCount != null and card.movie.ratingsCount > 0}"
                           class="reviews-badge" th:text="${card.movie.ratingsCount}">0</span>
                 </a>
             </div>
 
-            <div class="description">
-                <h3>Описание</h3>
-                <p th:text="${card.movie.description}">Описание фильма</p>
+            <div class="info-grid">
+                <div class="info-item">
+                    <div class="info-label">Год выпуска</div>
+                    <div class="info-value"
+                         th:text="${card.movie.releaseDate != null ? #temporals.format(card.movie.releaseDate, 'yyyy') : '-'}">
+                        -
+                    </div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Жанр</div>
+                    <div class="info-value" th:text="${card.movie.genre != null ? card.movie.genre : '-'}">-</div>
+                </div>
+                <div class="info-item" th:if="${card.movie.director != null}">
+                    <div class="info-label">Режиссёр</div>
+                    <div class="info-value" th:text="${card.movie.director}">-</div>
+                </div>
+                <div class="info-item" th:if="${card.movie.formattedDuration != null}">
+                    <div class="info-label">Длительность</div>
+                    <div class="info-value" th:text="${card.movie.formattedDuration}">-</div>
+                </div>
             </div>
 
-            <div class="purchase-buttons">
-                <div th:if="${session.userForOwnerViewDTO != null}" style="display: flex; width: 100%; gap: 1rem;">
-                    <button th:if="${!card.status.bought and !card.status.inCart}" th:data-movie-id="${card.movie.id}"
-                            onclick="addToCart(this)" class="cart-btn-large to-cart-btn-details">В корзину
+            <div class="price-section">
+                <div class="price-label">Стоимость покупки</div>
+                <div class="price-amount" th:text="${card.movie.price + ' ₽'}">0 ₽</div>
+            </div>
+
+            <div class="details-actions">
+                <th:block th:if="${session.userForOwnerViewDTO != null}">
+                    <button type="button" th:if="${!card.status.bought and !card.status.inCart}"
+                            class="cart-button to-cart-btn-details"
+                            th:data-movie-id="${card.movie.id}"
+                            onclick="addToCart(this)">В корзину
                     </button>
-                    <a th:if="${!card.status.bought and card.status.inCart}" th:data-movie-id="${card.movie.id}"
-                       href="/cart" class="cart-btn-large in-cart-btn-details in-cart-link">В корзине →</a>
-                    <button th:if="${!card.status.bought}" th:data-movie-id="${card.movie.id}"
-                            th:data-movie-title="${card.movie.title}" th:data-movie-price="${card.movie.price}"
-                            onclick="showBuyModal(this)" class="buy-btn-large">Купить сейчас
+                    <a th:if="${card.status.inCart}" href="/cart" class="cart-button in-cart-btn-details">В корзине
+                        →</a>
+                    <button th:if="${!card.status.bought}"
+                            class="buy-now-btn"
+                            th:data-movie-id="${card.movie.id}"
+                            th:data-movie-price="${card.movie.price}"
+                            th:data-movie-title="${card.movie.title}"
+                            onclick="showBuyModal(this)">Купить сейчас
                     </button>
-                    <button th:if="${card.status.bought}" class="bought-btn-large" disabled>Куплено</button>
-                </div>
-                <div th:if="${session.userForOwnerViewDTO == null}" style="display: flex; width: 100%; gap: 1rem;">
-                    <a th:href="@{/login}" class="cart-btn-large to-cart-btn-details">В корзину</a>
-                    <a th:href="@{/login}" class="buy-btn-large">Купить сейчас</a>
-                </div>
+                    <button th:if="${card.status.bought}" class="bought-btn" disabled>Куплено</button>
+                </th:block>
+                <th:block th:unless="${session.userForOwnerViewDTO != null}">
+                    <a th:href="@{/login}" class="cart-button to-cart-btn-details">В корзину</a>
+                    <a th:href="@{/login}" class="buy-now-btn">Купить сейчас</a>
+                </th:block>
             </div>
         </div>
     </div>
@@ -341,6 +249,7 @@
 
 <th:block th:replace="~{fragments/modals :: buyModal}"></th:block>
 <th:block th:replace="~{fragments/modals :: ratingModal}"></th:block>
+<th:block th:replace="~{fragments/modals :: confirmDeleteModal}"></th:block>
 
 <script th:src="@{/js/main.js}" defer></script>
 <th:block th:replace="~{fragments/footer :: footer}"></th:block>

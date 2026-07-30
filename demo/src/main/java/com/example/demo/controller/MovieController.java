@@ -34,13 +34,12 @@ public class MovieController {
             @SessionAttribute(required = false) UserForOwnerViewDTO userForOwnerViewDTO,
             @PageableDefault(size = 12, sort = "releaseDate", direction = Sort.Direction.DESC) Pageable pageable,
             Model model) {
-
         String username = prepareModelAndGetUsername(userForOwnerViewDTO, model);
         boolean isSearch = title != null && !title.isBlank();
-
-        MovieSearchDTO searchDto = isSearch ? new MovieSearchDTO(null, title, null, null, null) : null;
-        Page<MovieForUser<MovieCardViewDTO>> cardsPage = movieService.getMovieCards(username, searchDto, pageable);
-
+        MovieSearchDTO movieSearchDTO = isSearch ? new MovieSearchDTO(null, title,
+                null, null, null) : null;
+        Page<MovieForUser<MovieCardViewDTO>> cardsPage = movieService
+                .getMovieCards(username, movieSearchDTO, pageable);
         model.addAttribute("cardsPage", cardsPage);
         return "index";
     }

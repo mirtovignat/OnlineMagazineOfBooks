@@ -13,8 +13,9 @@ public interface PurchasedMapper {
     @Mapping(target = "title", source = "movie.title")
     @Mapping(target = "price", source = "movie.price")
     @Mapping(target = "releaseDate", source = "movie.releaseDate")
-    @Mapping(target = "formattedDuration", source = "movie.duration")
-    @Mapping(target = "genre", source = "movie.genre")
+    @Mapping(target = "formattedDuration", source = "movie.duration",
+            qualifiedByName = "durationToString")    @Mapping(target = "genre", source = "movie.genre")
+    @Mapping(target = "posterUrl", source = "movie.posterUrl")
     @Mapping(target = "rating", source = "movie.rating")
     @Mapping(target = "description", source = "movie.description")
     @Mapping(target = "purchasesCount", source = "movie.purchases", qualifiedByName = "sizeToLong")

@@ -1,3 +1,6 @@
+let _deletemovieId = null;
+let _ratingModalMode = 'add';
+
 function handleResponse(response) {
     if (response.status === 401) {
         return response.json().then(data => {
@@ -63,10 +66,23 @@ function refreshCounts() {
     updateFavouritesCount();
 }
 
+function requireAuth(event, url) {
+    var userMenu = document.querySelector('.user-menu');
+    if (!userMenu) {
+        event.preventDefault();
+        showFlashMessage('Авторизуйтесь!', 'error');
+        return false;
+    }
+    return true;
+}
+
 function addToCart(button) {
     const movieId = getMovieId(button);
     if (!movieId) return;
-    button.disabled = true;
+
+    if (button.tagName.toLowerCase() === 'button') {
+        button.disabled = true;
+    }
 
     fetch('/cart/add/' + encodeURIComponent(movieId), {
         method: 'POST',
@@ -76,16 +92,27 @@ function addToCart(button) {
     .then(data => {
         showFlashMessage(data.message, 'success');
         updateCartCount();
-        window.location.reload();
+
+        button.textContent = 'В корзине →';
+        button.className = 'cart-button in-cart-btn-details';
+        button.onclick = function() { removeFromCart(this); };
+        button.disabled = false;
     })
-    .catch(err => showFlashMessage(err.message || 'Ошибка', 'error'))
-    .finally(() => {});
+    .catch(err => {
+        showFlashMessage(err.message || 'Ошибка', 'error');
+        if (button.tagName.toLowerCase() === 'button') {
+            button.disabled = false;
+        }
+    });
 }
 
 function removeFromCart(button) {
     const movieId = getMovieId(button);
     if (!movieId) return;
-    button.disabled = true;
+
+    if (button.tagName.toLowerCase() === 'button') {
+        button.disabled = true;
+    }
 
     fetch('/cart/remove/' + encodeURIComponent(movieId), {
         method: 'POST',
@@ -95,13 +122,6 @@ function removeFromCart(button) {
     .then(data => {
         showFlashMessage(data.message, 'success');
         updateCartCount();
-        const parent = button.parentNode;
-        const btn = document.createElement('button');
-        btn.className = 'cart-button to-cart-btn-details';
-        btn.textContent = 'В корзину';
-        btn.setAttribute('data-movie-id', movieId);
-        btn.onclick = function() { addToCart(this); };
-        parent.replaceChild(btn, button);
 
         const card = button.closest('.movie-card');
         if (card && window.location.pathname.includes('/cart')) {
@@ -110,32 +130,25 @@ function removeFromCart(button) {
             setTimeout(() => {
                 card.remove();
                 const rem = document.querySelectorAll('.movie-card').length;
-                const span = document.querySelector('.cart-count span');
-                if (span) span.innerText = rem;
                 if (rem === 0) window.location.reload();
             }, 300);
+        } else {
+            const newBtn = document.createElement('button');
+            newBtn.type = 'button';
+            newBtn.className = 'cart-button to-cart-btn-details';
+            newBtn.setAttribute('data-movie-id', movieId);
+            newBtn.setAttribute('onclick', 'addToCart(this)');
+            newBtn.textContent = 'В корзину';
+
+            button.parentNode.replaceChild(newBtn, button);
         }
     })
-    .catch(err => showFlashMessage(err.message || 'Ошибка', 'error'))
-    .finally(() => button.disabled = false);
-}
-
-function toggleCartButton(button, inCart) {
-    const parent = button.parentNode;
-    if (inCart) {
-        const link = document.createElement('a');
-        link.className = 'cart-button in-cart-btn-details';
-        link.href = '/cart';
-        link.textContent = 'В корзине →';
-        parent.replaceChild(link, button);
-    } else {
-        const btn = document.createElement('button');
-        btn.className = 'cart-button to-cart-btn-details';
-        btn.textContent = 'В корзину';
-        btn.setAttribute('data-movie-id', button.getAttribute('data-movie-id') || '');
-        btn.onclick = function() { addToCart(this); };
-        parent.replaceChild(btn, button);
-    }
+    .catch(err => {
+        showFlashMessage(err.message || 'Ошибка', 'error');
+        if (button.tagName.toLowerCase() === 'button') {
+            button.disabled = false;
+        }
+    });
 }
 
 function updateCartCount() {
@@ -319,6 +332,25 @@ function hideRatingModal() {
     }
 }
 
+function updateMovieReviewsBadge(movieId, reviewsCount) {
+    if (reviewsCount === undefined || reviewsCount === null) return;
+
+    const commentBtns = document.querySelectorAll(`.comment-btn[data-movie-id="${movieId}"]`);
+    commentBtns.forEach(btn => {
+        let badge = btn.querySelector('.reviews-badge');
+        if (reviewsCount > 0) {
+            if (!badge) {
+                badge = document.createElement('span');
+                badge.className = 'reviews-badge';
+                btn.appendChild(badge);
+            }
+            badge.textContent = reviewsCount;
+        } else if (badge) {
+            badge.remove();
+        }
+    });
+}
+
 function submitRating() {
     const modal = document.getElementById('ratingModal');
     if (!modal) return;
@@ -333,10 +365,7 @@ function submitRating() {
     let rating = document.getElementById('ratingValue').value;
     const review = document.getElementById('ratingComment').value;
 
-    if (!movieId) {
-        if (errorDiv) { errorDiv.innerText = 'Ошибка: не определён фильм'; errorDiv.style.display = 'block'; }
-        return;
-    }
+    if (!movieId) return;
 
     const ratingValue = parseFloat(rating);
     if (isNaN(ratingValue) || ratingValue < 0 || ratingValue > 10) {
@@ -362,17 +391,90 @@ function submitRating() {
     .then(handleResponse)
     .then(data => {
         hideRatingModal();
-        if (window.location.pathname.includes('/reviews')) {
-            sessionStorage.setItem('flashMessage', JSON.stringify({ message: data.message, type: 'success' }));
-            setTimeout(() => window.location.reload(), 600);
-        } else {
-            showFlashMessage(data.message, 'success');
+        showFlashMessage(data.message, 'success');
+
+        if (data.data) {
+            const { movieId: id, rating: newRating, reviewsCount } = data.data;
+            updateMovieReviewsBadge(id, reviewsCount);
+            document.querySelectorAll(`.badge.rating[data-movie-id="${id}"]`).forEach(b => {
+                b.textContent = newRating !== '-' ? `★ ${newRating} / 10` : '-';
+            });
+        } else if (typeof updateMovieRating === 'function') {
             updateMovieRating(movieId);
+        }
+
+        const ownCard = document.querySelector(`.review-card[data-movie-id="${movieId}"][data-own="true"]`);
+
+        if (ownCard) {
+            const ratingValEl = ownCard.querySelector('.review-rating-value');
+            const textEl = ownCard.querySelector('.review-text');
+            const btnEdit = ownCard.querySelector('.btn-edit');
+
+            if (ratingValEl) ratingValEl.textContent = ratingValue.toFixed(1);
+            if (textEl) textEl.textContent = review ? review.trim() : '';
+            if (btnEdit) {
+                btnEdit.setAttribute('data-review-rating', ratingValue.toFixed(1));
+                btnEdit.setAttribute('data-review-text', review ? review.trim() : '');
+            }
+        } else {
+            const addBtnContainer = document.getElementById('addReviewBtnContainer');
+            if (addBtnContainer) addBtnContainer.style.display = 'none';
+
+            const noReviewsBlock = document.getElementById('noReviewsBlock');
+            if (noReviewsBlock) noReviewsBlock.style.display = 'none';
+
+            const userNameEl = document.querySelector('.user-menu .username') || document.querySelector('.user-details .name');
+            const username = userNameEl ? userNameEl.textContent.trim() : 'Пользователь';
+            const firstLetter = username.charAt(0).toUpperCase() || 'U';
+
+            const newCardHtml = `
+                <div class="review-card" data-movie-id="${movieId}" data-own="true" style="animation-delay: 0s;">
+                    <div class="review-header">
+                        <div class="review-user">
+                            <div class="avatar">${firstLetter}</div>
+                            <span class="review-username">${username}</span>
+                        </div>
+                        <div class="review-meta">
+                            <span class="review-rating">
+                                <span>★</span>
+                                <span class="review-rating-value">${ratingValue.toFixed(1)}</span>
+                            </span>
+                            <span class="review-date">Только что</span>
+                        </div>
+                    </div>
+                    <p class="review-text">${review ? review.trim() : ''}</p>
+                    <div class="review-actions">
+                        <button class="btn-edit"
+                                data-movie-id="${movieId}"
+                                data-movie-title=""
+                                data-review-rating="${ratingValue.toFixed(1)}"
+                                data-review-text="${review ? review.trim() : ''}"
+                                onclick="showRatingModal(this.getAttribute('data-movie-id'), this.getAttribute('data-movie-title'), 'edit', parseFloat(this.getAttribute('data-review-rating')), this.getAttribute('data-review-text') || '')">
+                            ✏️ Редактировать
+                        </button>
+                        <button class="btn-delete"
+                                data-movie-id="${movieId}"
+                                onclick="deleteRating(this.getAttribute('data-movie-id'))">
+                            🗑 Удалить
+                        </button>
+                    </div>
+                </div>
+            `;
+
+            let reviewsList = document.getElementById('reviewsList');
+            if (!reviewsList) {
+                reviewsList = document.createElement('div');
+                reviewsList.className = 'reviews-list';
+                reviewsList.id = 'reviewsList';
+                const header = document.querySelector('.reviews-header');
+                if (header) header.insertAdjacentElement('afterend', reviewsList);
+            }
+            reviewsList.insertAdjacentHTML('afterbegin', newCardHtml);
         }
     })
     .catch(err => {
         hideRatingModal();
-        showFlashMessage(err.message || 'Ошибка при отправке оценки', 'error');
+        showFlashMessage(err.message || 'Ошибка сохранения', 'error');
     });
 }
 
@@ -381,20 +483,12 @@ function updateMovieRating(movieId) {
         .then(r => r.json())
         .then(data => {
             const newRating = data.rating;
-            document.querySelectorAll('.badge.rating').forEach(b => {
-                const id = b.getAttribute('data-movie-id');
-                if (String(id) === String(movieId)) {
-                    if (newRating !== null && newRating !== '-') {
-                        const formatted = parseFloat(newRating).toFixed(1);
-                        const currentText = b.textContent.trim();
-                        if (currentText.includes('★')) {
-                            b.textContent = currentText.includes('/ 10') ? '★ ' + formatted + ' / 10' : '★ ' + formatted;
-                        } else {
-                            b.textContent = formatted;
-                        }
-                    } else {
-                        b.textContent = '-';
-                    }
+            document.querySelectorAll(`.badge.rating[data-movie-id="${movieId}"]`).forEach(b => {
+                if (newRating !== null && newRating !== '-') {
+                    const formatted = parseFloat(newRating).toFixed(1);
+                    b.textContent = `★ ${formatted} / 10`;
+                } else {
+                    b.textContent = '-';
                 }
             });
         })
@@ -428,15 +522,41 @@ function executeDelete() {
     .then(handleResponse)
     .then(data => {
         hideConfirmDeleteModal();
-        if (window.location.pathname.includes('/reviews')) {
-            sessionStorage.setItem('flashMessage', JSON.stringify({ message: data.message, type: 'success' }));
-            setTimeout(() => window.location.reload(), 600);
-        } else {
-            showFlashMessage(data.message, 'success');
+        showFlashMessage(data.message, 'success');
+
+        if (data.data) {
+            const { movieId: id, rating: newRating, reviewsCount } = data.data;
+            updateMovieReviewsBadge(id, reviewsCount);
+            document.querySelectorAll(`.badge.rating[data-movie-id="${id}"]`).forEach(b => {
+                b.textContent = newRating !== '-' ? `★ ${newRating} / 10` : '-';
+            });
+        } else if (typeof updateMovieRating === 'function') {
             updateMovieRating(movieId);
         }
+
+        const ownCard = document.querySelector(`.review-card[data-movie-id="${movieId}"][data-own="true"]`);
+        if (ownCard) {
+            ownCard.style.transition = 'all 0.3s ease';
+            ownCard.style.opacity = '0';
+            ownCard.style.transform = 'scale(0.9)';
+            setTimeout(() => {
+                ownCard.remove();
+
+                const addBtnContainer = document.getElementById('addReviewBtnContainer');
+                if (addBtnContainer) addBtnContainer.style.display = 'block';
+
+                const remainingCards = document.querySelectorAll('.review-card');
+                if (remainingCards.length === 0) {
+                    const noReviewsBlock = document.getElementById('noReviewsBlock');
+                    if (noReviewsBlock) noReviewsBlock.style.display = 'block';
+                }
+            }, 300);
+        }
     })
-    .catch(err => showFlashMessage(err.message || 'Ошибка удаления', 'error'));
+    .catch(err => {
+        hideConfirmDeleteModal();
+        showFlashMessage(err.message || 'Ошибка удаления', 'error');
+    });
 }
 
 function toggleUserMenu() {
@@ -481,26 +601,35 @@ document.addEventListener('click', function(e) {
 });
 
 function calculateRangeMinutes() {
-        const getVal = (id) => parseInt(document.getElementById(id)?.value, 10) || 0;
+    const getVal = (id) => parseInt(document.getElementById(id)?.value, 10) || 0;
 
-        const fromH = getVal('durationFromHours');
-        const fromM = getVal('durationFromMinutes');
-        const fromS = getVal('durationFromSeconds');
-        const totalFrom = (fromH * 60) + fromM + Math.round(fromS / 60);
+    const fromH = getVal('durationFromHours');
+    const fromM = getVal('durationFromMinutes');
+    const fromS = getVal('durationFromSeconds');
+    const totalFrom = (fromH * 60) + fromM + Math.round(fromS / 60);
 
-        const toH = getVal('durationToHours');
-        const toM = getVal('durationToMinutes');
-        const toS = getVal('durationToSeconds');
-        const totalTo = (toH * 60) + toM + Math.round(toS / 60);
+    const toH = getVal('durationToHours');
+    const toM = getVal('durationToMinutes');
+    const toS = getVal('durationToSeconds');
+    const totalTo = (toH * 60) + toM + Math.round(toS / 60);
 
-        const minEl = document.getElementById('minDuration');
-        const maxEl = document.getElementById('maxDuration');
+    const minEl = document.getElementById('minDuration');
+    const maxEl = document.getElementById('maxDuration');
 
-        if (minEl) minEl.value = totalFrom > 0 ? totalFrom : '';
-        if (maxEl) maxEl.value = totalTo > 0 ? totalTo : '';
+    if (minEl) minEl.value = totalFrom > 0 ? totalFrom : '';
+    if (maxEl) maxEl.value = totalTo > 0 ? totalTo : '';
 }
 
 document.addEventListener('DOMContentLoaded', () => {
+    const flash = sessionStorage.getItem('flashMessage');
+    if (flash) {
+        try {
+            const data = JSON.parse(flash);
+            showFlashMessage(data.message, data.type);
+            sessionStorage.removeItem('flashMessage');
+        } catch (e) {}
+    }
+
     const positiveInputs = document.querySelectorAll('.positive-int');
 
     positiveInputs.forEach(input => {
@@ -535,12 +664,18 @@ document.addEventListener('visibilitychange', function() {
     if (document.visibilityState === 'visible') refreshCounts();
 });
 
-function requireAuth(event, url) {
-    var userMenu = document.querySelector('.user-menu');
-    if (!userMenu) {
-        event.preventDefault();
-        showFlashMessage('Авторизуйтесь!', 'error');
-        return false;
-    }
-    return true;
+function clearCart() {
+    if (!confirm('Вы уверены, что хотите очистить корзину?')) return;
+
+    fetch('/cart/clear', {
+        method: 'POST',
+        headers: { 'X-Requested-With': 'XMLHttpRequest' }
+    })
+    .then(handleResponse)
+    .then(data => {
+        showFlashMessage(data.message, 'success');
+        updateCartCount();
+        location.reload();
+    })
+    .catch(err => showFlashMessage(err.message || 'Ошибка очистки', 'error'));
 }

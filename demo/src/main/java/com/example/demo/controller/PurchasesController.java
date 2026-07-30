@@ -4,6 +4,7 @@ import com.example.demo.dto.joined_to_user.HistoricalMovieForOwnerViewDTO;
 import com.example.demo.dto.joined_to_user.LibrarianMovieForOwnerViewDTO;
 import com.example.demo.dto.user.UserForOwnerViewDTO;
 import com.example.demo.exception.BusinessException;
+import com.example.demo.exception.SuccessCode;
 import com.example.demo.service.PurchasedService;
 import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -28,7 +29,8 @@ public class PurchasesController {
         try {
             purchasedService.validateBulkPurchase(userForOwnerViewDTO.username());
             purchasedService.purchase(userForOwnerViewDTO.username());
-            redirectAttributes.addFlashAttribute("successMessage", "Покупка прошла успешно!");
+            redirectAttributes.addFlashAttribute("successMessage",
+                    SuccessCode.PURCHASED_SUCCESSFULLY.format("Все товары"));
         } catch (BusinessException e) {
             redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
         }
@@ -42,9 +44,10 @@ public class PurchasesController {
         try {
             purchasedService.validatePurchase(id, userForOwnerViewDTO.username());
             purchasedService.purchase(id, userForOwnerViewDTO.username());
-            redirectAttributes.addFlashAttribute("successMessage", "Товар куплен!");
-        } catch (BusinessException e) {
-            redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
+            redirectAttributes.addFlashAttribute("successMessage",
+                    SuccessCode.PURCHASED_SUCCESSFULLY.format(id));
+        } catch (BusinessException businessException) {
+            redirectAttributes.addFlashAttribute("errorMessage", businessException.getMessage());
         }
         return "redirect:/";
     }

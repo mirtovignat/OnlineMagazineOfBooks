@@ -5,7 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Фильмы — Cinema Service</title>
     <link rel="icon" type="image/x-icon" th:href="@{/favicon.ico}">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700&display=swap"
+          rel="stylesheet">
     <link rel="stylesheet" th:href="@{/css/main.css}">
     <style>
         .movies-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 2rem; padding: 2rem; max-width: 1400px; margin: 0 auto; }
@@ -104,7 +105,6 @@
                 <div class="price-label">Стоимость</div>
                 <div class="price" th:text="${card.movie.price + ' ₽'}">0 ₽</div>
 
-                <!-- ОДИН БЛОК ДЛЯ ВСЕХ: кнопки всегда видны -->
                 <div class="movie-actions">
                     <button class="icon-btn favourite-btn"
                             th:classappend="${card.status.inFavourites} ? 'active' : ''"
@@ -127,13 +127,17 @@
                 </div>
 
                 <div class="purchase-buttons">
-                    <button th:if="${!card.status.bought and !card.status.inCart}"
+                    <button type="button" th:if="${!card.status.bought and !card.status.inCart}"
                             class="cart-button to-cart-btn-details"
                             th:data-movie-id="${card.movie.id}"
                             onclick="addToCart(this)">В корзину
                     </button>
-                    <a th:if="${card.status.inCart}" href="/cart" class="cart-button in-cart-btn-details">В корзине →</a>
-                    <button th:if="${!card.status.bought}"
+                    <button type="button" th:if="${!card.status.bought and card.status.inCart}"
+                            class="cart-button in-cart-btn-details"
+                            th:data-movie-id="${card.movie.id}"
+                            onclick="removeFromCart(this)">В корзине
+                    </button>
+                    <button type="button" th:if="${!card.status.bought}"
                             class="buy-now-btn"
                             th:data-movie-id="${card.movie.id}"
                             th:data-movie-price="${card.movie.price}"

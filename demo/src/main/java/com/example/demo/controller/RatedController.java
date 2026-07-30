@@ -1,11 +1,13 @@
 package com.example.demo.controller;
 
+import com.example.demo.dto.ApiResponse;
 import com.example.demo.dto.joined_to_user.RatedMovieForOwnerFormDTO;
 import com.example.demo.dto.joined_to_user.RatedMovieForOwnerViewDTO;
 import com.example.demo.dto.joined_to_user.ReviewViewDTO;
 import com.example.demo.dto.user.UserForOwnerViewDTO;
 import com.example.demo.exception.BusinessException;
 import com.example.demo.exception.ErrorCode;
+import com.example.demo.exception.SuccessCode;
 import com.example.demo.service.RatedService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -50,11 +52,10 @@ public class RatedController {
         if (currentUsername != null) {
             ratedMovieForOwnerFormDTO = ratedService.getPreFilledForm(movieId, currentUsername);
             isRatedByCurrentUser = ratedMovieForOwnerFormDTO.rating() != null;
-            badgeUpdater.updateBadges(userForOwnerViewDTO, model);
         } else {
             ratedMovieForOwnerFormDTO = new RatedMovieForOwnerFormDTO(movieId, null, null);
         }
-
+        badgeUpdater.updateBadges(userForOwnerViewDTO, model);
         model.addAttribute("ratedForm", ratedMovieForOwnerFormDTO);
         model.addAttribute("editMode", edit);
         model.addAttribute("isRatedByCurrentUser", isRatedByCurrentUser);
@@ -74,9 +75,15 @@ public class RatedController {
             return "redirect:/rated/" + movieId + "/reviews";
         }
         try {
+            RatedMovieForOwnerFormDTO existingForm = ratedService.getPreFilledForm(movieId, userForOwnerViewDTO.username());
+            boolean isUpdate = existingForm != null && existingForm.rating() != null;
             ratedService.addOrUpdateRating(movieId, userForOwnerViewDTO.username(), form);
-            redirectAttributes.addFlashAttribute("successMessage",
-                    form.rating() != null ? "Отзыв обновлён!" : "Отзыв добавлен!");
+
+            SuccessCode successCode = isUpdate
+                    ? SuccessCode.REVIEW_HAS_BEEN_UPDATED_SUCCESSFULLY
+                    : SuccessCode.REVIEW_HAS_BEEN_SAVED_SUCCESSFULLY;
+
+            redirectAttributes.addFlashAttribute("successMessage", successCode.format(movieId));
         } catch (BusinessException e) {
             if (e.getErrorCode() == ErrorCode.DATA_COINCIDENCE) {
                 redirectAttributes.addFlashAttribute("infoMessage", e.getMessage());
@@ -97,62 +104,101 @@ public class RatedController {
 
         try {
             ratedService.deleteRating(movieId, userForOwnerViewDTO.username());
-            redirectAttributes.addFlashAttribute("successMessage", "Отзыв удалён");
-        } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("errorMessage", "Ошибка при удалении отзыва");
+            redirectAttributes.addFlashAttribute("successMessage",
+                    SuccessCode.REVIEW_HAS_BEEN_DELETED_SUCCESSFULLY.format(movieId));
+        } catch (Exception exception) {
+            redirectAttributes.addFlashAttribute("errorMessage",
+                    "Ошибка при удалении отзыва");
         }
         return "redirect:/rated/" + movieId + "/reviews";
     }
 
+    // --- REST МЕТОДЫ (Возвращаем payload с обновленным рейтингом и кол-вом отзывов) ---
+
     @PostMapping("/add")
     @ResponseBody
-    public ResponseEntity<Map<String, String>> addRating(
+    public ResponseEntity<ApiResponse> addRating(
             @Valid @ModelAttribute RatedMovieForOwnerFormDTO ratedMovieForOwnerFormDTO,
             @SessionAttribute UserForOwnerViewDTO userForOwnerViewDTO) {
 
         try {
-            ratedService.addOrUpdateRating(ratedMovieForOwnerFormDTO.id(), userForOwnerViewDTO.username(), ratedMovieForOwnerFormDTO);
-            return ResponseEntity.ok(Map.of("message", "Оценка сохранена"));
-        } catch (BusinessException e) {
-            if (e.getErrorCode() == ErrorCode.DATA_COINCIDENCE) {
-                return ResponseEntity.status(HttpStatus.CONFLICT).body(Map.of("message", e.getMessage()));
+            ratedService.addOrUpdateRating(ratedMovieForOwnerFormDTO.id(),
+                    userForOwnerViewDTO.username(), ratedMovieForOwnerFormDTO);
+
+            BigDecimal newRating = ratedService.getMovieRating(ratedMovieForOwnerFormDTO.id());
+            long reviewsCount = ratedService.getReviewsCountForMovie(ratedMovieForOwnerFormDTO.id());
+
+            return ResponseEntity.ok(ApiResponse.success(
+                    SuccessCode.REVIEW_HAS_BEEN_SAVED_SUCCESSFULLY,
+                    Map.of(
+                            "movieId", ratedMovieForOwnerFormDTO.id(),
+                            "rating", newRating != null ? newRating : "-",
+                            "reviewsCount", reviewsCount
+                    )
+            ));
+        } catch (BusinessException businessException) {
+            if (businessException.getErrorCode() == ErrorCode.DATA_COINCIDENCE) {
+                return ResponseEntity.status(HttpStatus.CONFLICT).body(
+                        ApiResponse.error(businessException.getMessage()));
             }
-            return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(Map.of("message", "Ошибка при сохранении"));
+            return ResponseEntity.badRequest().body(ApiResponse.error(businessException.getMessage()));
+        } catch (Exception exception) {
+            return ResponseEntity.badRequest().body(ApiResponse.error("Ошибка при добавлении оценки"));
         }
     }
 
     @PostMapping("/edit")
     @ResponseBody
-    public ResponseEntity<Map<String, String>> editRating(
+    public ResponseEntity<ApiResponse> editRating(
             @Valid @ModelAttribute RatedMovieForOwnerFormDTO ratedMovieForOwnerFormDTO,
             @SessionAttribute UserForOwnerViewDTO userForOwnerViewDTO) {
 
         try {
             ratedService.addOrUpdateRating(ratedMovieForOwnerFormDTO.id(), userForOwnerViewDTO.username(), ratedMovieForOwnerFormDTO);
-            return ResponseEntity.ok(Map.of("message", "Оценка обновлена"));
-        } catch (BusinessException e) {
-            if (e.getErrorCode() == ErrorCode.DATA_COINCIDENCE) {
-                return ResponseEntity.status(HttpStatus.CONFLICT).body(Map.of("message", e.getMessage()));
+
+            BigDecimal newRating = ratedService.getMovieRating(ratedMovieForOwnerFormDTO.id());
+            long reviewsCount = ratedService.getReviewsCountForMovie(ratedMovieForOwnerFormDTO.id());
+
+            return ResponseEntity.ok(ApiResponse.success(
+                    SuccessCode.REVIEW_HAS_BEEN_UPDATED_SUCCESSFULLY,
+                    Map.of(
+                            "movieId", ratedMovieForOwnerFormDTO.id(),
+                            "rating", newRating != null ? newRating : "-",
+                            "reviewsCount", reviewsCount
+                    )
+            ));
+        } catch (BusinessException businessException) {
+            if (businessException.getErrorCode() == ErrorCode.DATA_COINCIDENCE) {
+                return ResponseEntity.status(HttpStatus.CONFLICT).body(ApiResponse.error(businessException.getMessage()));
             }
-            return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(Map.of("message", "Ошибка при обновлении"));
+            return ResponseEntity.badRequest().body(ApiResponse.error(businessException.getMessage()));
+        } catch (Exception exception) {
+            return ResponseEntity.badRequest().body(ApiResponse.error("Ошибка при обновлении оценки"));
         }
     }
 
     @PostMapping("/remove/{id}")
     @ResponseBody
-    public ResponseEntity<Map<String, String>> removeRating(
+    public ResponseEntity<ApiResponse> removeRating(
             @PathVariable("id") Long movieId,
             @SessionAttribute UserForOwnerViewDTO userForOwnerViewDTO) {
 
         try {
             ratedService.deleteRating(movieId, userForOwnerViewDTO.username());
-            return ResponseEntity.ok(Map.of("message", "Оценка удалена"));
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
+
+            BigDecimal newRating = ratedService.getMovieRating(movieId);
+            long reviewsCount = ratedService.getReviewsCountForMovie(movieId);
+
+            return ResponseEntity.ok(ApiResponse.success(
+                    SuccessCode.REVIEW_HAS_BEEN_DELETED_SUCCESSFULLY,
+                    Map.of(
+                            "movieId", movieId,
+                            "rating", newRating != null ? newRating : "-",
+                            "reviewsCount", reviewsCount
+                    )
+            ));
+        } catch (Exception exception) {
+            return ResponseEntity.badRequest().body(ApiResponse.error(exception.getMessage()));
         }
     }
 
