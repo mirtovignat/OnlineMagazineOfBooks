@@ -3,7 +3,6 @@ package com.example.demo.service;
 import com.example.demo.config.MinIOConfig;
 import io.minio.MinioClient;
 import io.minio.PutObjectArgs;
-import io.minio.RemoveObjectArgs;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -28,15 +27,5 @@ public class PosterService {
                         .build()
         );
         return minIOConfig.getExternalEndpoint() + "/" + minIOConfig.getBucketName() + "/" + fileName;
-    }
-
-    public void deletePoster(String posterUrl) throws Exception {
-        String fileName = posterUrl.substring(posterUrl.lastIndexOf('/') + 1);
-        minioClient.removeObject(
-                RemoveObjectArgs.builder()
-                        .bucket(minIOConfig.getBucketName())
-                        .object(fileName)
-                        .build()
-        );
     }
 }

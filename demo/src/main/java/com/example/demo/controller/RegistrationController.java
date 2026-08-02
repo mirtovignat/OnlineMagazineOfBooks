@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 @AllArgsConstructor
 @RequestMapping("/register")
 public class RegistrationController {
+
     private final AuthorizeService authorizeService;
 
     @GetMapping
@@ -30,8 +31,7 @@ public class RegistrationController {
     }
 
     @PostMapping
-    public String register(@Valid @ModelAttribute("registerForm")
-                           RegisterFormDTO registerFormDTO,
+    public String register(@Valid @ModelAttribute("registerForm") RegisterFormDTO registerFormDTO,
                            BindingResult bindingResult,
                            Model model,
                            HttpSession httpSession) {
@@ -48,11 +48,9 @@ public class RegistrationController {
             ErrorCode errorCode = businessException.getErrorCode();
             model.addAttribute("registerForm", registerFormDTO);
             if (errorCode == ErrorCode.PASSWORDS_MISMATCH) {
-                model.addAttribute("passwordsMismatchExceptionMessage",
-                        businessException.getMessage());
+                model.addAttribute("passwordsMismatchExceptionMessage", businessException.getMessage());
             } else if (errorCode == ErrorCode.ALREADY_REGISTERED) {
-                model.addAttribute("alreadyRegisteredExceptionMessage",
-                        businessException.getMessage());
+                model.addAttribute("alreadyRegisteredExceptionMessage", businessException.getMessage());
             } else {
                 model.addAttribute("errorMessage", businessException.getMessage());
             }

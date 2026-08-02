@@ -10,12 +10,15 @@ import com.example.demo.repository.FavouriteMovieRepository;
 import com.example.demo.repository.MovieRepository;
 import com.example.demo.repository.PurchasedMovieRepository;
 import com.example.demo.repository.UserRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
 public class FavouritesService extends AbstractLinkedCollectionService<FavouriteMovie, FavouriteMovieForOwnerViewDTO> {
 
+    @Autowired
     private final FavouritesMapper favouritesMapper;
+    @Autowired
     private final PresenceService presenceService;
 
     public FavouritesService(FavouriteMovieRepository favouriteMovieRepository, UserRepository userRepository,

@@ -7,8 +7,9 @@ import com.example.demo.exception.BusinessException;
 import com.example.demo.exception.ErrorCode;
 import com.example.demo.mapper.UserMapper;
 import com.example.demo.model.User;
-import com.example.demo.repository.UserRepository;
+import com.example.demo.repository.*;
 import lombok.AllArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -18,9 +19,21 @@ import java.math.BigDecimal;
 @Service
 @AllArgsConstructor
 public class AuthorizeService {
+
+    @Autowired
     private final UserRepository userRepository;
+    @Autowired
     private final UserMapper userMapper;
+    @Autowired
     private final PasswordEncoder passwordEncoder;
+    @Autowired
+    private final CartItemRepository cartItemRepository;
+    @Autowired
+    private final FavouriteMovieRepository favouriteMovieRepository;
+    @Autowired
+    private final PurchasedMovieRepository purchasedMovieRepository;
+    @Autowired
+    private final RatedMovieRepository ratedMovieRepository;
 
     public User validateLogin(LoginFormDTO loginFormDTO) {
         User user = switch (loginFormDTO.identifier()) {
@@ -66,6 +79,22 @@ public class AuthorizeService {
     }
 
     public UserForOwnerViewDTO login(User user) {
-        return userMapper.toOwnerView(user);
+        String username = user.getUsername();
+        int cartCount = cartItemRepository.countByUsername(username);
+        int favCount = favouriteMovieRepository.countByUsername(username);
+        int purchasesCount = purchasedMovieRepository.countByUserUsername(username);
+        int ratingsCount = (int) ratedMovieRepository.countByUserUsername(username);
+        return new UserForOwnerViewDTO(
+                user.getId(),
+                username,
+                cartCount,
+                favCount,
+                user.getEmail(),
+                user.getPhone(),
+                user.getBalance(),
+                user.getCurrencyCode(),
+                purchasesCount,
+                ratingsCount
+        );
     }
 }

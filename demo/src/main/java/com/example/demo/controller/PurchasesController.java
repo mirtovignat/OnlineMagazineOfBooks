@@ -23,7 +23,7 @@ import java.util.Map;
 @AllArgsConstructor
 public class PurchasesController {
     private final PurchasedService purchasedService;
-    private final BadgeUpdater badgeUpdater;
+    
 
     @PostMapping("/add/bulk")
     public String buyMovies(RedirectAttributes redirectAttributes,
@@ -62,7 +62,7 @@ public class PurchasesController {
         Page<HistoricalMovieForOwnerViewDTO> history = purchasedService.getHistory(pageable, userForOwnerViewDTO.username());
         model.addAttribute("history", history);
         model.addAttribute("historyCount", history.getTotalElements());
-        badgeUpdater.updateBadges(userForOwnerViewDTO, model);
+        
         return "history";
     }
 
@@ -73,7 +73,7 @@ public class PurchasesController {
         Page<LibrarianMovieForOwnerViewDTO> library = purchasedService.getLibrary(pageable, userForOwnerViewDTO.username());
         model.addAttribute("library", library);
         model.addAttribute("libraryCount", library.getTotalElements());
-        badgeUpdater.updateBadges(userForOwnerViewDTO, model);
+        
         return "library";
     }
 }

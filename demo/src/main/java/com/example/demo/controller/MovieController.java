@@ -8,6 +8,7 @@ import com.example.demo.dto.user.UserForOwnerViewDTO;
 import com.example.demo.filter.MovieFilter;
 import com.example.demo.service.MovieService;
 import lombok.AllArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -25,8 +26,8 @@ import java.util.Map;
 @RequestMapping
 public class MovieController {
 
+    @Autowired
     private final MovieService movieService;
-    private final BadgeUpdater badgeUpdater;
 
     @GetMapping
     public String showMovies(
@@ -109,7 +110,7 @@ public class MovieController {
 
     private String prepareModelAndGetUsername(UserForOwnerViewDTO userForOwnerViewDTO, Model model) {
         if (userForOwnerViewDTO != null) {
-            badgeUpdater.updateBadges(userForOwnerViewDTO, model);
+            
             return userForOwnerViewDTO.username();
 
         }

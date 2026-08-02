@@ -3,9 +3,7 @@ package com.example.demo.controller;
 import com.example.demo.dto.user.UserForOwnerViewDTO;
 import com.example.demo.dto.wallet.TopUpFormDTO;
 import com.example.demo.exception.SuccessCode;
-import com.example.demo.mapper.UserMapper;
 import com.example.demo.model.User;
-import com.example.demo.repository.UserRepository;
 import com.example.demo.service.UserService;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
@@ -20,10 +18,8 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 @RequestMapping("/wallet")
 @AllArgsConstructor
 public class WalletController {
+
     private final UserService userService;
-    private final UserRepository userRepository;
-    private final UserMapper userMapper;
-    private final BadgeUpdater badgeUpdater;
 
     @GetMapping("/top-up")
     public String getTopUpForm(@SessionAttribute UserForOwnerViewDTO userForOwnerViewDTO,
@@ -32,7 +28,6 @@ public class WalletController {
             model.addAttribute("topUpFormDTO", new TopUpFormDTO(null));
         }
         model.addAttribute("wallet", userService.getWalletForOwner(userForOwnerViewDTO.username()));
-        badgeUpdater.updateBadges(userForOwnerViewDTO, model);
         return "top-up";
     }
 
@@ -46,12 +41,18 @@ public class WalletController {
             redirectAttributes.addFlashAttribute("errorMessage", "Сумма должна быть положительной (минимум 0.01)");
             return "redirect:/wallet/top-up";
         }
-
         User user = userService.findUserByUsername(userForOwnerViewDTO.username());
         try {
             userService.topUp(topUpFormDTO, user);
-            User updated = userRepository.findByUsernameOrThrow(userForOwnerViewDTO.username());
-            httpSession.setAttribute("userForOwnerViewDTO", userMapper.toOwnerView(updated));
+            UserForOwnerViewDTO freshData = userService.getUserForOwner(userForOwnerViewDTO.username());
+            UserForOwnerViewDTO updatedInSession = new UserForOwnerViewDTO(
+                    freshData.id(), freshData.username(),
+                    userForOwnerViewDTO.cartCount(), userForOwnerViewDTO.favouritesCount(),
+                    freshData.email(), freshData.phone(), freshData.balance(),
+                    freshData.currencyCode(),
+                    userForOwnerViewDTO.purchasesCount(), userForOwnerViewDTO.ratingsCount()
+            );
+            httpSession.setAttribute("userForOwnerViewDTO", updatedInSession);
             redirectAttributes.addFlashAttribute("successMessage",
                     SuccessCode.BALANCE_HAS_BEEN_TOPPED_UP_SUCCESSFULLY.format(topUpFormDTO.amount()));
         } catch (Exception exception) {

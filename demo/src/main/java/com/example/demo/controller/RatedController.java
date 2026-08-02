@@ -11,6 +11,7 @@ import com.example.demo.exception.SuccessCode;
 import com.example.demo.service.RatedService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -31,8 +32,8 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class RatedController {
 
+    @Autowired
     private final RatedService ratedService;
-    private final BadgeUpdater badgeUpdater;
 
     @GetMapping("/{id}/reviews")
     public String getReviews(
@@ -55,7 +56,7 @@ public class RatedController {
         } else {
             ratedMovieForOwnerFormDTO = new RatedMovieForOwnerFormDTO(movieId, null, null);
         }
-        badgeUpdater.updateBadges(userForOwnerViewDTO, model);
+        
         model.addAttribute("ratedForm", ratedMovieForOwnerFormDTO);
         model.addAttribute("editMode", edit);
         model.addAttribute("isRatedByCurrentUser", isRatedByCurrentUser);
@@ -215,7 +216,7 @@ public class RatedController {
     ) {
         Page<RatedMovieForOwnerViewDTO> ratedHistory = ratedService.getRatedHistory(userForOwnerViewDTO.username(), pageable);
         model.addAttribute("ratedHistory", ratedHistory);
-        badgeUpdater.updateBadges(userForOwnerViewDTO, model);
+        
         return "rated-history";
     }
 

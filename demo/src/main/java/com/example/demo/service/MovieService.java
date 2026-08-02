@@ -16,6 +16,7 @@ import com.example.demo.utils.MovieUserStatusHelper;
 import com.example.demo.utils.PaginationHelper;
 import com.example.demo.utils.SqlSearchEscaper;
 import lombok.AllArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -28,14 +29,23 @@ import java.util.List;
 @Transactional(readOnly = true)
 public class MovieService {
 
+    @Autowired
     private final MovieRepository movieRepository;
+    @Autowired
     private final MovieMapper movieMapper;
+    @Autowired
     private final PurchasedService purchasedService;
+    @Autowired
     private final AbstractLinkedCollectionService<FavouriteMovie, FavouriteMovieForOwnerViewDTO> favouritesService;
+    @Autowired
     private final AbstractLinkedCollectionService<CartItem, CartMovieForOwnerViewDTO> cartService;
+    @Autowired
     private final SqlSearchEscaper sqlSearchEscaper;
+    @Autowired
     private final PaginationHelper paginationHelper;
+    @Autowired
     private final MovieUserStatusHelper userStatusHelper;
+    @Autowired
     private final MovieSearchHelper movieSearchHelper;
 
     public Double getMovieRating(Long id) {

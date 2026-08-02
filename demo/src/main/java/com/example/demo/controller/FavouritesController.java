@@ -14,10 +14,8 @@ import org.springframework.web.bind.annotation.SessionAttribute;
 @RequestMapping("/favourites")
 public class FavouritesController extends AbstractLinkedCollectionController<FavouriteMovieForOwnerViewDTO> {
 
-
-    public FavouritesController(BadgeUpdater badgeUpdater,
-                                AbstractLinkedCollectionService<FavouriteMovie, FavouriteMovieForOwnerViewDTO> favouritesService) {
-        super(favouritesService, badgeUpdater);
+    public FavouritesController(AbstractLinkedCollectionService<FavouriteMovie, FavouriteMovieForOwnerViewDTO> favouritesService) {
+        super(favouritesService);
     }
 
     @GetMapping
@@ -25,7 +23,7 @@ public class FavouritesController extends AbstractLinkedCollectionController<Fav
                                 @SessionAttribute UserForOwnerViewDTO userForOwnerViewDTO) {
         model.addAttribute("favourites", linkedCollectionService.getAllOfUser(userForOwnerViewDTO.username()));
         model.addAttribute("favouritesCount", linkedCollectionService.getCount(userForOwnerViewDTO.username())); // Вернули счётчик
-        badgeUpdater.updateBadges(userForOwnerViewDTO, model);
+        
         return "favourites";
     }
 }

@@ -3,21 +3,20 @@ package com.example.demo.controller;
 import com.example.demo.dto.user.UserForOwnerViewDTO;
 import com.example.demo.exception.SuccessCode;
 import com.example.demo.service.AbstractLinkedCollectionService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
 
 public abstract class AbstractLinkedCollectionController<DTO> {
 
+    @Autowired
     protected final AbstractLinkedCollectionService<?, DTO> linkedCollectionService;
-    protected final BadgeUpdater badgeUpdater;
 
     protected AbstractLinkedCollectionController(
-            AbstractLinkedCollectionService<?, DTO> linkedCollectionService,
-            BadgeUpdater badgeUpdater
+            AbstractLinkedCollectionService<?, DTO> linkedCollectionService
     ) {
         this.linkedCollectionService = linkedCollectionService;
-        this.badgeUpdater = badgeUpdater;
     }
 
     @GetMapping("/count")

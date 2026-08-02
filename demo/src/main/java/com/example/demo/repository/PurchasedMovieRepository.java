@@ -35,4 +35,11 @@ public interface PurchasedMovieRepository extends JpaRepository<PurchasedMovie, 
             """)
     List<Long> findMovieIdsByUsername(@Param("username")
                                       String username);
+
+    @Query("""
+            SELECT COUNT(purchasedMovie)
+            FROM PurchasedMovie purchasedMovie
+            WHERE purchasedMovie.user.username = :username
+            """)
+    int countByUserUsername(@Param("username") String username);
 }

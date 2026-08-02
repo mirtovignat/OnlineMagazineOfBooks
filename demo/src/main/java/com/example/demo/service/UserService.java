@@ -9,11 +9,10 @@ import com.example.demo.exception.BusinessException;
 import com.example.demo.exception.ErrorCode;
 import com.example.demo.mapper.UserMapper;
 import com.example.demo.model.User;
-import com.example.demo.repository.CartItemRepository;
-import com.example.demo.repository.FavouriteMovieRepository;
-import com.example.demo.repository.UserRepository;
+import com.example.demo.repository.*;
 import com.example.demo.utils.Normalizer;
 import lombok.AllArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -24,12 +23,24 @@ import java.util.Objects;
 @Service
 @AllArgsConstructor
 public class UserService {
+
     private static final BigDecimal MAX_BALANCE = new BigDecimal("100000.00");
+
+    @Autowired
     private final UserRepository userRepository;
+    @Autowired
     private final UserMapper userMapper;
+    @Autowired
     private final PasswordEncoder passwordEncoder;
+    @Autowired
     private final CartItemRepository cartItemRepository;
+    @Autowired
     private final FavouriteMovieRepository favouriteMovieRepository;
+    @Autowired
+    private final PurchasedMovieRepository purchasedMovieRepository;
+    @Autowired
+    private final RatedMovieRepository ratedMovieRepository;
+    @Autowired
     private final Normalizer normalizer;
 
     public User findUserByUsername(String username) {
@@ -62,9 +73,9 @@ public class UserService {
     }
 
     @Transactional
-    public void changeProfile(ProfileSettingsDTO dto, String username) {
+    public void changeProfile(ProfileSettingsDTO profileSettingsDTO, String username) {
         User user = findUserByUsername(username);
-        changeProfile(dto, user);
+        changeProfile(profileSettingsDTO, user);
     }
 
     @Transactional
@@ -81,9 +92,9 @@ public class UserService {
     }
 
     @Transactional
-    public void changePassword(PasswordChangingDTO dto, String username) {
+    public void changePassword(PasswordChangingDTO passwordChangingDTO, String username) {
         User user = findUserByUsername(username);
-        changePassword(dto, user);
+        changePassword(passwordChangingDTO, user);
     }
 
     @Transactional
@@ -98,13 +109,11 @@ public class UserService {
         if (topUpFormDTO.amount() == null || topUpFormDTO.amount().compareTo(BigDecimal.ZERO) <= 0) {
             throw new IllegalArgumentException("Сумма пополнения должна быть положительной");
         }
-
         BigDecimal current = user.getBalance() == null ? BigDecimal.ZERO : user.getBalance();
         BigDecimal newBalance = current.add(topUpFormDTO.amount());
         if (newBalance.compareTo(MAX_BALANCE) > 0) {
             throw BusinessException.of(ErrorCode.BALANCE_LIMIT_EXCEED, MAX_BALANCE);
         }
-
         user.addMoney(topUpFormDTO.amount());
         userRepository.save(user);
     }
@@ -114,7 +123,24 @@ public class UserService {
     }
 
     public UserForOwnerViewDTO getUserForOwner(String username) {
-        return userMapper.toOwnerView(findUserByUsername(username));
+        User user = findUserByUsername(username);
+
+        int cartCount = cartItemRepository.countByUsername(username);
+        int favouritesCount = favouriteMovieRepository.countByUsername(username);
+        int purchasesCount = purchasedMovieRepository.countByUserUsername(username);
+        int ratingsCount = (int) ratedMovieRepository.countByUserUsername(username);
+        return new UserForOwnerViewDTO(
+                user.getId(),
+                user.getUsername(),
+                cartCount,
+                favouritesCount,
+                user.getEmail(),
+                user.getPhone(),
+                user.getBalance(),
+                user.getCurrencyCode(),
+                purchasesCount,
+                ratingsCount
+        );
     }
 
     public ProfileSettingsDTO getProfileSettings(String username) {
@@ -133,11 +159,9 @@ public class UserService {
         if (!Objects.equals(username, user.getUsername()) && userRepository.existsByUsername(username)) {
             throw BusinessException.of(ErrorCode.ALREADY_REGISTERED);
         }
-
         if (!Objects.equals(email, user.getEmail()) && userRepository.existsByEmail(email)) {
             throw BusinessException.of(ErrorCode.ALREADY_REGISTERED);
         }
-
         if (phone != null && !Objects.equals(phone, user.getPhone()) && userRepository.existsByPhone(phone)) {
             throw BusinessException.of(ErrorCode.ALREADY_REGISTERED);
         }

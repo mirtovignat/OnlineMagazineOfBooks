@@ -10,6 +10,7 @@ import com.example.demo.repository.MovieRepository;
 import com.example.demo.repository.PurchasedMovieRepository;
 import com.example.demo.repository.UserRepository;
 import lombok.AllArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.LinkedHashSet;
@@ -19,9 +20,13 @@ import java.util.Set;
 @AllArgsConstructor
 public abstract class AbstractLinkedCollectionService<Entity extends AbstractLinkedCollectionItem, DTO> {
 
+    @Autowired
     protected final AbstractLinkedCollectionRepository<Entity> linkedCollectionRepository;
+    @Autowired
     protected final UserRepository userRepository;
+    @Autowired
     protected final MovieRepository movieRepository;
+    @Autowired
     protected final PurchasedMovieRepository purchasedMovieRepository;
 
     @Transactional(readOnly = true)

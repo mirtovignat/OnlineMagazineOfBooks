@@ -14,10 +14,9 @@ import org.springframework.web.bind.annotation.SessionAttribute;
 @RequestMapping("/cart")
 public class CartController extends AbstractLinkedCollectionController<CartMovieForOwnerViewDTO> {
 
-
-    public CartController(BadgeUpdater badgeUpdater,
-                          AbstractLinkedCollectionService<CartItem, CartMovieForOwnerViewDTO> cartService) {
-        super(cartService, badgeUpdater);
+    public CartController(
+            AbstractLinkedCollectionService<CartItem, CartMovieForOwnerViewDTO> cartService) {
+        super(cartService);
     }
 
     @GetMapping
@@ -25,7 +24,6 @@ public class CartController extends AbstractLinkedCollectionController<CartMovie
                           @SessionAttribute UserForOwnerViewDTO userForOwnerViewDTO) {
         model.addAttribute("cart", linkedCollectionService.getAllOfUser(userForOwnerViewDTO.username()));
         model.addAttribute("cartCount", linkedCollectionService.getCount(userForOwnerViewDTO.username())); // Вернули счётчик
-        badgeUpdater.updateBadges(userForOwnerViewDTO, model);
         return "cart";
     }
 }

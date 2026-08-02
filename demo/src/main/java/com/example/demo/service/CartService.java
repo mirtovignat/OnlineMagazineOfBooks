@@ -10,13 +10,16 @@ import com.example.demo.repository.CartItemRepository;
 import com.example.demo.repository.MovieRepository;
 import com.example.demo.repository.PurchasedMovieRepository;
 import com.example.demo.repository.UserRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 
 @Service
 public class CartService extends AbstractLinkedCollectionService<CartItem, CartMovieForOwnerViewDTO> {
 
+    @Autowired
     private final CartItemMapper cartItemMapper;
+    @Autowired
     private final PresenceService presenceService;
 
     public CartService(CartItemRepository cartItemRepository,

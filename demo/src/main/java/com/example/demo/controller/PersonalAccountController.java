@@ -23,8 +23,7 @@ import java.util.Map;
 @AllArgsConstructor
 public class PersonalAccountController {
 
-    private final UserService userService;
-    private final BadgeUpdater badgeUpdater;
+    private final UserService userService; // Убрали лишний @Autowired
 
     @GetMapping("/personal-account")
     public String getPersonalAccount(@SessionAttribute(required = false) UserForOwnerViewDTO userForOwnerViewDTO,
@@ -34,7 +33,6 @@ public class PersonalAccountController {
         }
         UserForOwnerViewDTO updatedUser = userService.getUserForOwner(userForOwnerViewDTO.username());
         model.addAttribute("userForOwner", updatedUser);
-        badgeUpdater.updateBadges(updatedUser, model);
         return "personal-account";
     }
 
@@ -46,7 +44,7 @@ public class PersonalAccountController {
             model.addAttribute("profileSettingsDTO", profileSettingsDTO);
         }
         model.addAttribute("wallet", userService.getWalletForOwner(userForOwnerViewDTO.username()));
-        badgeUpdater.updateBadges(userForOwnerViewDTO, model);
+
         return "settings";
     }
 
@@ -55,18 +53,23 @@ public class PersonalAccountController {
                                     BindingResult bindingResult,
                                     RedirectAttributes redirectAttributes,
                                     @SessionAttribute UserForOwnerViewDTO userForOwnerViewDTO,
-                                    HttpSession httpSession,
-                                    Model model) {
+                                    HttpSession httpSession) {
         if (bindingResult.hasErrors()) {
-            badgeUpdater.updateBadges(userForOwnerViewDTO, model);
             return "settings";
         }
         try {
             userService.changeProfile(profileSettingsDTO, userForOwnerViewDTO.username());
-            UserForOwnerViewDTO updated = userService.getUserForOwner(profileSettingsDTO.username());
-            httpSession.setAttribute("userForOwnerViewDTO", updated);
+            UserForOwnerViewDTO freshData = userService.getUserForOwner(profileSettingsDTO.username());
+            UserForOwnerViewDTO updatedInSession = new UserForOwnerViewDTO(
+                    freshData.id(), freshData.username(),
+                    userForOwnerViewDTO.cartCount(), userForOwnerViewDTO.favouritesCount(),
+                    freshData.email(), freshData.phone(), freshData.balance(),
+                    freshData.currencyCode(),
+                    userForOwnerViewDTO.purchasesCount(), userForOwnerViewDTO.ratingsCount()
+            );
+            httpSession.setAttribute("userForOwnerViewDTO", updatedInSession);
             redirectAttributes.addFlashAttribute("successMessage",
-                    SuccessCode.PROFILE_HAS_BEEN_CHANGED_SUCCESSFULLY.format(updated.username()));
+                    SuccessCode.PROFILE_HAS_BEEN_CHANGED_SUCCESSFULLY.format(updatedInSession.username()));
             return "redirect:/personal-account";
         } catch (BusinessException ex) {
             redirectAttributes.addFlashAttribute("errorMessage", ex.getMessage());
@@ -84,9 +87,15 @@ public class PersonalAccountController {
                                                          HttpSession httpSession) {
         try {
             userService.changeProfile(profileSettingsDTO, userForOwnerViewDTO.username());
-            UserForOwnerViewDTO updated = userService.getUserForOwner(profileSettingsDTO.username());
-            httpSession.setAttribute("userForOwnerViewDTO", updated);
-
+            UserForOwnerViewDTO freshData = userService.getUserForOwner(profileSettingsDTO.username());
+            UserForOwnerViewDTO updatedInSession = new UserForOwnerViewDTO(
+                    freshData.id(), freshData.username(),
+                    userForOwnerViewDTO.cartCount(), userForOwnerViewDTO.favouritesCount(),
+                    freshData.email(), freshData.phone(), freshData.balance(),
+                    freshData.currencyCode(),
+                    userForOwnerViewDTO.purchasesCount(), userForOwnerViewDTO.ratingsCount()
+            );
+            httpSession.setAttribute("userForOwnerViewDTO", updatedInSession);
             return ResponseEntity.ok(ApiResponse.successWithData(
                     SuccessCode.PROFILE_HAS_BEEN_CHANGED_SUCCESSFULLY,
                     Map.of(
@@ -103,27 +112,32 @@ public class PersonalAccountController {
 
     @GetMapping("/profile/settings/delete/phone")
     @ResponseBody
-    public ResponseEntity<ApiResponse> deletePhone(@SessionAttribute
-                                                   UserForOwnerViewDTO userForOwnerViewDTO,
+    public ResponseEntity<ApiResponse> deletePhone(@SessionAttribute UserForOwnerViewDTO userForOwnerViewDTO,
                                                    HttpSession httpSession) {
         userService.deletePhone(userForOwnerViewDTO.username());
-        UserForOwnerViewDTO updated = userService.getUserForOwner(userForOwnerViewDTO.username());
-        httpSession.setAttribute("userForOwnerViewDTO", updated);
+        UserForOwnerViewDTO freshData = userService.getUserForOwner(userForOwnerViewDTO.username());
+
+        UserForOwnerViewDTO updatedInSession = new UserForOwnerViewDTO(
+                freshData.id(), freshData.username(),
+                userForOwnerViewDTO.cartCount(), userForOwnerViewDTO.favouritesCount(),
+                freshData.email(), freshData.phone(), freshData.balance(),
+                freshData.currencyCode(),
+                userForOwnerViewDTO.purchasesCount(), userForOwnerViewDTO.ratingsCount()
+        );
+        httpSession.setAttribute("userForOwnerViewDTO", updatedInSession);
         return ResponseEntity.ok(ApiResponse.success(SuccessCode.PHONE_HAS_BEEN_REMOVED_SUCCESSFULLY, ""));
     }
 
     @GetMapping("/profile/settings/change/pwd")
     public String getChangePasswordForm(Model model) {
         if (!model.containsAttribute("passwordChangingDTO")) {
-            model.addAttribute("passwordChangingDTO",
-                    PasswordChangingDTO.builder().build());
+            model.addAttribute("passwordChangingDTO", PasswordChangingDTO.builder().build());
         }
         return "change-password";
     }
 
     @PostMapping("/profile/settings/change/pwd")
-    public String changePassword(@Valid @ModelAttribute("passwordChangingDTO")
-                                 PasswordChangingDTO passwordChangingDTO,
+    public String changePassword(@Valid @ModelAttribute("passwordChangingDTO") PasswordChangingDTO passwordChangingDTO,
                                  BindingResult bindingResult,
                                  @SessionAttribute UserForOwnerViewDTO userForOwnerViewDTO,
                                  RedirectAttributes redirectAttributes) {

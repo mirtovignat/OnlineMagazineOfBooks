@@ -5,10 +5,5 @@ public record MovieUserStatus(
         boolean inCart,
         boolean inFavourites
 ) {
-    public MovieUserStatus {
-        if (bought && inCart) {
-            throw new IllegalArgumentException
-                    ("Фильм не может быть в корзине, если он куплен");
-        }
-    }
+
 }

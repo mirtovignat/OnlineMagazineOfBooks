@@ -6,6 +6,7 @@ import com.example.demo.model.Movie;
 import com.example.demo.repository.MovieRepository;
 import com.example.demo.repository.specification.MovieSpecifications;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -19,8 +20,9 @@ import java.util.stream.Collectors;
 @Component
 @RequiredArgsConstructor
 public class MovieSearchHelper {
-
+    @Autowired
     private final MovieRepository movieRepository;
+    @Autowired
     private final SqlSearchEscaper sqlSearchEscaper;
 
     public List<Movie> findMoviesByDtoList(List<MovieSearchDTO> movieSearchDTOS) {

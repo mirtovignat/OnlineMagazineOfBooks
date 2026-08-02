@@ -11,6 +11,7 @@ import com.example.demo.model.Movie;
 import com.example.demo.service.AbstractLinkedCollectionService;
 import com.example.demo.service.PurchasedService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Component;
 
@@ -21,12 +22,17 @@ import java.util.function.Function;
 @RequiredArgsConstructor
 public class MovieUserStatusHelper {
 
+    @Autowired
     private final PurchasedService purchasedService;
-    private final AbstractLinkedCollectionService<FavouriteMovie, FavouriteMovieForOwnerViewDTO> favouritesService;
+    @Autowired
+    private final AbstractLinkedCollectionService<FavouriteMovie, FavouriteMovieForOwnerViewDTO>
+            favouritesService;
+    @Autowired
     private final AbstractLinkedCollectionService<CartItem, CartMovieForOwnerViewDTO> cartService;
 
 
-    private record UserStatuses(Set<Long> bought, Set<Long> cart, Set<Long> favourites) {}
+    private record UserStatuses(Set<Long> bought, Set<Long> cart, Set<Long> favourites) {
+    }
 
     private UserStatuses getUserStatuses(String username) {
         return new UserStatuses(
