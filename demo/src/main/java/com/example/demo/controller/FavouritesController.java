@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.SessionAttribute;
 @RequestMapping("/favourites")
 public class FavouritesController extends AbstractLinkedCollectionController<FavouriteMovieForOwnerViewDTO> {
 
+
     public FavouritesController(BadgeUpdater badgeUpdater,
                                 AbstractLinkedCollectionService<FavouriteMovie, FavouriteMovieForOwnerViewDTO> favouritesService) {
         super(favouritesService, badgeUpdater);

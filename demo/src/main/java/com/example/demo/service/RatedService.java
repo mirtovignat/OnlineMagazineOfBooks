@@ -51,39 +51,48 @@ public class RatedService {
     }
 
     @Transactional
-    public void addOrUpdateRating(Long movieId, String username, RatedMovieForOwnerFormDTO ratedMovieForOwnerFormDTO) {
+    public void addOrUpdateRating(
+            Long movieId,
+            String username,
+            RatedMovieForOwnerFormDTO ratedMovieForOwnerFormDTO
+    ) {
         Movie movie = movieRepository.findByIdOrThrow(movieId);
         User user = userRepository.findByUsernameOrThrow(username);
 
         RatedMovie ratedMovie = ratedMovieRepository
-                .findByMovieIdAndUserUsernameWithLock(movie.getId(), username)
+                .findByMovieIdAndUserUsernameWithLock(movieId, username)
                 .orElseGet(() -> {
-                    RatedMovie rm = new RatedMovie();
-                    rm.setMovie(movie);
-                    rm.setUser(user);
-                    return rm;
+                    RatedMovie created = new RatedMovie();
+                    created.setMovie(movie);
+                    created.setUser(user);
+                    return created;
                 });
-        boolean isNew = ratedMovie.getId() == null;
-        if (!isNew && isUnchanged(ratedMovieForOwnerFormDTO, ratedMovie)) {
+
+        if (ratedMovie.getId() != null
+                && isUnchanged(ratedMovieForOwnerFormDTO, ratedMovie)) {
             throw BusinessException.of(ErrorCode.DATA_COINCIDENCE);
         }
+
         ratedMovie.setRatingValue(ratedMovieForOwnerFormDTO.rating());
         ratedMovie.setReview(ratedMovieForOwnerFormDTO.review());
-        ratedMovieRepository.save(ratedMovie);
-        if (isNew) {
-            movieRepository.incrementRatingsCount(movie.getId());
-            movieRepository.flush();
-        }
-        updateMovieRating(movie);
+
+        ratedMovieRepository.saveAndFlush(ratedMovie);
+
+        synchronizeMovieRating(movieId);
     }
 
     @Transactional
     public void deleteRating(Long movieId, String username) {
-        Movie movie = movieRepository.findByIdOrThrow(movieId);
-        ratedMovieRepository.deleteByMovieIdAndUsername(movie.getId(), username);
-        movieRepository.decrementRatingsCount(movie.getId());
-        movieRepository.flush();
-        updateMovieRating(movie);
+        movieRepository.findByIdOrThrow(movieId);
+
+        int deleted = ratedMovieRepository
+                .deleteByMovieIdAndUsername(movieId, username);
+
+        if (deleted == 0) {
+            throw BusinessException.of(ErrorCode.ENTITY_NOT_FOUND);
+        }
+
+        synchronizeMovieRating(movieId);
     }
 
     private boolean isUnchanged(RatedMovieForOwnerFormDTO ratedMovieForOwnerFormDTO,
@@ -95,9 +104,23 @@ public class RatedService {
         return isRatingSame && isReviewSame;
     }
 
-    private void updateMovieRating(Movie movie) {
-        BigDecimal average = ratedMovieRepository.calculateAverageRating(movie);
-        movie.setRating(average != null ? average.setScale(1, RoundingMode.HALF_UP) : null);
+    private void synchronizeMovieRating(Long movieId) {
+        Movie movie = movieRepository.findByIdOrThrow(movieId);
+
+        BigDecimal average =
+                ratedMovieRepository.calculateAverageRating(movie);
+
+        long actualCount =
+                ratedMovieRepository.countByMovieId(movieId);
+
+        movie.setRating(
+                average != null
+                        ? average.setScale(1, RoundingMode.HALF_UP)
+                        : null
+        );
+
+        movie.setRatingsCount(Math.toIntExact(actualCount));
+
         movieRepository.save(movie);
     }
 
@@ -108,8 +131,7 @@ public class RatedService {
 
     @Transactional(readOnly = true)
     public long getReviewsCountForMovie(Long movieId) {
-        return movieRepository.findByIdOrThrow(movieId).getRatingsCount();
-        // Или через ratedMovieRepository.countByMovieId(movieId), смотря как у тебя в сущности
+        return ratedMovieRepository.countByMovieId(movieId);
     }
 
     @Transactional(readOnly = true)

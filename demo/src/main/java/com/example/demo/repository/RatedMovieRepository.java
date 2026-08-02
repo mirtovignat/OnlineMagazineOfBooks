@@ -39,22 +39,16 @@ public interface RatedMovieRepository extends JpaRepository<RatedMovie, Long> {
     Page<RatedMovie> findAllByMovieId(@Param("movieId") Long movieId,
                                       Pageable pageable);
 
-    @Modifying
+    @Modifying(flushAutomatically = true, clearAutomatically = true)
     @Query("""
             DELETE FROM RatedMovie ratedMovie
             WHERE ratedMovie.movie.id = :movieId
-            AND ratedMovie.user.username = :username
+              AND ratedMovie.user.username = :username
             """)
-    void deleteByMovieIdAndUsername(@Param("movieId") Long movieId,
-                                    @Param("username") String username);
-
-    @Modifying
-    @Query("""
-            DELETE FROM RatedMovie ratedMovie
-            WHERE ratedMovie.user.username = :username
-            """)
-    void deleteAllByUsername(@Param("username") String username);
-
+    int deleteByMovieIdAndUsername(
+            @Param("movieId") Long movieId,
+            @Param("username") String username
+    );
 
     @Query("""
             SELECT ratedMovie
@@ -83,8 +77,6 @@ public interface RatedMovieRepository extends JpaRepository<RatedMovie, Long> {
             WHERE ratedMovie.movie = :movie
             """)
     BigDecimal calculateAverageRating(Movie movie);
-
-    boolean existsByMovieTitleAndUserUsername(String title, String username);
 
     long countByUserUsername(String username);
 

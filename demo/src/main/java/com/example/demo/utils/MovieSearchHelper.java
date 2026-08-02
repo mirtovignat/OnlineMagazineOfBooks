@@ -56,7 +56,7 @@ public class MovieSearchHelper {
         }
         Pageable limit = PageRequest.of(0, 10);
         String escaped = sqlSearchEscaper.escapeLike(query.trim());
-        return movieRepository.findByTitleStartingWithIgnoreCase(escaped, limit)
+        return movieRepository.findByTitleContainingIgnoreCase(escaped, limit)
                 .stream()
                 .map(movie -> new MovieSearchDTO(
                         movie.getId(),

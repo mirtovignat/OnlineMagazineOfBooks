@@ -16,6 +16,8 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import java.util.Map;
+
 @Controller
 @RequestMapping("/orders")
 @AllArgsConstructor
@@ -38,18 +40,18 @@ public class PurchasesController {
     }
 
     @PostMapping("/add/{id}")
-    public String buyMovie(RedirectAttributes redirectAttributes,
-                           @PathVariable("id") Long id,
-                           @SessionAttribute UserForOwnerViewDTO userForOwnerViewDTO) {
-        try {
-            purchasedService.validatePurchase(id, userForOwnerViewDTO.username());
-            purchasedService.purchase(id, userForOwnerViewDTO.username());
-            redirectAttributes.addFlashAttribute("successMessage",
-                    SuccessCode.PURCHASED_SUCCESSFULLY.format(id));
-        } catch (BusinessException businessException) {
-            redirectAttributes.addFlashAttribute("errorMessage", businessException.getMessage());
-        }
-        return "redirect:/";
+    @ResponseBody
+    public Map<String, String> buyMovie(
+            @PathVariable("id") Long id,
+            @SessionAttribute UserForOwnerViewDTO userForOwnerViewDTO) {
+
+        purchasedService.validatePurchase(id, userForOwnerViewDTO.username());
+        purchasedService.purchase(id, userForOwnerViewDTO.username());
+
+        return Map.of(
+                "message",
+                SuccessCode.PURCHASED_SUCCESSFULLY.format()
+        );
     }
 
     @GetMapping("/history")

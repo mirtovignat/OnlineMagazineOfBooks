@@ -26,9 +26,17 @@
         <p style="font-weight:600; color:#3b82f6;" id="ratingModalMovieTitle"></p>
         <form id="ratingForm" method="post">
             <input type="hidden" name="id" id="ratingFormTitle" value="">
+
             <div class="rating-input">
                 <label for="ratingValue">Оценка (0.0–10.0):</label>
-                <input type="number" id="ratingValue" name="rating" step="0.1" min="0" max="10" value="5.0" required>
+                <input type="number"
+                       id="ratingValue"
+                       name="rating"
+                       step="0.1"
+                       min="0"
+                       max="10"
+                       value="5.0"
+                       required>
             </div>
             <div class="comment-input">
                 <label for="ratingComment">Комментарий (необязательно):</label>
@@ -60,6 +68,5 @@
         </div>
     </div>
 </div>
-
 </body>
 </html>

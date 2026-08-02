@@ -1,298 +1,58 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" lang="ru">
 <head>
-    <meta charset="UTF-8"/>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>Личный кабинет</title>
-    <link rel="icon" type="image/x-icon" th:href="@{/favicon.ico}">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&display=swap"
-          rel="stylesheet">
-    <link rel="stylesheet" th:href="@{/css/main.css?v=3}">
+    <title>Личный кабинет — Cinema Service</title>
+    <th:block th:replace="~{fragments/head :: head}"></th:block>
     <style>
-        *,
-        *::before,
-        *::after {
-            box-sizing: border-box;
-        }
-        .profile-wrapper {
-            max-width: 1400px;
-            margin: 0 auto;
-            padding: 2rem 2rem 0;
-        }
-        .profile-header {
-            margin-bottom: 2rem;
-        }
-        .profile-header h1 {
-            font-size: 2.5rem;
-            font-weight: 700;
-            background: linear-gradient(135deg, #e0e7ff, #c084fc);
-            -webkit-background-clip: text;
-            background-clip: text;
-            color: transparent;
-            margin: 0;
-        }
-        .profile-grid {
-            display: grid;
-            grid-template-columns: 380px 1fr;
-            gap: 2rem;
-            align-items: start;
-        }
-        .profile-card {
-            background: var(--card-bg);
-            backdrop-filter: blur(8px);
-            border-radius: var(--radius-xl);
-            padding: 2rem;
-            border: 1px solid var(--glass-border);
-            position: sticky;
-            top: 100px;
-        }
-        .profile-avatar {
-            text-align: center;
-            margin-bottom: 1.5rem;
-        }
-        .profile-avatar-letter {
-            width: 120px;
-            height: 120px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, #4f46e5, #7c3aed);
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 700;
-            font-size: 3.5rem;
-            color: white;
-            text-transform: uppercase;
-            border: 3px solid var(--glow-primary);
-            box-shadow: 0 4px 20px rgba(79,70,229,0.4);
-            transition: 0.2s;
-            user-select: none;
-        }
-        .profile-avatar-letter:hover {
-            transform: scale(1.05);
-            border-color: #c084fc;
-        }
-        .profile-name {
-            font-size: 1.6rem;
-            font-weight: 600;
-            text-align: center;
-            margin: 0.5rem 0 0.25rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.5rem;
-        }
-        .edit-icon {
-            cursor: pointer;
-            font-size: 1rem;
-            background: rgba(59,130,246,0.15);
-            padding: 4px 8px;
-            border-radius: 40px;
-            transition: 0.2s;
-            line-height: 1;
-            color: var(--text-muted);
-        }
-        .edit-icon:hover {
-            background: var(--glow-primary);
-            color: white;
-        }
-        .profile-details {
-            margin: 1.5rem 0;
-        }
-        .profile-detail-item {
-            display: grid;
-            grid-template-columns: 80px 1fr auto;
-            align-items: center;
-            gap: 10px;
-            padding: 0.7rem 0;
-            border-bottom: 1px solid rgba(255,255,255,0.06);
-        }
-        .detail-label {
-            color: var(--text-muted);
-            font-size: 0.85rem;
-            font-weight: 500;
-        }
-        .detail-value {
-            white-space: normal;
-            overflow: visible;
-            text-overflow: clip;
-            word-break: keep-all;
-            overflow-wrap: anywhere;
-            color: var(--text-light);
-            font-size: 0.95rem;
-        }
-        .detail-actions {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            flex-shrink: 0;
-        }
-        .detail-edit,
-        .delete-phone-btn {
-            cursor: pointer;
-            background: none;
-            border: none;
-            color: var(--text-muted);
-            font-size: 0.9rem;
-            padding: 0 4px;
-            transition: 0.2s;
-        }
-        .detail-edit:hover {
-            color: var(--glow-primary);
-            transform: scale(1.1);
-        }
-        .delete-phone-btn {
-            color: var(--glow-danger);
-        }
-        .delete-phone-btn:hover {
-            color: #fecdd3;
-            transform: scale(1.1);
-        }
-        .delete-account-btn {
-            margin-top: 1.5rem;
-            width: 100%;
-            padding: 0.75rem;
-            background: transparent;
-            border: 1px solid var(--glow-danger);
-            color: var(--glow-danger);
-            border-radius: 60px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: 0.2s;
-            text-align: center;
-        }
-        .delete-account-btn:hover {
-            background: var(--glow-danger);
-            color: white;
-            transform: translateY(-2px);
-            box-shadow: 0 8px 20px rgba(244,63,94,0.4);
-        }
-        .profile-right {
-            display: flex;
-            flex-direction: column;
-            gap: 2rem;
-        }
-        .stats-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 1rem;
-        }
-        .stat-card {
-            background: rgba(0,0,0,0.3);
-            border-radius: var(--radius-lg);
-            padding: 1.5rem 1rem;
-            text-align: center;
-            border: 1px solid var(--glass-border);
-            transition: 0.2s;
-        }
-        .stat-card:hover {
-            border-color: var(--glow-primary);
-            transform: translateY(-2px);
-        }
-        .stat-value {
-            font-size: 2.5rem;
-            font-weight: 700;
-            color: #c084fc;
-        }
-        .stat-label {
-            font-size: 0.8rem;
-            color: var(--text-muted);
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            margin-top: 0.2rem;
-        }
-        .sections-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 1rem;
-        }
-        .section-link {
-            background: rgba(0,0,0,0.25);
-            border-radius: var(--radius-lg);
-            padding: 1.25rem 1rem;
-            text-decoration: none;
-            color: inherit;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 0.5rem;
-            transition: 0.2s;
-            border: 1px solid var(--glass-border);
-            text-align: center;
-        }
-        .section-link:hover {
-            transform: translateY(-4px);
-            border-color: var(--glow-primary);
-            box-shadow: 0 12px 24px -10px rgba(0,0,0,0.4);
-            background: rgba(59,130,246,0.05);
-        }
-        .section-icon {
-            font-size: 2.2rem;
-        }
-        .section-title {
-            font-weight: 600;
-            font-size: 1rem;
-        }
-        .section-desc {
-            font-size: 0.8rem;
-            color: var(--text-muted);
-        }
-        .error-msg {
-            color: var(--glow-danger);
-            font-size: 0.75rem;
-            margin-top: -0.8rem;
-            margin-bottom: 0.8rem;
-            display: none;
-        }
-        #phoneDisplayEmpty {
-            color: var(--text-muted);
-            font-style: italic;
-            cursor: pointer;
-        }
-        #phoneDisplayEmpty:hover {
-            text-decoration: underline;
-            color: var(--glow-primary);
-        }
-        @media (max-width: 1024px) {
-            .profile-grid {
-                grid-template-columns: 1fr;
-            }
-            .profile-card {
-                position: static;
-            }
-            .sections-grid {
-                grid-template-columns: repeat(2, 1fr);
-            }
-        }
-        @media (max-width: 640px) {
-            .profile-wrapper {
-                padding: 1rem;
-            }
-            .stats-grid {
-                grid-template-columns: 1fr;
-            }
-            .sections-grid {
-                grid-template-columns: 1fr;
-            }
-            .profile-detail-item {
-                grid-template-columns: 70px 1fr auto;
-                gap: 6px;
-            }
-            .profile-avatar-letter {
-                width: 80px;
-                height: 80px;
-                font-size: 2.5rem;
-            }
-        }
+        *, *::before, *::after{box-sizing:border-box;}
+        .profile-wrapper{max-width:1400px;margin:0 auto;padding:2rem 2rem 0;}
+        .profile-header{margin-bottom:2rem;}
+        .profile-header h1{font-size:2.5rem;font-weight:700;background:linear-gradient(135deg,#e0e7ff,#c084fc);-webkit-background-clip:text;background-clip:text;color:transparent;margin:0;}
+        .profile-grid{display:grid;grid-template-columns:380px 1fr;gap:2rem;align-items:start;}
+        .profile-card{background:var(--card-bg);backdrop-filter:blur(8px);border-radius:var(--radius-xl);padding:2rem;border:1px solid var(--glass-border);position:sticky;top:100px;}
+        .profile-avatar{text-align:center;margin-bottom:1.5rem;}
+        .profile-avatar-letter{width:120px;height:120px;border-radius:50%;background:linear-gradient(135deg,#4f46e5,#7c3aed);display:inline-flex;align-items:center;justify-content:center;font-weight:700;font-size:3.5rem;color:white;text-transform:uppercase;border:3px solid var(--glow-primary);box-shadow:0 4px 20px rgba(79,70,229,0.4);transition:0.2s;user-select:none;}
+        .profile-avatar-letter:hover{transform:scale(1.05);border-color:#c084fc;}
+        .profile-name{font-size:1.6rem;font-weight:600;text-align:center;margin:0.5rem 0 0.25rem;display:flex;align-items:center;justify-content:center;gap:0.5rem;}
+        .edit-icon{cursor:pointer;font-size:1rem;background:rgba(59,130,246,0.15);padding:4px 8px;border-radius:40px;transition:0.2s;line-height:1;color:var(--text-muted);}
+        .edit-icon:hover{background:var(--glow-primary);color:white;}
+        .profile-details{margin:1.5rem 0;}
+        .profile-detail-item{display:grid;grid-template-columns:80px 1fr auto;align-items:center;gap:10px;padding:0.7rem 0;border-bottom:1px solid rgba(255,255,255,0.06);}
+        .detail-label{color:var(--text-muted);font-size:0.85rem;font-weight:500;}
+        .detail-value{white-space:normal;overflow:visible;text-overflow:clip;word-break:keep-all;overflow-wrap:anywhere;color:var(--text-light);font-size:0.95rem;}
+        .detail-actions{display:flex;align-items:center;gap:8px;flex-shrink:0;}
+        .detail-edit,.delete-phone-btn{cursor:pointer;background:none;border:none;color:var(--text-muted);font-size:0.9rem;padding:0 4px;transition:0.2s;}
+        .detail-edit:hover{color:var(--glow-primary);transform:scale(1.1);}
+        .delete-phone-btn{color:var(--glow-danger);}
+        .delete-phone-btn:hover{color:#fecdd3;transform:scale(1.1);}
+        .delete-account-btn{margin-top:1.5rem;width:100%;padding:0.75rem;background:transparent;border:1px solid var(--glow-danger);color:var(--glow-danger);border-radius:60px;font-weight:600;cursor:pointer;transition:0.2s;text-align:center;}
+        .delete-account-btn:hover{background:var(--glow-danger);color:white;transform:translateY(-2px);box-shadow:0 8px 20px rgba(244,63,94,0.4);}
+        .profile-right{display:flex;flex-direction:column;gap:2rem;}
+        .stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem;}
+        .stat-card{background:rgba(0,0,0,0.3);border-radius:var(--radius-lg);padding:1.5rem 1rem;text-align:center;border:1px solid var(--glass-border);transition:0.2s;}
+        .stat-card:hover{border-color:var(--glow-primary);transform:translateY(-2px);}
+        .stat-value{font-size:2.5rem;font-weight:700;color:#c084fc;}
+        .stat-label{font-size:0.8rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px;margin-top:0.2rem;}
+        .sections-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;}
+        .section-link{background:rgba(0,0,0,0.25);border-radius:var(--radius-lg);padding:1.25rem 1rem;text-decoration:none;color:inherit;display:flex;flex-direction:column;align-items:center;gap:0.5rem;transition:0.2s;border:1px solid var(--glass-border);text-align:center;}
+        .section-link:hover{transform:translateY(-4px);border-color:var(--glow-primary);box-shadow:0 12px 24px -10px rgba(0,0,0,0.4);background:rgba(59,130,246,0.05);}
+        .section-icon{font-size:2.2rem;}
+        .section-title{font-weight:600;font-size:1rem;}
+        .section-desc{font-size:0.8rem;color:var(--text-muted);}
+        .error-msg{color:var(--glow-danger);font-size:0.75rem;margin-top:-0.8rem;margin-bottom:0.8rem;display:none;}
+        #phoneDisplayEmpty{color:var(--text-muted);font-style:italic;cursor:pointer;}
+        #phoneDisplayEmpty:hover{text-decoration:underline;color:var(--glow-primary);}
+        @media(max-width:1024px){.profile-grid{grid-template-columns:1fr;}.profile-card{position:static;}.sections-grid{grid-template-columns:repeat(2,1fr);}}
+        @media(max-width:640px){.profile-wrapper{padding:1rem;}.stats-grid{grid-template-columns:1fr;}.sections-grid{grid-template-columns:1fr;}.profile-detail-item{grid-template-columns:70px 1fr auto;gap:6px;}.profile-avatar-letter{width:80px;height:80px;font-size:2.5rem;}}
     </style>
 </head>
 <body>
-<th:block th:replace="~{fragments/header :: header}"></th:block>
-<th:block th:replace="~{fragments/flash-messages :: flashMessages}"></th:block>
+
+<th th:replace="~{fragments/header :: header}"></th>
+<th th:replace="~{fragments/flash-messages :: flashMessages}"></th>
 
 <main class="profile-wrapper">
-    <div class="profile-header">
-        <h1>Личный кабинет</h1>
-    </div>
+    <div class="profile-header"><h1>Личный кабинет</h1></div>
 
     <div th:if="${userForOwner}" class="profile-grid">
         <div class="profile-card">
@@ -302,7 +62,8 @@
                 </div>
             </div>
             <div class="profile-name">
-                <span id="usernameDisplay" th:text="${userForOwner.username}">username</span>
+                <span id="usernameDisplay" class="js-current-username"
+                      th:text="${userForOwner.username}">username</span>
                 <span class="edit-icon" onclick="openModal('usernameModal')">✏️</span>
             </div>
             <div class="profile-details">
@@ -387,6 +148,7 @@
     </div>
 </main>
 
+<!-- Модалки -->
 <div id="deleteAccountModal" class="modal">
     <div class="modal-content">
         <div class="modal-header">
@@ -402,6 +164,7 @@
         </div>
     </div>
 </div>
+
 <div id="deletePhoneModal" class="modal">
     <div class="modal-content">
         <div class="modal-header">
@@ -415,6 +178,7 @@
         </div>
     </div>
 </div>
+
 <div id="usernameModal" class="modal">
     <div class="modal-content">
         <div class="modal-header">
@@ -432,6 +196,7 @@
         </form>
     </div>
 </div>
+
 <div id="emailModal" class="modal">
     <div class="modal-content">
         <div class="modal-header">
@@ -449,6 +214,7 @@
         </form>
     </div>
 </div>
+
 <div id="phoneModal" class="modal">
     <div class="modal-content">
         <div class="modal-header">
@@ -466,12 +232,10 @@
     </div>
 </div>
 
-<th:block th:replace="~{fragments/footer :: footer}"></th:block>
-
 <script th:src="@{/js/main.js}" defer></script>
 <script>
     function formatPhone(input) {
-        const raw = input.value.replace(/\D/g, '');
+        let raw = input.value.replace(/\D/g, '');
         let digits = raw;
         if (digits.startsWith('7') || digits.startsWith('8')) {
             digits = '7' + digits.substring(1);
@@ -479,58 +243,77 @@
             digits = '7' + digits;
         }
         if (digits.length > 11) digits = digits.substring(0, 11);
-
         let formatted = '';
         if (digits.length > 0) formatted = '+7';
         if (digits.length > 1) formatted += ' (' + digits.substring(1, 4);
         if (digits.length > 4) formatted += ') ' + digits.substring(4, 7);
         if (digits.length > 7) formatted += '-' + digits.substring(7, 9);
         if (digits.length > 9) formatted += '-' + digits.substring(9, 11);
-
-        if (formatted === input.value) return;
         input.value = formatted;
-        input.setSelectionRange(formatted.length, formatted.length);
     }
 
     function initPhoneDisplay() {
         const initialPhone = document.getElementById('initialPhone').value;
-        const phoneSpan = document.getElementById('phoneDisplay');
-        const emptySpan = document.getElementById('phoneDisplayEmpty');
-        const deleteBtn = document.getElementById('deletePhoneBtn');
-        if (initialPhone && initialPhone.trim() !== '') {
-            phoneSpan.textContent = initialPhone;
-            phoneSpan.style.display = 'inline';
-            emptySpan.style.display = 'none';
-            deleteBtn.style.display = 'inline-block';
-        } else {
-            phoneSpan.style.display = 'none';
-            emptySpan.style.display = 'inline';
-            deleteBtn.style.display = 'none';
-        }
+        updatePhoneUI(initialPhone);
     }
 
     function updatePhoneUI(phoneNumber) {
         const phoneSpan = document.getElementById('phoneDisplay');
         const emptySpan = document.getElementById('phoneDisplayEmpty');
         const deleteBtn = document.getElementById('deletePhoneBtn');
-        if (phoneNumber && phoneNumber.trim() !== '') {
+        const initialPhoneInput = document.getElementById('initialPhone');
+        const hasPhone = phoneNumber && phoneNumber.trim() !== '';
+        if (hasPhone) {
             phoneSpan.textContent = phoneNumber;
             phoneSpan.style.display = 'inline';
             emptySpan.style.display = 'none';
             deleteBtn.style.display = 'inline-block';
-            document.getElementById('initialPhone').value = phoneNumber;
+            if (initialPhoneInput) initialPhoneInput.value = phoneNumber;
         } else {
+            phoneSpan.textContent = '';
             phoneSpan.style.display = 'none';
             emptySpan.style.display = 'inline';
             deleteBtn.style.display = 'none';
-            document.getElementById('initialPhone').value = '';
+            if (initialPhoneInput) initialPhoneInput.value = '';
         }
     }
 
-    function openModal(id) { document.getElementById(id).classList.add('show'); }
-    function closeModal(id) { document.getElementById(id).classList.remove('show'); }
-    window.onclick = function(event) { if (event.target.classList.contains('modal')) event.target.classList.remove('show'); };
-    document.addEventListener('keydown', function(e) { if (e.key === 'Escape') document.querySelectorAll('.modal.show').forEach(m => m.classList.remove('show')); });
+    function updateUsernameUI(newUsername) {
+        if (!newUsername) return;
+        document.querySelectorAll('.js-current-username, .user-menu-name, #usernameDisplay').forEach(el => {
+            el.textContent = newUsername;
+        });
+        const firstLetter = newUsername.charAt(0).toUpperCase();
+        document.querySelectorAll('.profile-avatar-letter, .avatar, .user-avatar-letter').forEach(avatar => {
+            avatar.textContent = firstLetter;
+        });
+        const currentUserData = document.getElementById('currentUserData');
+        if (currentUserData) currentUserData.dataset.username = newUsername;
+    }
+
+    function openModal(id) {
+        const modal = document.getElementById(id);
+        if (modal) modal.classList.add('show');
+    }
+
+    function closeModal(id) {
+        const modal = document.getElementById(id);
+        if (modal) {
+            modal.classList.remove('show');
+            const errorDiv = modal.querySelector('.error-msg');
+            if (errorDiv) {
+                errorDiv.innerText = '';
+                errorDiv.style.display = 'none';
+            }
+        }
+    }
+
+    window.onclick = function(event) {
+        if (event.target.classList.contains('modal')) event.target.classList.remove('show');
+    };
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') document.querySelectorAll('.modal.show').forEach(m => m.classList.remove('show'));
+    });
 
     function openDeletePhoneModal() { openModal('deletePhoneModal'); }
     function closeDeletePhoneModal() { closeModal('deletePhoneModal'); }
@@ -538,22 +321,32 @@
     function closeDeleteAccountModal() { closeModal('deleteAccountModal'); }
 
     function deletePhone() {
-        fetch('/profile/settings/delete/phone', { method: 'GET' })
-            .then(res => { if(res.ok) { showFlashMessage('Номер телефона удалён', 'success'); updatePhoneUI(''); closeDeletePhoneModal(); } })
-            .catch(() => showFlashMessage('Ошибка при удалении', 'error'));
+        const btn = document.getElementById('confirmDeletePhoneBtn');
+        if (btn) btn.disabled = true;
+        fetch('/profile/settings/delete/phone', {
+            method: 'GET',
+            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+        })
+        .then(res => res.json())
+        .then(result => {
+            if (typeof showFlashMessage === 'function') {
+                showFlashMessage(result.message || 'Номер телефона удалён', 'success');
+            }
+            updatePhoneUI('');
+            closeDeletePhoneModal();
+        })
+        .catch(() => {
+            if (typeof showFlashMessage === 'function') {
+                showFlashMessage('Ошибка при удалении телефона', 'error');
+            }
+        })
+        .finally(() => {
+            if (btn) btn.disabled = false;
+        });
     }
     document.getElementById('confirmDeletePhoneBtn')?.addEventListener('click', deletePhone);
 
-    function showFlashMessage(message, type) {
-        const div = document.createElement('div');
-        div.className = 'flash-message ' + type;
-        div.textContent = message;
-        document.body.appendChild(div);
-        setTimeout(function() { div.style.animation = 'fadeOut 0.3s ease forwards'; setTimeout(function() { if(div.parentNode) div.remove(); }, 300); }, 5000);
-    }
-
     var usernameRegex = /^[a-zA-Z0-9_]{6,20}$/;
-    var emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     var phoneRegex = /^$|^\+\d{1,3}\s?\(?\d{1,3}\)?\s?\d{3}[\s\-]?\d{2}[\s\-]?\d{2}$/;
 
     function validateUsername() {
@@ -567,17 +360,7 @@
         error.style.display = 'none';
         return true;
     }
-    function validateEmail() {
-        var input = document.getElementById('newEmail');
-        var error = document.getElementById('emailError');
-        if (!emailRegex.test(input.value.trim())) {
-            error.textContent = 'Введите корректный email';
-            error.style.display = 'block';
-            return false;
-        }
-        error.style.display = 'none';
-        return true;
-    }
+
     function validatePhone() {
         var input = document.getElementById('newPhone');
         var error = document.getElementById('phoneError');
@@ -600,49 +383,80 @@
 
     function setupForm(formId, fieldName, validator, successCallback) {
         var form = document.getElementById(formId);
+        if (!form) return;
         form.addEventListener('submit', async function(e) {
             e.preventDefault();
+
             if (validator && !validator()) return;
+
             var val = form.querySelector('input').value.trim();
+            var submitBtn = form.querySelector('button[type="submit"]');
+            if (submitBtn) submitBtn.disabled = true;
+
+            var errorContainer = form.querySelector('.error-msg');
+            if (errorContainer) {
+                errorContainer.textContent = '';
+                errorContainer.style.display = 'none';
+            }
+            var inputField = form.querySelector('input');
+            if (inputField) inputField.classList.remove('has-error');
+
             try {
                 var res = await fetch('/profile/settings/change-ajax', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
                     body: JSON.stringify(buildPayload(fieldName, val))
                 });
                 var result = await res.json();
+
                 if (res.ok) {
-                    showFlashMessage(result.message, 'success');
-                    if (fieldName === 'username') successCallback(result.newUsername);
-                    if (fieldName === 'email') successCallback(result.newEmail);
-                    if (fieldName === 'phone') successCallback(result.newPhone);
+                    if (typeof showFlashMessage === 'function') {
+                        showFlashMessage(result.message || 'Изменения сохранены', 'success');
+                    }
+                    const dataObj = result.data || {};
+                    const updatedValue = dataObj[fieldName === 'username' ? 'newUsername' : fieldName === 'email' ? 'newEmail' : 'newPhone'] || val;
+                    if (successCallback) successCallback(updatedValue);
                     closeModal(formId.replace('Form', 'Modal'));
                     form.reset();
                 } else {
-                    showFlashMessage(result.message, 'error');
+                    let errorMsg = result.message;
+                    if (result.errors && Array.isArray(result.errors)) {
+                        const fieldErr = result.errors.find(e => e.field === fieldName);
+                        if (fieldErr) errorMsg = fieldErr.defaultMessage;
+                    }
+                    if (errorMsg && errorContainer) {
+                        errorContainer.textContent = errorMsg;
+                        errorContainer.style.display = 'block';
+                        if (inputField) inputField.classList.add('has-error');
+                    } else {
+                        if (typeof showFlashMessage === 'function') {
+                            showFlashMessage(errorMsg || 'Ошибка сохранения', 'error');
+                        }
+                    }
                 }
             } catch (error) {
-                showFlashMessage('Ошибка сети', 'error');
+                if (typeof showFlashMessage === 'function') {
+                    showFlashMessage('Ошибка сети', 'error');
+                }
+            } finally {
+                if (submitBtn) submitBtn.disabled = false;
             }
         });
     }
 
-    setupForm('usernameForm', 'username', validateUsername, function(val) { document.getElementById('usernameDisplay').textContent = val; });
-    setupForm('emailForm', 'email', validateEmail, function(val) { document.getElementById('emailDisplay').textContent = val; });
-    setupForm('phoneForm', 'phone', validatePhone, function(val) { updatePhoneUI(val); });
+    setupForm('usernameForm', 'username', validateUsername, function(newUsername) { updateUsernameUI(newUsername); });
+    setupForm('emailForm', 'email', null, function(newEmail) { document.getElementById('emailDisplay').textContent = newEmail; });
+    setupForm('phoneForm', 'phone', validatePhone, function(newPhone) { updatePhoneUI(newPhone); });
 
     document.addEventListener('DOMContentLoaded', function() {
         initPhoneDisplay();
-        var p = document.getElementById('initialPhone').value;
-        if (p && p.trim() !== '') updatePhoneUI(p);
-
         var phoneInput = document.getElementById('newPhone');
         if (phoneInput) {
-            phoneInput.addEventListener('blur', function() {
-                formatPhone(this);
-            });
+            phoneInput.addEventListener('input', function() { formatPhone(this); });
         }
     });
 </script>
+
+<th th:replace="~{fragments/footer :: footer}"></th>
 </body>
 </html>

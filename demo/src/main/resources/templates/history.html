@@ -28,6 +28,7 @@
         .empty-state p{color:var(--text-muted);font-size:1.2rem;margin-bottom:2rem;}
         .btn{background:var(--glow-primary);color:white;padding:0.9rem 2.2rem;border-radius:60px;text-decoration:none;font-weight:600;display:inline-block;transition:0.2s;}
         .btn:hover{transform:translateY(-3px);box-shadow:0 8px 20px rgba(59,130,246,0.4);}
+        .rating-star{color:#facc15;}
         @media (max-width:768px){
             .history-table,.history-table thead,.history-table tbody,.history-table tr,.history-table td{display:block;}
             .history-table thead{display:none;}
@@ -52,14 +53,14 @@
                 <th>Рейтинг</th>
                 <th>Оценок</th>
                 <th>Дата покупки</th>
-                <th>Цена</th>
+                <th>Цена покупки</th>
             </tr>
             </thead>
             <tbody>
             <tr th:each="purchase : ${history.content}">
                 <td data-label="Постер">
                     <img th:if="${purchase.posterUrl != null and !purchase.posterUrl.isEmpty()}"
-                         th:src="${purchase.posterUrl}" class="poster-thumb" alt="Постер"/>
+                         th:src="${purchase.posterUrl}" class="poster-thumb" alt="Постер" src=""/>
                     <div th:unless="${purchase.posterUrl != null and !purchase.posterUrl.isEmpty()}"
                          class="poster-placeholder">Нет
                     </div>
@@ -74,28 +75,24 @@
                               th:text="|• Реж. ${purchase.director}|">• Реж. Имя</span>
                     </div>
                 </td>
-                <td data-label="Рейтинг"
-                    th:text="${purchase.rating != null} ? ${#numbers.formatDecimal(purchase.rating, 1, 1)} : '—'">7.9
+                <td data-label="Рейтинг">
+                    <span class="rating-star">★</span>
+                    <span th:text="${purchase.rating != null ? #numbers.formatDecimal(purchase.rating, 1, 1) + ' / 10' : '—'}">7.9 / 10</span>
                 </td>
-                <td data-label="Оценок" th:text="${purchase.ratingsCount != null} ? ${purchase.ratingsCount} : '0'">0
-                </td>
+                <td data-label="Оценок" th:text="${purchase.ratingsCount != null ? purchase.ratingsCount : '0'}">0</td>
                 <td data-label="Дата покупки"
                     th:text="${#temporals.format(purchase.purchasedAt, 'dd MMM yyyy, HH:mm')}">1 янв 2026, 15:30
                 </td>
-                <td data-label="Цена" class="price" th:text="${purchase.priceSnapshot + ' ₽'}">329.99 ₽</td>
+                <td data-label="Цена покупки" class="price" th:text="${purchase.priceSnapshot + ' ₽'}">329.99 ₽</td>
             </tr>
             </tbody>
         </table>
         <th:block th:replace="~{fragments/pagination :: pager(page=${history}, url='/history')}"></th:block>
     </div>
     <div th:if="${history == null or history.empty}" class="empty-state"><p>У вас пока нет купленных фильмов</p><a
-            href="/" class="btn">Перейти к каталогу</a></div>
+            href="/" class="btn">Перейти в каталог</a></div>
 </main>
-
 <script th:src="@{/js/main.js}" defer></script>
-
-
 <th:block th:replace="~{fragments/footer :: footer}"></th:block>
-
 </body>
 </html>

@@ -5,173 +5,41 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title id="pageTitle">Регистрация — Cinema Service</title>
     <link rel="icon" type="image/x-icon" th:href="@{/favicon.ico}">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700&display=swap"
-          rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" th:href="@{/css/main.css}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <style>
-        body {
-            background: radial-gradient(circle at 10% 20%, #0b0f1c, #05070f);
-            display: flex;
-            flex-direction: column;
-            justify-content: flex-start;
-            align-items: center;
-            min-height: 100vh;
-            margin: 0;
-            padding: 1rem;
-            box-sizing: border-box;
-            font-family: 'Inter', sans-serif;
-            position: relative;
-        }
-        .main-container {
-            max-width: 750px;
-            width: 100%;
-            background: rgba(15, 23, 42, 0.65);
-            backdrop-filter: blur(16px);
-            border-radius: 20px;
-            border: 1px solid rgba(72, 187, 255, 0.15);
-            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
-            display: flex;
-            flex-direction: column;
-            z-index: 2;
-            margin: auto 0;
-        }
-        .header {
-            background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(168, 85, 247, 0.1));
-            padding: 1.2rem 1.5rem;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 0.4rem;
-            position: relative;
-        }
-        .logo-link {
-            text-decoration: none;
-            color: #94a3b8;
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-            font-weight: 500;
-            font-size: 0.85rem;
-            transition: 0.2s;
-        }
+        body { background: radial-gradient(circle at 10% 20%, #0b0f1c, #05070f); display: flex; flex-direction: column; justify-content: flex-start; align-items: center; min-height: 100vh; margin: 0; padding: 1rem; box-sizing: border-box; font-family: 'Inter', sans-serif; position: relative; }
+        .main-container { max-width: 750px; width: 100%; background: rgba(15, 23, 42, 0.65); backdrop-filter: blur(16px); border-radius: 20px; border: 1px solid rgba(72, 187, 255, 0.15); box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5); display: flex; flex-direction: column; z-index: 2; margin: auto 0; }
+        .header { background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(168, 85, 247, 0.1)); padding: 1.2rem 1.5rem; border-bottom: 1px solid rgba(255, 255, 255, 0.05); display: flex; flex-direction: column; align-items: center; gap: 0.4rem; position: relative; }
+        .logo-link { text-decoration: none; color: #94a3b8; display: inline-flex; align-items: center; gap: 0.5rem; font-weight: 500; font-size: 0.85rem; transition: 0.2s; }
         .logo-link:hover { color: #fff; }
         .logo-link img { width: 22px; height: 22px; border-radius: 5px; }
-        .header h1 {
-            font-size: 1.5rem;
-            font-weight: 700;
-            margin: 0;
-            background: linear-gradient(135deg, #fff, #c084fc);
-            -webkit-background-clip: text;
-            background-clip: text;
-            color: transparent;
-            text-align: center;
-        }
+        .header h1 { font-size: 1.5rem; font-weight: 700; margin: 0; background: linear-gradient(135deg, #fff, #c084fc); -webkit-background-clip: text; background-clip: text; color: transparent; text-align: center; }
         .form-container { padding: 1.5rem; }
-        .form-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 1.2rem 1.5rem;
-        }
+        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.2rem 1.5rem; }
         .form-group { display: flex; flex-direction: column; position: relative; }
-        label {
-            font-size: 0.75rem;
-            font-weight: 600;
-            margin-bottom: 0.4rem;
-            color: #eef2ff;
-            letter-spacing: 0.3px;
-        }
-        input.form-control {
-            width: 100%;
-            padding: 0.65rem 2.5rem 0.65rem 0.9rem;
-            border-radius: 10px;
-            border: 1px solid rgba(72, 187, 255, 0.2);
-            background: rgba(0, 0, 0, 0.4) !important;
-            color: white !important;
-            font-size: 0.85rem;
-            box-sizing: border-box;
-            transition: 0.2s ease;
-        }
-        input.form-control:-webkit-autofill,
-        input.form-control:-webkit-autofill:hover,
-        input.form-control:-webkit-autofill:focus {
-            -webkit-text-fill-color: white !important;
-            box-shadow: 0 0 0px 1000px rgba(10, 15, 30, 0.95) inset !important;
-            border: 1px solid #3b82f6 !important;
-        }
-        input.form-control:focus {
-            outline: none;
-            border-color: #3b82f6;
-            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.25);
-        }
+        label { font-size: 0.75rem; font-weight: 600; margin-bottom: 0.4rem; color: #eef2ff; letter-spacing: 0.3px; }
+        input.form-control { width: 100%; padding: 0.65rem 2.5rem 0.65rem 0.9rem; border-radius: 10px; border: 1px solid rgba(72, 187, 255, 0.2); background: rgba(0, 0, 0, 0.4) !important; color: white !important; font-size: 0.85rem; box-sizing: border-box; transition: 0.2s ease; }
+        input.form-control:-webkit-autofill, input.form-control:-webkit-autofill:hover, input.form-control:-webkit-autofill:focus { -webkit-text-fill-color: white !important; box-shadow: 0 0 0px 1000px rgba(10, 15, 30, 0.95) inset !important; border: 1px solid #3b82f6 !important; }
+        input.form-control:focus { outline: none; border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.25); }
         .input-wrapper { position: relative; }
-        .toggle-password {
-            position: absolute;
-            right: 12px;
-            top: 50%;
-            transform: translateY(-50%);
-            background: none;
-            border: none;
-            color: #64748b;
-            cursor: pointer;
-            font-size: 1rem;
-            padding: 0;
-            z-index: 3;
-        }
+        .toggle-password { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); background: none; border: none; color: #64748b; cursor: pointer; font-size: 1rem; padding: 0; z-index: 3; }
         .toggle-password:hover { color: #94a3b8; }
-        .field-error {
-            color: #f43f5e;
-            font-size: 0.7rem;
-            position: absolute;
-            bottom: -15px;
-            left: 2px;
-            display: none;
-        }
+        .field-error { color: #f43f5e; font-size: 0.7rem; position: absolute; bottom: -15px; left: 2px; display: none; }
         .field-error.show { display: block; }
         .has-error { border-color: #f43f5e !important; }
-        .footer-actions {
-            grid-column: span 2;
-            margin-top: 1rem;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 0.6rem;
-        }
-        .btn-submit {
-            background: linear-gradient(135deg, #3b82f6, #1d4ed8);
-            color: white;
-            padding: 0.75rem;
-            border: none;
-            border-radius: 10px;
-            font-size: 0.95rem;
-            font-weight: 600;
-            cursor: pointer;
-            width: 100%;
-            transition: 0.2s;
-        }
-        .btn-submit:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4);
-        }
+        .footer-actions { grid-column: span 2; margin-top: 1rem; display: flex; flex-direction: column; align-items: center; gap: 0.6rem; }
+        .btn-submit { background: linear-gradient(135deg, #3b82f6, #1d4ed8); color: white; padding: 0.75rem; border: none; border-radius: 10px; font-size: 0.95rem; font-weight: 600; cursor: pointer; width: 100%; transition: 0.2s; }
+        .btn-submit:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4); }
         .login-link { font-size: 0.85rem; color: #94a3b8; margin: 0; }
         .login-link a { color: #c084fc; text-decoration: none; font-weight: 500; }
         .login-link a:hover { text-decoration: underline; }
         .flash-container { grid-column: span 2; }
-        .flash-message {
-            padding: 0.5rem 1rem;
-            border-radius: 10px;
-            margin-bottom: 0.5rem;
-            font-size: 0.85rem;
-        }
+        .flash-message { padding: 0.5rem 1rem; border-radius: 10px; margin-bottom: 0.5rem; font-size: 0.85rem; }
         .flash-message.error { background: rgba(244, 63, 94, 0.15); border: 1px solid #f43f5e; color: #fecdd3; }
         .flash-message.success { background: rgba(16, 185, 129, 0.15); border: 1px solid #10b981; color: #d1fae5; }
-        @media (max-width: 640px) {
-            body { overflow: auto; padding-bottom: 4rem; }
-            .form-grid { grid-template-columns: 1fr; gap: 1.2rem; }
-            .footer-actions { grid-column: span 1; }
-            .flash-container { grid-column: span 1; }
-        }
+        @media (max-width: 640px) { body { overflow: auto; padding-bottom: 4rem; } .form-grid { grid-template-columns: 1fr; gap: 1.2rem; } .footer-actions { grid-column: span 1; } .flash-container { grid-column: span 1; } }
     </style>
 </head>
 <body>
@@ -195,79 +63,77 @@
                     <div th:if="${alreadyRegisteredExceptionMessage}" class="flash-message error"
                          th:text="${alreadyRegisteredExceptionMessage}"></div>
                 </div>
+
                 <div class="form-group">
                     <label for="surname" data-translate="lblSurname">Фамилия *</label>
                     <input type="text" th:field="*{surname}" id="surname" class="form-control" placeholder="Иванов"
-                           data-placeholder="placeholderSurname"/>
-                    <div th:if="${#fields.hasErrors('surname')}" th:errors="*{surname}" class="field-error"></div>
-                    <div class="field-error" id="surnameError"></div>
+                           data-placeholder="placeholderSurname"
+                           th:classappend="${#fields.hasErrors('surname')} ? 'has-error' : ''"/>
+                    <div th:if="${#fields.hasErrors('surname')}" th:errors="*{surname}" class="field-error show"></div>
                 </div>
                 <div class="form-group">
                     <label for="name" data-translate="lblName">Имя *</label>
                     <input type="text" th:field="*{name}" id="name" class="form-control" placeholder="Иван"
-                           data-placeholder="placeholderName"/>
-                    <div th:if="${#fields.hasErrors('name')}" th:errors="*{name}" class="field-error"></div>
-                    <div class="field-error" id="nameError"></div>
+                           data-placeholder="placeholderName"
+                           th:classappend="${#fields.hasErrors('name')} ? 'has-error' : ''"/>
+                    <div th:if="${#fields.hasErrors('name')}" th:errors="*{name}" class="field-error show"></div>
                 </div>
                 <div class="form-group">
                     <label for="patronymic" data-translate="lblPatronymic">Отчество *</label>
                     <input type="text" th:field="*{patronymic}" id="patronymic" class="form-control"
-                           placeholder="Иванович" data-placeholder="placeholderPatronymic"/>
-                    <div th:if="${#fields.hasErrors('patronymic')}" th:errors="*{patronymic}" class="field-error"></div>
-                    <div class="field-error" id="patronymicError"></div>
+                           placeholder="Иванович" data-placeholder="placeholderPatronymic"
+                           th:classappend="${#fields.hasErrors('patronymic')} ? 'has-error' : ''"/>
+                    <div th:if="${#fields.hasErrors('patronymic')}" th:errors="*{patronymic}"
+                         class="field-error show"></div>
                 </div>
                 <div class="form-group">
                     <label for="username" data-translate="lblUsername">Имя пользователя (логин) *</label>
-                    <input type="text" th:field="*{username}" id="username" class="form-control"
-                           placeholder="username"/>
-                    <div th:if="${#fields.hasErrors('username')}" th:errors="*{username}" class="field-error"></div>
-                    <div class="field-error" id="usernameError"></div>
+                    <input type="text" th:field="*{username}" id="username" class="form-control" placeholder="username"
+                           th:classappend="${#fields.hasErrors('username')} ? 'has-error' : ''"/>
+                    <div th:if="${#fields.hasErrors('username')}" th:errors="*{username}"
+                         class="field-error show"></div>
                 </div>
                 <div class="form-group">
                     <label for="email" data-translate="lblEmail">Электронная почта *</label>
                     <input type="email" th:field="*{email}" id="email" class="form-control"
-                           placeholder="mail@example.com"/>
-                    <div th:if="${#fields.hasErrors('email')}" th:errors="*{email}" class="field-error"></div>
-                    <div class="field-error" id="emailError"></div>
+                           placeholder="mail@example.com"
+                           th:classappend="${#fields.hasErrors('email')} ? 'has-error' : ''"/>
+                    <div th:if="${#fields.hasErrors('email')}" th:errors="*{email}" class="field-error show"></div>
                 </div>
                 <div class="form-group">
                     <label for="phone" data-translate="lblPhone">Телефон *</label>
                     <input type="tel" th:field="*{phone}" id="phone" class="form-control"
-                           placeholder="+7 (999) 123-45-67"/>
-                    <div th:if="${#fields.hasErrors('phone')}" th:errors="*{phone}" class="field-error"></div>
-                    <div class="field-error" id="phoneError"></div>
+                           placeholder="+7 (999) 123-45-67"
+                           th:classappend="${#fields.hasErrors('phone')} ? 'has-error' : ''"/>
+                    <div th:if="${#fields.hasErrors('phone')}" th:errors="*{phone}" class="field-error show"></div>
                 </div>
                 <div class="form-group">
                     <label for="rawPassword" data-translate="lblPassword">Пароль (мин. 8 симв.) *</label>
                     <div class="input-wrapper">
                         <input type="password" th:field="*{rawPassword}" id="rawPassword" class="form-control"
-                               placeholder="••••••••"/>
-                        <button type="button" class="toggle-password" data-target="rawPassword">
-                            <i class="fas fa-eye-slash"></i>
-                        </button>
+                               placeholder="••••••••"
+                               th:classappend="${#fields.hasErrors('rawPassword')} ? 'has-error' : ''"/>
+                        <button type="button" class="toggle-password" data-target="rawPassword"><i class="fas fa-eye-slash"></i></button>
                     </div>
                     <div th:if="${#fields.hasErrors('rawPassword')}" th:errors="*{rawPassword}"
-                         class="field-error"></div>
-                    <div class="field-error" id="rawPasswordError"></div>
+                         class="field-error show"></div>
                 </div>
                 <div class="form-group">
                     <label for="repeatRawPassword" data-translate="lblRepeatPassword">Повторите пароль *</label>
                     <div class="input-wrapper">
                         <input type="password" th:field="*{repeatRawPassword}" id="repeatRawPassword"
-                               class="form-control" placeholder="••••••••"/>
-                        <button type="button" class="toggle-password" data-target="repeatRawPassword">
-                            <i class="fas fa-eye-slash"></i>
-                        </button>
+                               class="form-control" placeholder="••••••••"
+                               th:classappend="${#fields.hasErrors('repeatRawPassword')} ? 'has-error' : ''"/>
+                        <button type="button" class="toggle-password" data-target="repeatRawPassword"><i class="fas fa-eye-slash"></i></button>
                     </div>
                     <div th:if="${#fields.hasErrors('repeatRawPassword')}" th:errors="*{repeatRawPassword}"
-                         class="field-error"></div>
-                    <div class="field-error" id="repeatPasswordError"></div>
+                         class="field-error show"></div>
                 </div>
+
                 <input type="hidden" th:field="*{currencyCode}" id="currencyCode" value="RUB"/>
+
                 <div class="footer-actions">
-                    <button type="submit" class="btn-submit" id="btnSubmit" data-translate="btnSubmit">
-                        Зарегистрироваться →
-                    </button>
+                    <button type="submit" class="btn-submit" id="btnSubmit" data-translate="btnSubmit">Зарегистрироваться →</button>
                     <div class="login-link">
                         <span data-translate="hasAccount">Уже есть аккаунт?</span>
                         <a th:href="@{/login}" data-translate="loginLink">Войти</a>
@@ -277,19 +143,16 @@
         </form>
     </div>
 </div>
+
 <th:block th:replace="~{fragments/footer :: footer}"></th:block>
 <script th:src="@{/js/main.js}" defer></script>
 <script>
     const translations = {
         ru: {
-            title: "Регистрация",
-            pageTitle: "Регистрация — Cinema Service",
-            lblSurname: "Фамилия *",
-            placeholderSurname: "Иванов",
-            lblName: "Имя *",
-            placeholderName: "Иван",
-            lblPatronymic: "Отчество *",
-            placeholderPatronymic: "Иванович",
+            title: "Регистрация", pageTitle: "Регистрация — Cinema Service",
+            lblSurname: "Фамилия *", placeholderSurname: "Иванов",
+            lblName: "Имя *", placeholderName: "Иван",
+            lblPatronymic: "Отчество *", placeholderPatronymic: "Иванович",
             lblUsername: "Имя пользователя (логин) *",
             lblEmail: "Электронная почта *",
             lblPhone: "Телефон *",
@@ -300,7 +163,6 @@
             loginLink: "Войти",
             errLogin: "Введите логин",
             errEmail: "Введите email",
-            errEmailInval: "Некорректный email",
             errPhone: "Номер должен содержать 10 цифр после +7",
             errSurname: "Введите фамилию",
             errName: "Введите имя",
@@ -311,14 +173,10 @@
             errMatch: "Пароли не совпадают"
         },
         en: {
-            title: "Registration",
-            pageTitle: "Registration — Cinema Service",
-            lblSurname: "Last Name *",
-            placeholderSurname: "Smith",
-            lblName: "First Name *",
-            placeholderName: "John",
-            lblPatronymic: "Middle Name *",
-            placeholderPatronymic: "Edward",
+            title: "Registration", pageTitle: "Registration — Cinema Service",
+            lblSurname: "Last Name *", placeholderSurname: "Smith",
+            lblName: "First Name *", placeholderName: "John",
+            lblPatronymic: "Middle Name *", placeholderPatronymic: "Edward",
             lblUsername: "Username *",
             lblEmail: "Email Address *",
             lblPhone: "Phone Number *",
@@ -329,7 +187,6 @@
             loginLink: "Log In",
             errLogin: "Enter username",
             errEmail: "Enter email",
-            errEmailInval: "Invalid email style",
             errPhone: "Phone must contain 10 digits after +7",
             errSurname: "Enter last name",
             errName: "Enter first name",
@@ -340,7 +197,9 @@
             errMatch: "Passwords do not match"
         }
     };
+
     let currentLang = localStorage.getItem('cinema_lang') || 'ru';
+
     function applyLanguage(lang) {
         currentLang = lang;
         localStorage.setItem('cinema_lang', lang);
@@ -366,7 +225,9 @@
             }
         });
     }
+
     function changeLang(lang) { applyLanguage(lang); }
+
     document.querySelectorAll('.toggle-password').forEach(btn => {
         btn.addEventListener('click', function(e) {
             e.preventDefault();
@@ -388,52 +249,128 @@
             }
         });
     });
+
     function formatPhone(input) {
         let digits = input.value.replace(/\D/g, '');
-        if (digits.startsWith('7') || digits.startsWith('8')) { digits = '7' + digits.substring(1); }
-        else if (digits.length > 0 && !digits.startsWith('7')) { digits = '7' + digits; }
-        if (digits.length > 11) digits = digits.substring(0, 11);
+        if (digits.startsWith('8') || digits.startsWith('7')) {
+            digits = '7' + digits.substring(1);
+        } else if (digits.length > 0) {
+            digits = '7' + digits;
+        }
+        digits = digits.substring(0, 11);
         let formatted = '';
         if (digits.length > 0) formatted = '+7';
         if (digits.length > 1) formatted += ' (' + digits.substring(1, 4);
-        if (digits.length > 4) formatted += ') ' + digits.substring(4, 7);
+        if (digits.length >= 4) formatted += ')';
+        if (digits.length > 4) formatted += ' ' + digits.substring(4, 7);
         if (digits.length > 7) formatted += '-' + digits.substring(7, 9);
         if (digits.length > 9) formatted += '-' + digits.substring(9, 11);
         input.value = formatted;
     }
+
+    function showError(id, msg) {
+        const el = document.getElementById(id);
+        if (el) { el.textContent = msg; el.classList.add('show'); }
+    }
+
+    function clearError(id) {
+        const el = document.getElementById(id);
+        if (el) { el.textContent = ''; el.classList.remove('show'); }
+    }
+
+    function markError(id) {
+        const el = document.getElementById(id);
+        if (el) el.classList.add('has-error');
+    }
+
+    function clearMarkError(id) {
+        const el = document.getElementById(id);
+        if (el) el.classList.remove('has-error');
+    }
+
     function validateProfileForm() {
         let isValid = true;
-        const errorFields = ['usernameError', 'emailError', 'phoneError', 'surnameError', 'nameError', 'patronymicError', 'rawPasswordError', 'repeatPasswordError'];
-        errorFields.forEach(id => { const errDiv = document.getElementById(id); if (errDiv) errDiv.classList.remove('show'); });
-        document.querySelectorAll('#registerForm .has-error').forEach(el => el.classList.remove('has-error'));
         const lang = currentLang;
+
+        // Убираем старые ошибки
+        document.querySelectorAll('.field-error.show').forEach(el => el.classList.remove('show'));
+        document.querySelectorAll('.has-error').forEach(el => el.classList.remove('has-error'));
+
         const username = document.getElementById('username').value.trim();
-        if (!username) { showError('usernameError', translations[lang].errLogin); markError('username'); isValid = false; }
+        if (!username) {
+            showError('usernameError', translations[lang].errLogin);
+            markError('username');
+            isValid = false;
+        }
+
         const email = document.getElementById('email').value.trim();
-        if (!email) { showError('emailError', translations[lang].errEmail); markError('email'); isValid = false; }
-        else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { showError('emailError', translations[lang].errEmailInval); markError('email'); isValid = false; }
+        if (!email) {
+            showError('emailError', translations[lang].errEmail);
+            markError('email');
+            isValid = false;
+        }
+
         const phone = document.getElementById('phone').value;
         const phoneDigits = phone.replace(/\D/g, '');
-        if (phoneDigits.length > 0 && phoneDigits.length !== 11) { showError('phoneError', translations[lang].errPhone); markError('phone'); isValid = false; }
+        if (phoneDigits.length > 0 && phoneDigits.length !== 11) {
+            showError('phoneError', translations[lang].errPhone);
+            markError('phone');
+            isValid = false;
+        }
+
         const surname = document.getElementById('surname').value.trim();
-        if (!surname) { showError('surnameError', translations[lang].errSurname); markError('surname'); isValid = false; }
+        if (!surname) {
+            showError('surnameError', translations[lang].errSurname);
+            markError('surname');
+            isValid = false;
+        }
+
         const name = document.getElementById('name').value.trim();
-        if (!name) { showError('nameError', translations[lang].errName); markError('name'); isValid = false; }
+        if (!name) {
+            showError('nameError', translations[lang].errName);
+            markError('name');
+            isValid = false;
+        }
+
         const patronymic = document.getElementById('patronymic').value.trim();
-        if (!patronymic) { showError('patronymicError', translations[lang].errPatronymic); markError('patronymic'); isValid = false; }
+        if (!patronymic) {
+            showError('patronymicError', translations[lang].errPatronymic);
+            markError('patronymic');
+            isValid = false;
+        }
+
         const password = document.getElementById('rawPassword').value;
-        if (!password) { showError('rawPasswordError', translations[lang].errPassEmpty); markError('rawPassword'); isValid = false; }
-        else if (password.length < 8) { showError('rawPasswordError', translations[lang].errPassMin); markError('rawPassword'); isValid = false; }
+        if (!password) {
+            showError('rawPasswordError', translations[lang].errPassEmpty);
+            markError('rawPassword');
+            isValid = false;
+        } else if (password.length < 8) {
+            showError('rawPasswordError', translations[lang].errPassMin);
+            markError('rawPassword');
+            isValid = false;
+        }
+
         const repeatPass = document.getElementById('repeatRawPassword').value;
-        if (!repeatPass) { showError('repeatPasswordError', translations[lang].errRepeatEmpty); markError('repeatRawPassword'); isValid = false; }
-        else if (repeatPass.length < 8) { showError('repeatPasswordError', translations[lang].errPassMin); markError('repeatRawPassword'); isValid = false; }
-        else if (password !== repeatPass) { showError('repeatPasswordError', translations[lang].errMatch); markError('repeatRawPassword'); isValid = false; }
+        if (!repeatPass) {
+            showError('repeatPasswordError', translations[lang].errRepeatEmpty);
+            markError('repeatRawPassword');
+            isValid = false;
+        } else if (repeatPass.length < 8) {
+            showError('repeatPasswordError', translations[lang].errPassMin);
+            markError('repeatRawPassword');
+            isValid = false;
+        } else if (password !== repeatPass) {
+            showError('repeatPasswordError', translations[lang].errMatch);
+            markError('repeatRawPassword');
+            isValid = false;
+        }
+
         return isValid;
     }
-    function showError(id, msg) { const el = document.getElementById(id); if(el) { el.textContent = msg; el.classList.add('show'); } }
-    function markError(id) { const el = document.getElementById(id); if(el) el.classList.add('has-error'); }
+
     document.addEventListener('DOMContentLoaded', function() {
         applyLanguage(currentLang);
+
         const phoneFields = ['phone'];
         phoneFields.forEach(id => {
             const field = document.getElementById(id);
@@ -442,10 +379,14 @@
                 if (field.value) formatPhone(field);
             }
         });
+
         const profileForm = document.getElementById('registerForm');
         if (profileForm) {
-            profileForm.addEventListener('submit', function(e) { if (!validateProfileForm()) e.preventDefault(); });
+            profileForm.addEventListener('submit', function(e) {
+                if (!validateProfileForm()) e.preventDefault();
+            });
         }
+
         setTimeout(() => {
             document.querySelectorAll('.flash-message').forEach(msg => {
                 msg.style.animation = 'fadeOut 0.3s ease forwards';

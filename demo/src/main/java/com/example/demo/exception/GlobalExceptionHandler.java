@@ -3,6 +3,8 @@ package com.example.demo.exception;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.FieldError;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.ServletRequestBindingException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -56,6 +58,26 @@ public class GlobalExceptionHandler {
         }
         redirectAttributes.addFlashAttribute("errorMessage", message);
         return "redirect:" + fallbackPath(httpServletRequest);
+    }
+
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public Object handleValidationException(
+            MethodArgumentNotValidException exception,
+            HttpServletRequest request,
+            RedirectAttributes redirectAttributes) {
+        String message = exception.getBindingResult()
+                .getFieldErrors()
+                .stream()
+                .findFirst()
+                .map(FieldError::getDefaultMessage)
+                .orElse("Ошибка валидации");
+        if (isAjax(request)) {
+            return ResponseEntity
+                    .badRequest()
+                    .body(Map.of("message", message));
+        }
+        redirectAttributes.addFlashAttribute("errorMessage", message);
+        return "redirect:" + fallbackPath(request);
     }
 
     @ExceptionHandler(Exception.class)

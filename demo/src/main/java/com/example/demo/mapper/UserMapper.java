@@ -30,7 +30,10 @@ public interface UserMapper {
                     source = "registerFormDTO.rawPassword", qualifiedByName = "rawToEncoded"),
             @Mapping(target = "fullName",
                     expression = "java(mapperUtils.toFullName(registerFormDTO.surname(), registerFormDTO.name(), registerFormDTO.patronymic()))"),
-            @Mapping(target = "phone", source = "phone"),
+            @Mapping(
+                    target = "phone",
+                    expression = "java(registerFormDTO.phone() != null && !registerFormDTO.phone().trim().isEmpty() ? registerFormDTO.phone().trim() : null)"
+            ),
             @Mapping(target = "balance", ignore = true),
             @Mapping(target = "purchases", ignore = true),
             @Mapping(target = "favourites", ignore = true),
@@ -39,9 +42,13 @@ public interface UserMapper {
     })
     User fromRegisterForm(RegisterFormDTO registerFormDTO);
 
+    @Mapping(
+            target = "phone",
+            expression = "java(profileSettingsDTO.phone() != null && !profileSettingsDTO.phone().trim().isEmpty() ? profileSettingsDTO.phone().trim() : null)"
+    )
     void updateUserFromDto(ProfileSettingsDTO profileSettingsDTO, @MappingTarget User existingUser);
 
-    @Mapping(target = "phone", expression = "java(user.getPhone() == null || user.getPhone().isBlank() ? null : user.getPhone())")
+    @Mapping(target = "phone", expression = "java(user.getPhone() == null || user.getPhone().isBlank() ? null : user.getPhone().trim())")
     ProfileSettingsDTO toSettingsForm(User user);
 
     WalletForOwnerViewDTO toWalletView(User user);

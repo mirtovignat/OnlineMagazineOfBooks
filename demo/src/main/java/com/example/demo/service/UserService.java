@@ -9,26 +9,28 @@ import com.example.demo.exception.BusinessException;
 import com.example.demo.exception.ErrorCode;
 import com.example.demo.mapper.UserMapper;
 import com.example.demo.model.User;
-import com.example.demo.repository.*;
+import com.example.demo.repository.CartItemRepository;
+import com.example.demo.repository.FavouriteMovieRepository;
+import com.example.demo.repository.UserRepository;
+import com.example.demo.utils.Normalizer;
 import lombok.AllArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.util.Objects;
 
 @Service
 @AllArgsConstructor
 public class UserService {
     private static final BigDecimal MAX_BALANCE = new BigDecimal("100000.00");
-
     private final UserRepository userRepository;
     private final UserMapper userMapper;
     private final PasswordEncoder passwordEncoder;
     private final CartItemRepository cartItemRepository;
     private final FavouriteMovieRepository favouriteMovieRepository;
-    private final PurchasedMovieRepository purchasedMovieRepository;
-    private final RatedMovieRepository ratedMovieRepository;
+    private final Normalizer normalizer;
 
     public User findUserByUsername(String username) {
         return userRepository.findByUsernameOrThrow(username);
@@ -42,9 +44,20 @@ public class UserService {
 
     @Transactional
     public void changeProfile(ProfileSettingsDTO profileSettingsDTO, User user) {
-        throwIfNoChanges(profileSettingsDTO.equals(userMapper.toSettingsForm(user)));
-        validateUniqueness(profileSettingsDTO.username(), profileSettingsDTO.email(), profileSettingsDTO.phone(), user);
-        userMapper.updateUserFromDto(profileSettingsDTO, user);
+        String normalizedPhone = normalizer.normalizePhone(profileSettingsDTO);
+        ProfileSettingsDTO normalizedDto = new ProfileSettingsDTO(
+                profileSettingsDTO.username(),
+                profileSettingsDTO.email(),
+                normalizedPhone
+        );
+        throwIfNoChanges(normalizedDto.equals(userMapper.toSettingsForm(user)));
+        validateUniqueness(
+                normalizedDto.username(),
+                normalizedDto.email(),
+                normalizedDto.phone(),
+                user
+        );
+        userMapper.updateUserFromDto(normalizedDto, user);
         userRepository.save(user);
     }
 
@@ -104,7 +117,6 @@ public class UserService {
         return userMapper.toOwnerView(findUserByUsername(username));
     }
 
-
     public ProfileSettingsDTO getProfileSettings(String username) {
         User user = findUserByUsername(username);
         return userMapper.toSettingsForm(user);
@@ -118,13 +130,15 @@ public class UserService {
     }
 
     private void validateUniqueness(String username, String email, String phone, User user) {
-        if (!username.equals(user.getUsername()) && userRepository.existsByUsername(username)) {
+        if (!Objects.equals(username, user.getUsername()) && userRepository.existsByUsername(username)) {
             throw BusinessException.of(ErrorCode.ALREADY_REGISTERED);
         }
-        if (!email.equals(user.getEmail()) && userRepository.existsByEmail(email)) {
+
+        if (!Objects.equals(email, user.getEmail()) && userRepository.existsByEmail(email)) {
             throw BusinessException.of(ErrorCode.ALREADY_REGISTERED);
         }
-        if (phone != null && !phone.isBlank() && !phone.equals(user.getPhone()) && userRepository.existsByPhone(phone)) {
+
+        if (phone != null && !Objects.equals(phone, user.getPhone()) && userRepository.existsByPhone(phone)) {
             throw BusinessException.of(ErrorCode.ALREADY_REGISTERED);
         }
     }

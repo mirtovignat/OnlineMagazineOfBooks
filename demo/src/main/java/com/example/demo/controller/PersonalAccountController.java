@@ -116,7 +116,7 @@ public class PersonalAccountController {
     public String getChangePasswordForm(Model model) {
         if (!model.containsAttribute("passwordChangingDTO")) {
             model.addAttribute("passwordChangingDTO",
-                    new PasswordChangingDTO("", "", ""));
+                    PasswordChangingDTO.builder().build());
         }
         return "change-password";
     }

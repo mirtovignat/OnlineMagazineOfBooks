@@ -113,8 +113,6 @@ public class RatedController {
         return "redirect:/rated/" + movieId + "/reviews";
     }
 
-    // --- REST МЕТОДЫ (Возвращаем payload с обновленным рейтингом и кол-вом отзывов) ---
-
     @PostMapping("/add")
     @ResponseBody
     public ResponseEntity<ApiResponse> addRating(
@@ -219,5 +217,11 @@ public class RatedController {
         model.addAttribute("ratedHistory", ratedHistory);
         badgeUpdater.updateBadges(userForOwnerViewDTO, model);
         return "rated-history";
+    }
+
+    @GetMapping("/count/{movieId}")
+    @ResponseBody
+    public ResponseEntity<Long> getReviewsCount(@PathVariable Long movieId) {
+        return ResponseEntity.ok(ratedService.getReviewsCountForMovie(movieId));
     }
 }

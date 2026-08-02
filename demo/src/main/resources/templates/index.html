@@ -1,108 +1,47 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" lang="ru">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>Фильмы — Cinema Service</title>
-    <link rel="icon" type="image/x-icon" th:href="@{/favicon.ico}">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700&display=swap"
-          rel="stylesheet">
-    <link rel="stylesheet" th:href="@{/css/main.css}">
+    <title>Каталог — Cinema Service</title>
+    <th:block th:replace="~{fragments/head :: head}"></th:block>
     <style>
-        .movies-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 2rem; padding: 2rem; max-width: 1400px; margin: 0 auto; }
-        .movie-card { background: rgba(15,23,42,0.75); border-radius: 28px; overflow: hidden; border: 1px solid rgba(72,187,255,0.25); transition: 0.3s; display: flex; flex-direction: column; height: 100%; }
-        .movie-card:hover { transform: translateY(-8px); border-color: #3b82f6; }
-        .movie-poster-link { display: block; position: relative; }
-        .movie-poster-img { width: 100%; aspect-ratio: 2/3; object-fit: cover; display: block; }
-        .movie-poster-placeholder { width: 100%; aspect-ratio: 2/3; display: flex; align-items: center; justify-content: center; background: #2d3748; color: #718096; }
-        .movie-card-content { padding: 1.5rem; flex: 1; display: flex; flex-direction: column; }
-        .movie-card-content h3 { font-size: 1.3rem; font-weight: 600; margin-bottom: 0.75rem; }
-        .movie-card-content h3 a { color: inherit; text-decoration: none; }
-        .movie-card-content h3 a:hover { text-decoration: underline; color: #c084fc; }
-        .movie-attributes { display: grid; grid-template-columns: 1fr 1fr; gap: 0.4rem 1rem; margin-bottom: 0.8rem; }
-        .attr-item { display: flex; flex-direction: column; }
-        .attr-label { font-size: 0.6rem; text-transform: uppercase; letter-spacing: 0.5px; color: #94a3b8; }
-        .attr-value { font-size: 0.9rem; font-weight: 500; color: #eef2ff; }
-        .badge-rating { background: rgba(251,191,36,0.2); color: #fde047; padding: 0.1rem 0.6rem; border-radius: 40px; display: inline-block; }
-        .badge-year { background: rgba(52,211,153,0.2); color: #6ee7b7; padding: 0.1rem 0.6rem; border-radius: 40px; display: inline-block; }
-        .badge-genre { background: rgba(96,165,250,0.2); color: #93c5fd; padding: 0.1rem 0.6rem; border-radius: 40px; display: inline-block; }
-        .price-label { font-size: 0.75rem; color: #94a3b8; margin-top: 0.5rem; }
-        .price { font-size: 1.6rem; font-weight: 700; color: #c084fc; margin: 0.2rem 0 0.8rem; }
-        .movie-actions { display: flex; gap: 0.75rem; margin-bottom: 1rem; align-items: center; }
-        .icon-btn { width: 44px; height: 44px; border-radius: 50%; background: rgba(255,255,255,0.05); border: 1px solid rgba(72,187,255,0.25); display: flex; align-items: center; justify-content: center; font-size: 1.5rem; cursor: pointer; text-decoration: none; color: inherit; transition: 0.2s; position: relative; }
-        .icon-btn:hover { transform: scale(1.1); border-color: #f472b6; color: #f472b6; }
-        .icon-btn.rating-btn:hover { border-color: #fbbf24; color: #fbbf24; }
-        .icon-btn.comment-btn:hover { border-color: #06b6d4; color: #06b6d4; }
-        .reviews-badge {
-            position: absolute;
-            top: -6px;
-            right: -6px;
-            background: #3b82f6;
-            color: white;
-            border-radius: 40px;
-            min-width: 20px;
-            height: 20px;
-            font-size: 0.6rem;
-            font-weight: 700;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0 0 6px rgba(59,130,246,0.5);
-            padding: 0 4px;
-        }
-        .purchase-buttons { display: flex; flex-direction: column; gap: 0.75rem; margin-top: auto; }
-        .cart-button, .buy-now-btn, .bought-btn { display: block; padding: 0.8rem; border-radius: 60px; text-align: center; border: none; cursor: pointer; font-weight: 600; text-decoration: none; }
-        .to-cart-btn-details { background: linear-gradient(135deg, #3b82f6, #1d4ed8); color: white; }
-        .to-cart-btn-details:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(59,130,246,0.4); }
-        .in-cart-btn-details { background: linear-gradient(135deg, #10b981, #059669); color: white; }
-        .in-cart-btn-details:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(16,185,129,0.4); }
-        .buy-now-btn { background: linear-gradient(135deg, #10b981, #059669); color: white; }
-        .buy-now-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(16,185,129,0.4); }
-        .bought-btn { background: #64748b; color: white; cursor: default; opacity: 0.8; }
-        @media (max-width: 600px) { .movie-attributes { grid-template-columns: 1fr; } }
+        .catalog-header{text-align:center;padding:0.75rem 1rem;}
+        .catalog-header h1{font-size:2rem;font-weight:700;background:linear-gradient(135deg,#e0e7ff,#a78bfa);-webkit-background-clip:text;background-clip:text;color:transparent;margin:0;}
+        .catalog-wrapper .movies-grid{padding-top:0;}
     </style>
 </head>
 <body>
 
-<header th:replace="~{fragments/header :: header}"></header>
+<th:block th:replace="~{fragments/header :: header}"></th:block>
 <th:block th:replace="~{fragments/flash-messages :: flashMessages}"></th:block>
 
-<main>
-    <div class="movies-grid" th:if="${cardsPage != null and !cardsPage.empty}">
-        <div class="movie-card" th:each="card : ${cardsPage.content}">
-            <a class="movie-poster-link" th:href="@{/movies/{id}(id=${card.movie.id})}">
-                <img th:if="${card.movie.posterUrl != null}" th:src="${card.movie.posterUrl}" alt="Постер"
-                     class="movie-poster-img" src="">
-                <div th:unless="${card.movie.posterUrl != null}" class="movie-poster-placeholder"><span>📽️ Постер</span>
-                </div>
-            </a>
-            <div class="movie-card-content">
-                <h3><a th:href="@{/movies/{id}(id=${card.movie.id})}" th:text="${card.movie.title}">Название</a></h3>
+<main class="catalog-wrapper">
+    <div class="catalog-header">
+        <h1>Каталог фильмов</h1>
+    </div>
 
-                <div class="movie-attributes">
-                    <div class="attr-item">
-                        <span class="attr-label">Рейтинг</span>
-                        <span class="attr-value badge rating" th:data-movie-id="${card.movie.id}"
-                              th:text="${card.movie.rating != null ? '★ ' + #numbers.formatDecimal(card.movie.rating, 1, 1) + ' / 10' : '-'}">-</span>
-                    </div>
-                    <div class="attr-item">
-                        <span class="attr-label">Год</span>
-                        <span class="attr-value badge-year" th:text="${card.movie.releaseYear}">-</span>
-                    </div>
-                    <div class="attr-item">
-                        <span class="attr-label">Жанр</span>
-                        <span class="attr-value badge-genre" th:text="${card.movie.genre}">-</span>
-                    </div>
-                    <div class="attr-item" th:if="${card.movie.director != null}">
-                        <span class="attr-label">Режиссёр</span>
-                        <span class="attr-value" th:text="${card.movie.director}">-</span>
-                    </div>
-                    <div class="attr-item" th:if="${card.movie.formattedDuration != null}">
-                        <span class="attr-label">Длительность</span>
-                        <span class="attr-value" th:text="${card.movie.formattedDuration}">-</span>
-                    </div>
+    <div class="movies-grid" th:if="${cardsPage != null and !cardsPage.empty}">
+        <div class="movie-card" th:each="card : ${cardsPage.content}" th:data-movie-id="${card.movie.id}">
+            <a class="movie-poster-link" th:href="@{/movies/{id}(id=${card.movie.id})}">
+                <img th:if="${card.movie.posterUrl != null and !card.movie.posterUrl.isEmpty()}"
+                     th:src="${card.movie.posterUrl}" alt="Постер" class="movie-poster-img" src=""/>
+                <div th:unless="${card.movie.posterUrl != null and !card.movie.posterUrl.isEmpty()}"
+                     class="movie-poster-placeholder"><span>📽️ Постер</span></div>
+            </a>
+
+            <div class="movie-card-content">
+                <h3 class="movie-card-title">
+                    <a th:href="@{/movies/{id}(id=${card.movie.id})}" th:text="${card.movie.title}">Название</a>
+                </h3>
+
+                <div class="badges">
+                    <span class="badge rating js-rating-badge" th:data-movie-id="${card.movie.id}"
+                          th:text="${card.movie.rating != null ? 'Рейтинг: ★ ' + #numbers.formatDecimal(card.movie.rating, 1, 1) : 'Рейтинг: —'}">Рейтинг: ★ -</span>
+                    <span class="badge year" th:if="${card.movie.releaseYear != null}"
+                          th:text="'Год: ' + ${card.movie.releaseYear}">Год: 2024</span>
+                    <span class="badge genre" th:if="${card.movie.genre != null}"
+                          th:text="'Жанр: ' + ${card.movie.genre}">Жанр: Комедия</span>
                 </div>
-                <div class="price-label">Стоимость</div>
+
                 <div class="price" th:text="${card.movie.price + ' ₽'}">0 ₽</div>
 
                 <div class="movie-actions">
@@ -110,54 +49,82 @@
                             th:classappend="${card.status.inFavourites} ? 'active' : ''"
                             th:data-movie-id="${card.movie.id}"
                             th:data-action="${card.status.inFavourites} ? 'remove' : 'add'"
-                            onclick="toggleFavourite(this)">
+                            onclick="toggleFavourite(this)" title="Избранное">
                         <span th:text="${card.status.inFavourites} ? '♥' : '♡'"></span>
                     </button>
+
                     <button class="icon-btn rating-btn"
                             th:data-movie-id="${card.movie.id}"
                             th:data-movie-title="${card.movie.title}"
-                            onclick="showRatingModal(this.getAttribute('data-movie-id'), this.getAttribute('data-movie-title'))">
-                        ☆
+                            onclick="showRatingModal(this.getAttribute('data-movie-id'), this.getAttribute('data-movie-title'))"
+                            title="Оценить">☆
                     </button>
-                    <a th:href="@{/rated/{id}/reviews(id=${card.movie.id})}" class="icon-btn comment-btn">
+
+                    <a th:href="@{/rated/{id}/reviews(id=${card.movie.id})}" class="icon-btn comment-btn"
+                       title="Отзывы">
                         💬
-                        <span th:if="${card.movie.ratingsCount != null and card.movie.ratingsCount > 0}"
-                              class="reviews-badge" th:text="${card.movie.ratingsCount}">0</span>
+                        <span class="reviews-badge js-reviews-count"
+                              th:data-movie-id="${card.movie.id}"
+                              th:text="${card.movie.ratingsCount}"
+                              th:style="${card.movie.ratingsCount > 0} ? '' : 'display:none'">
+                        </span>
                     </a>
                 </div>
 
                 <div class="purchase-buttons">
-                    <button type="button" th:if="${!card.status.bought and !card.status.inCart}"
-                            class="cart-button to-cart-btn-details"
-                            th:data-movie-id="${card.movie.id}"
-                            onclick="addToCart(this)">В корзину
-                    </button>
-                    <button type="button" th:if="${!card.status.bought and card.status.inCart}"
-                            class="cart-button in-cart-btn-details"
-                            th:data-movie-id="${card.movie.id}"
-                            onclick="removeFromCart(this)">В корзине
-                    </button>
-                    <button type="button" th:if="${!card.status.bought}"
-                            class="buy-now-btn"
-                            th:data-movie-id="${card.movie.id}"
-                            th:data-movie-price="${card.movie.price}"
-                            th:data-movie-title="${card.movie.title}"
-                            onclick="showBuyModal(this)">Купить сейчас
-                    </button>
-                    <button th:if="${card.status.bought}" class="bought-btn" disabled>Куплено</button>
+                    <th:block th:if="${session.userForOwnerViewDTO != null}">
+                        <button type="button" th:if="${!card.status.bought and !card.status.inCart}"
+                                class="cart-button to-cart-btn-details"
+                                th:data-movie-id="${card.movie.id}"
+                                onclick="addToCart(this)">В корзину
+                        </button>
+                        <a th:if="${card.status.inCart}" href="/cart" class="cart-button in-cart-btn-details">В корзине →</a>
+                        <button th:if="${!card.status.bought}"
+                                class="buy-now-btn"
+                                th:data-movie-id="${card.movie.id}"
+                                th:data-movie-price="${card.movie.price}"
+                                th:data-movie-title="${card.movie.title}"
+                                onclick="showBuyModal(this)">Купить сейчас
+                        </button>
+                        <button th:if="${card.status.bought}" class="bought-btn" disabled>Куплено</button>
+                    </th:block>
+                    <th:block th:unless="${session.userForOwnerViewDTO != null}">
+                        <a th:href="@{/login}" class="cart-button to-cart-btn-details" onclick="return requireAuth(event, this.href)">В корзину</a>
+                        <a th:href="@{/login}" class="buy-now-btn" onclick="return requireAuth(event, this.href)">Купить сейчас</a>
+                    </th:block>
                 </div>
             </div>
         </div>
     </div>
 
-    <th:block th:replace="~{fragments/pagination :: pager(page=${cardsPage}, url='/')}"></th:block>
+    <div class="empty-catalog" th:unless="${cardsPage != null and !cardsPage.empty}">
+        Фильмы не найдены
+    </div>
 
+    <th:block th:replace="~{fragments/pagination :: pager(page=${cardsPage}, url='/')}"></th:block>
 </main>
 
 <th:block th:replace="~{fragments/modals :: buyModal}"></th:block>
 <th:block th:replace="~{fragments/modals :: ratingModal}"></th:block>
 
 <script th:src="@{/js/main.js}" defer></script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        document.querySelectorAll('.js-reviews-count[data-movie-id]').forEach(el => {
+            const id = el.getAttribute('data-movie-id');
+            if (id) updateReviewsCount(id);
+        });
+    });
+    window.addEventListener('pageshow', function(event) {
+        if (event.persisted) {
+            document.querySelectorAll('.js-reviews-count[data-movie-id]').forEach(el => {
+                const id = el.getAttribute('data-movie-id');
+                if (id) updateReviewsCount(id);
+            });
+        }
+    });
+</script>
 
 <th:block th:replace="~{fragments/footer :: footer}"></th:block>
 

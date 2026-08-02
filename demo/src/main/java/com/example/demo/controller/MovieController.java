@@ -111,6 +111,7 @@ public class MovieController {
         if (userForOwnerViewDTO != null) {
             badgeUpdater.updateBadges(userForOwnerViewDTO, model);
             return userForOwnerViewDTO.username();
+
         }
         return null;
     }

@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.SessionAttribute;
 @RequestMapping("/cart")
 public class CartController extends AbstractLinkedCollectionController<CartMovieForOwnerViewDTO> {
 
+
     public CartController(BadgeUpdater badgeUpdater,
                           AbstractLinkedCollectionService<CartItem, CartMovieForOwnerViewDTO> cartService) {
         super(cartService, badgeUpdater);

@@ -20,9 +20,10 @@
         .movie-card-content{padding:1.5rem;flex-grow:1;display:flex;flex-direction:column;}
         .movie-card-content h3{font-size:1.3rem;font-weight:600;margin-bottom:0.75rem;color:var(--text-light);}
         .movie-meta{display:flex;flex-wrap:wrap;gap:0.5rem;margin:0.75rem 0;}
-        .movie-meta span{padding:0.25rem 0.75rem;border-radius:30px;font-size:0.8rem;font-weight:500;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);}
-        .movie-genre{background:rgba(96,165,250,0.2) !important;color:#93c5fd !important;}
-        .movie-rating{background:rgba(251,191,36,0.2) !important;color:#fde047 !important;}
+        .movie-meta .badge{background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.12);border-radius:20px;padding:0.35rem 0.8rem;font-size:0.78rem;font-weight:500;color:#cbd5e1;}
+        .movie-meta .badge-year{background:rgba(52,211,153,0.15);border-color:rgba(52,211,153,0.2);color:#6ee7b7;}
+        .movie-meta .badge-genre{background:rgba(96,165,250,0.15);border-color:rgba(96,165,250,0.2);color:#93c5fd;}
+        .movie-meta .badge-rating{background:rgba(250,204,21,0.15);border-color:rgba(250,204,21,0.25);color:#fde047;}
         .movie-price{font-size:1.5rem;font-weight:700;color:#c084fc;margin:0.5rem 0;}
         .movie-description{color:var(--text-muted);font-size:0.95rem;line-height:1.6;margin:0.75rem 0;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;}
         .movie-user-review{background:rgba(59,130,246,0.1);padding:0.5rem 0.75rem;border-radius:0.75rem;margin:0.5rem 0;border-left:3px solid var(--glow-primary);}
@@ -54,43 +55,45 @@
             <div class="movie-card" th:each="movie : ${library.content}"
                  th:style="'animation-delay: ' + (${movieStat.index} * 0.05) + 's'">
                 <a th:href="@{/movies/{id}(id=${movie.id})}" class="movie-poster-link">
-                    <img th:if="${movie.posterUrl != null and !movie.posterUrl.isEmpty()}"
-                         th:src="${movie.posterUrl}" class="movie-poster-img" alt="Постер" src=""/>
+                    <img th:if="${movie.posterUrl != null and !movie.posterUrl.isEmpty()}" th:src="${movie.posterUrl}"
+                         class="movie-poster-img" alt="Постер" src=""/>
                     <div th:unless="${movie.posterUrl != null and !movie.posterUrl.isEmpty()}"
                          class="movie-poster-placeholder"><span>📽️ Постер</span></div>
                 </a>
                 <div class="movie-card-content">
                     <h3 th:text="${movie.title}">Название фильма</h3>
                     <div class="movie-meta">
-                        <span class="movie-genre" th:if="${movie.genre != null}" th:text="${movie.genre}">Жанр</span>
-                        <span class="movie-rating" th:if="${movie.rating != null}"
-                              th:text="'⭐ ' + ${#numbers.formatDecimal(movie.rating, 1, 1)}">8.5</span>
-                        <span th:if="${movie.releaseDate != null}" th:text="${movie.releaseDate.year}">2026</span>
-                        <span th:if="${movie.formattedDuration != null}"
-                              th:text="${movie.formattedDuration}">2ч 15мин</span>
+                        <span class="badge badge-genre" th:if="${movie.genre != null}"
+                              th:text="'Жанр: ' + ${movie.genre}">Жанр: Комедия</span>
+                        <span class="badge badge-rating" th:if="${movie.rating != null}"
+                              th:text="'Рейтинг: ★ ' + ${#numbers.formatDecimal(movie.rating, 1, 1)} + ' / 10'">Рейтинг: ★ 8.5 / 10</span>
+                        <span class="badge" th:if="${movie.rating == null}">Рейтинг: —</span>
+                        <span class="badge badge-year" th:if="${movie.releaseDate != null}"
+                              th:text="'Год: ' + ${movie.releaseDate.year}">Год: 2026</span>
+                        <span class="badge" th:if="${movie.formattedDuration != null}"
+                              th:text="'Длительность: ' + ${movie.formattedDuration}">Длит.: 2ч 15мин</span>
                     </div>
                     <div class="movie-price" th:text="${movie.price + ' ₽'}">329.99 ₽</div>
                     <div class="movie-description" th:if="${movie.description != null}" th:text="${movie.description}">
                         Краткое описание...
                     </div>
                     <div class="movie-director" th:if="${movie.director != null and !movie.director.isEmpty()}">
-                        Режиссёр: <span th:text="${movie.director}"></span>
-                    </div>
-                    <div class="movie-user-review" th:if="${movie.review != null and !movie.review.isEmpty()}">
-                        <strong>Ваш отзыв:</strong> <span th:text="${movie.review}"></span>
-                    </div>
+                        Режиссёр: <span th:text="${movie.director}"></span></div>
+                    <div class="movie-user-review" th:if="${movie.review != null and !movie.review.isEmpty()}"><strong>Ваш
+                        отзыв:</strong> <span th:text="${movie.review}"></span></div>
                     <div class="movie-meta" style="margin-top:auto; padding-top:10px;">
-                        <span th:text="'Куплено: ' + ${movie.purchasesCount} + ' раз'">0</span>
-                        <span th:text="'Отзывов: ' + ${movie.reviewCount}">0</span>
+                        <span class="badge"
+                              th:text="'Всего покупок: ' + ${movie.purchasesCount}">Всего покупок: 15</span>
+                        <span class="badge" th:text="'Всего отзывов: ' + ${movie.ratingsCount}">Всего отзывов: 8</span>
                     </div>
-                    <a th:href="@{/movies/{id}(id=${movie.id})}" th:text="Подробнее"></a>
+                    <a th:href="@{/movies/{id}(id=${movie.id})}">Подробнее →</a>
                 </div>
             </div>
         </div>
         <th:block th:replace="~{fragments/pagination :: pager(page=${library}, url='/orders/library')}"></th:block>
     </div>
 </main>
-<script th:src="@{/js/main.js}" defer></script><th:block th:replace="~{fragments/footer :: footer}"></th:block>
-
+<script th:src="@{/js/main.js}" defer></script>
+<th:block th:replace="~{fragments/footer :: footer}"></th:block>
 </body>
 </html>

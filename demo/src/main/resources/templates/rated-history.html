@@ -5,8 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Мои оценки — Cinema Service</title>
     <link rel="icon" type="image/x-icon" th:href="@{/favicon.ico}">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700&display=swap"
-          rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" th:href="@{/css/main.css}">
     <style>
         .history-container{max-width:1200px;margin:2rem auto;padding:0 2rem;}
@@ -30,6 +29,7 @@
         .empty-state p{color:var(--text-muted);font-size:1.2rem;margin-bottom:2rem;}
         .btn{background:var(--glow-primary);color:white;padding:0.9rem 2.2rem;border-radius:60px;text-decoration:none;font-weight:600;display:inline-block;transition:0.2s;}
         .btn:hover{transform:translateY(-3px);box-shadow:0 8px 20px rgba(59,130,246,0.4);}
+        .rating-star{color:#facc15;}
         @media (max-width:768px){
             .history-table,.history-table thead,.history-table tbody,.history-table tr,.history-table td{display:block;}
             .history-table thead{display:none;}
@@ -64,8 +64,7 @@
                     <img th:if="${rated.posterUrl != null and !rated.posterUrl.isEmpty()}"
                          th:src="${rated.posterUrl}" class="poster-thumb" alt="Постер" src=""/>
                     <div th:unless="${rated.posterUrl != null and !rated.posterUrl.isEmpty()}"
-                         class="poster-placeholder">Нет
-                    </div>
+                         class="poster-placeholder">Нет</div>
                 </td>
                 <td data-label="Название">
                     <a th:href="@{/movies/{id}(id=${rated.id})}" class="movie-link"
@@ -74,18 +73,17 @@
                         <span th:if="${rated.releaseDate != null}" th:text="${rated.releaseDate.year}">2026</span>
                         <span th:if="${rated.genre != null}" th:text="|• ${rated.genre}|">• Комедия</span>
                         <span th:if="${rated.formattedDuration != null}" th:text="|• ${rated.formattedDuration}|">• 1ч 45мин</span>
-                        <span th:if="${rated.director != null and !rated.director.isEmpty()}"
-                              th:text="|• Реж. ${rated.director}|">• Реж. Имя</span>
+                        <span th:if="${rated.director != null and !rated.director.isEmpty()}" th:text="|• Реж. ${rated.director}|">• Реж. Имя</span>
                         <span th:if="${rated.price != null}" th:text="|• ${rated.price} ₽|">• 329 ₽</span>
                     </div>
                 </td>
                 <td data-label="Моя оценка">
+                    <span class="rating-star">★</span>
                     <span class="rating-value" th:text="${rated.ratingValue}">8.5</span> / 10
                 </td>
                 <td data-label="Мой отзыв">
                     <div class="review-text" th:if="${rated.reviewText != null and !#strings.isEmpty(rated.reviewText)}"
-                         th:text="${rated.reviewText}">Отличный фильм!
-                    </div>
+                         th:text="${rated.reviewText}">Отличный фильм!</div>
                     <span th:if="${rated.reviewText == null or #strings.isEmpty(rated.reviewText)}"
                           style="color:#5b6e8c; font-style:italic;">— нет отзыва —</span>
                 </td>
@@ -93,9 +91,8 @@
                     <span th:text="${#temporals.format(rated.ratedAt, 'dd MMM yyyy, HH:mm')}">15 мар 2026, 18:30</span>
                 </td>
                 <td data-label="Рейтинг фильма">
-                    <span class="film-rating"
-                          th:text="${rated.rating != null} ? ${#numbers.formatDecimal(rated.rating, 1, 1)} : '0.0'">7.9</span>
-                    / 10
+                    <span class="rating-star">★</span>
+                    <span th:text="${rated.rating != null ? #numbers.formatDecimal(rated.rating, 1, 1) + ' / 10' : '—'}">7.9 / 10</span>
                 </td>
             </tr>
             </tbody>
@@ -104,11 +101,10 @@
     </div>
     <div th:if="${ratedHistory == null or ratedHistory.empty}" class="empty-state">
         <p>Вы ещё не оценили ни одного фильма</p>
-        <a href="/" class="btn">Перейти к каталогу</a>
+        <a href="/" class="btn">Перейти в каталог</a>
     </div>
 </main>
 <script th:src="@{/js/main.js}" defer></script>
 <th:block th:replace="~{fragments/footer :: footer}"></th:block>
-
 </body>
 </html>

@@ -4,7 +4,7 @@ import com.example.demo.dto.user.UserForOwnerViewDTO;
 import com.example.demo.exception.ErrorCode;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import org.jetbrains.annotations.NotNull;
+import jakarta.validation.constraints.NotNull;
 import org.springframework.web.servlet.HandlerInterceptor;
 
 public class SessionInterceptor implements HandlerInterceptor {
@@ -17,22 +17,21 @@ public class SessionInterceptor implements HandlerInterceptor {
     }
 
     @Override
-    public boolean preHandle(@NotNull HttpServletRequest request,
-                             @NotNull HttpServletResponse response,
+    public boolean preHandle(@NotNull HttpServletRequest httpServletRequest,
+                             @NotNull HttpServletResponse httpServletResponse,
                              @NotNull Object handler) throws Exception {
 
-        UserForOwnerViewDTO user = (UserForOwnerViewDTO) request.getSession()
+        UserForOwnerViewDTO userForOwnerViewDTO = (UserForOwnerViewDTO) httpServletRequest.getSession()
                 .getAttribute("userForOwnerViewDTO");
 
-        if (user == null) {
-            if (isAjax(request)) {
-                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-                response.setContentType("application/json;charset=UTF-8");
-                response.getWriter().write("{\"message\": \"" + ErrorCode.NOT_AUTHORIZED.format() + "\"}");
+        if (userForOwnerViewDTO == null) {
+            if (isAjax(httpServletRequest)) {
+                httpServletResponse.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                httpServletResponse.setContentType("application/json;charset=UTF-8");
+                httpServletResponse.getWriter().write("{\"message\": \"" + ErrorCode.NOT_AUTHORIZED.format() + "\"}");
                 return false;
             }
-            // Для обычных страниц перенаправляем на login
-            response.sendRedirect("/login");
+            httpServletResponse.sendRedirect("/login");
             return false;
         }
         return true;

@@ -1,13 +1,8 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" lang="ru">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Избранное — Cinema Service</title>
-    <link rel="icon" type="image/x-icon" th:href="@{/favicon.ico}">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700&display=swap"
-          rel="stylesheet">
-    <link rel="stylesheet" th:href="@{/css/main.css}">
+    <th:block th:replace="~{fragments/head :: head}"></th:block>
     <style>
         .favourites-header{text-align:center;padding:2rem 1rem 1rem;}
         .favourites-header h2{font-size:2.5rem;font-weight:700;background:linear-gradient(135deg,#e0e7ff,#f472b6);-webkit-background-clip:text;background-clip:text;color:transparent;}
@@ -18,48 +13,30 @@
         .empty-message h2{font-size:2rem;color:var(--text-muted);}
         .browse-movies-btn{background:var(--glow-primary);color:white;padding:1rem 2.5rem;border-radius:60px;text-decoration:none;font-weight:600;display:inline-block;margin-top:2rem;}
         .movie-poster-img{width:100%;aspect-ratio:2/3;object-fit:cover;border-bottom:1px solid var(--glass-border);}
-        .movie-attributes {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 0.4rem 1rem;
-            margin-bottom: 0.8rem;
-        }
-        .attr-item { display: flex; flex-direction: column; }
-        .attr-label { font-size: 0.6rem; text-transform: uppercase; letter-spacing: 0.5px; color: #94a3b8; }
-        .attr-value { font-size: 0.9rem; font-weight: 500; color: #eef2ff; }
-        .badge-rating { background: rgba(251,191,36,0.2); color: #fde047; padding: 0.1rem 0.6rem; border-radius: 40px; display: inline-block; }
-        .badge-year { background: rgba(52,211,153,0.2); color: #6ee7b7; padding: 0.1rem 0.6rem; border-radius: 40px; display: inline-block; }
-        .badge-genre { background: rgba(96,165,250,0.2); color: #93c5fd; padding: 0.1rem 0.6rem; border-radius: 40px; display: inline-block; }
-        .price-label { font-size: 0.75rem; color: #94a3b8; margin-top: 0.5rem; }
-        .price { font-size: 1.6rem; font-weight: 700; color: #c084fc; margin: 0.2rem 0 0.8rem; }
-        .remove-favourites-btn {
-            background:transparent;
-            border:1px solid var(--glass-border);
-            color:var(--text-light);
-            width:44px;
-            height:44px;
-            border-radius:50%;
-            display:flex;
-            align-items:center;
-            justify-content:center;
-            font-size:1.5rem;
-            cursor:pointer;
-            transition:0.2s;
-        }
-        .remove-favourites-btn:hover {
-            border-color:var(--glow-danger);
-            color:var(--glow-danger);
-            transform:scale(1.1);
-        }
+        .movie-attributes{display:grid;grid-template-columns:1fr 1fr;gap:0.4rem 1rem;margin-bottom:0.8rem;}
+        .attr-item{display:flex;flex-direction:column;}
+        .attr-label{font-size:0.6rem;text-transform:uppercase;letter-spacing:0.5px;color:#94a3b8;}
+        .attr-value{font-size:0.9rem;font-weight:500;color:#eef2ff;}
+        .badge-rating{background:rgba(251,191,36,0.2);color:#fde047;padding:0.1rem 0.6rem;border-radius:40px;display:inline-block;}
+        .badge-year{background:rgba(52,211,153,0.2);color:#6ee7b7;padding:0.1rem 0.6rem;border-radius:40px;display:inline-block;}
+        .badge-genre{background:rgba(96,165,250,0.2);color:#93c5fd;padding:0.1rem 0.6rem;border-radius:40px;display:inline-block;}
+        .price-label{font-size:0.75rem;color:#94a3b8;margin-top:0.5rem;}
+        .price{font-size:1.6rem;font-weight:700;color:#c084fc;margin:0.2rem 0 0.8rem;}
+        .remove-favourites-btn{background:transparent;border:1px solid var(--glass-border);color:var(--text-light);width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.5rem;cursor:pointer;transition:0.2s;}
+        .remove-favourites-btn:hover{border-color:var(--glow-danger);color:var(--glow-danger);transform:scale(1.1);}
     </style>
 </head>
 <body>
+
 <th:block th:replace="~{fragments/header :: header}"></th:block>
+
 <div class="favourites-header">
     <h2>❤️ Избранное</h2>
     <div class="favourites-count">Фильмов в избранном: <span th:text="${favouritesCount}">0</span></div>
 </div>
+
 <th:block th:replace="~{fragments/flash-messages :: flashMessages}"></th:block>
+
 <main>
     <div th:if="${favourites != null and !favourites.isEmpty()}">
         <div style="text-align:center; margin:1rem 0 0;">
@@ -78,12 +55,10 @@
             </a>
             <div class="movie-card-content">
                 <h3><a th:href="@{/movies/{id}(id=${movie.id})}" th:text="${movie.title}">Название</a></h3>
-
                 <div class="movie-attributes">
                     <div class="attr-item">
                         <span class="attr-label">Рейтинг</span>
-                        <span class="attr-value badge-rating"
-                              th:data-movie-id="${movie.id}"
+                        <span class="attr-value badge-rating" th:data-movie-id="${movie.id}"
                               th:text="${movie.rating != null ? '★ ' + #numbers.formatDecimal(movie.rating, 1, 1) + ' / 10' : '-'}">-</span>
                     </div>
                     <div class="attr-item">
@@ -104,13 +79,10 @@
                         <span class="attr-value" th:text="${movie.formattedDuration}">-</span>
                     </div>
                 </div>
-
                 <div class="price-label">Стоимость</div>
                 <div class="price" th:text="${movie.price + ' ₽'}">329.99 ₽</div>
-
                 <div class="movie-actions">
-                    <button class="icon-btn rating-btn"
-                            th:data-movie-id="${movie.id}"
+                    <button class="icon-btn rating-btn" th:data-movie-id="${movie.id}"
                             th:data-movie-title="${movie.title}"
                             onclick="showRatingModal(this.getAttribute('data-movie-id'), this.getAttribute('data-movie-title'))"
                             title="Оценить фильм">☆
@@ -118,8 +90,7 @@
                     <button class="remove-favourites-btn" th:data-movie-id="${movie.id}"
                             th:data-movie-title="${movie.title}"
                             onclick="showRemoveModal(this.getAttribute('data-movie-id'), this.getAttribute('data-movie-title'))"
-                            title="Удалить из избранного">
-                        🗑️
+                            title="Удалить из избранного">🗑️
                     </button>
                 </div>
             </div>
@@ -191,23 +162,44 @@
         })
         .then(handleResponse)
         .then(data => {
-            sessionStorage.setItem('flashMessage', JSON.stringify({ message: data.message || 'Фильм удалён из избранного', type: 'success' }));
             hideRemoveModal();
-            window.location.reload();
+
+            const card = document.querySelector(`.movie-card[data-movie-id="${movieToRemoveId}"]`);
+            if (card) {
+                card.style.transition = 'all .3s ease';
+                card.style.opacity = '0';
+                card.style.transform = 'scale(0.9)';
+                setTimeout(() => {
+                    card.remove();
+
+                    const countSpan = document.querySelector('.favourites-count span');
+                    if (countSpan) {
+                        let count = parseInt(countSpan.textContent) || 0;
+                        count = Math.max(0, count - 1);
+                        countSpan.textContent = count;
+                    }
+
+                    setFavouriteStatus(movieToRemoveId, false);
+
+                    const remainingCards = document.querySelectorAll('.movie-card');
+                    if (remainingCards.length === 0) {
+                        showEmptyFavourites();
+                    }
+                }, 300);
+            } else {
+                updateFavouritesCount();
+            }
+
+            showFlashMessage(data.message || 'Фильм удалён из избранного', 'success');
+            updateFavouritesCount();
+            if (btn) { btn.textContent = 'Удалить'; btn.disabled = false; }
+            movieToRemoveId = '';
         })
         .catch(error => {
             showFlashMessage(error.message || 'Не удалось удалить', 'error', true);
             if (btn) { btn.textContent = 'Удалить'; btn.disabled = false; }
             hideRemoveModal();
         });
-    }
-
-    function showClearFavouritesModal() {
-        document.getElementById('clearFavouritesModal').classList.add('show');
-    }
-
-    function hideClearFavouritesModal() {
-        document.getElementById('clearFavouritesModal').classList.remove('show');
     }
 
     function clearFavourites() {
@@ -220,15 +212,78 @@
         })
         .then(handleResponse)
         .then(data => {
-            sessionStorage.setItem('flashMessage', JSON.stringify({ message: data.message || 'Избранное очищено', type: 'success' }));
             hideClearFavouritesModal();
-            window.location.reload();
+
+            const cards = document.querySelectorAll('.movie-card');
+            if (cards.length) {
+                cards.forEach((card, index) => {
+                    const id = card.getAttribute('data-movie-id');
+                    if (id) setFavouriteStatus(id, false);
+                    setTimeout(() => {
+                        card.style.transition = 'all .3s ease';
+                        card.style.opacity = '0';
+                        card.style.transform = 'scale(0.9)';
+                        if (index === cards.length - 1) {
+                            setTimeout(() => {
+                                card.remove();
+                                showEmptyFavourites();
+                                const countSpan = document.querySelector('.favourites-count span');
+                                if (countSpan) countSpan.textContent = '0';
+                            }, 300);
+                        } else {
+                            setTimeout(() => card.remove(), 300);
+                        }
+                    }, index * 50);
+                });
+            } else {
+                showEmptyFavourites();
+                const countSpan = document.querySelector('.favourites-count span');
+                if (countSpan) countSpan.textContent = '0';
+            }
+
+            showFlashMessage(data.message || 'Избранное очищено', 'success');
+            updateFavouritesCount();
+            if (btn) { btn.textContent = 'Очистить избранное'; btn.disabled = false; }
         })
         .catch(error => {
             showFlashMessage(error.message || 'Не удалось очистить избранное', 'error', true);
             if (btn) { btn.textContent = 'Очистить избранное'; btn.disabled = false; }
             hideClearFavouritesModal();
         });
+    }
+
+    function showEmptyFavourites() {
+        const grid = document.querySelector('.movies-grid');
+        if (grid) grid.remove();
+
+        const header = document.querySelector('.favourites-header');
+        if (header) header.remove();
+
+        const clearBtnWrapper = document.querySelector('div[style*="text-align:center"]');
+        if (clearBtnWrapper) clearBtnWrapper.remove();
+        const main = document.querySelector('main');
+        if (main) {
+            main.innerHTML = `
+                <div class="empty-message">
+                    <h2>😔 В избранном пока ничего нет</h2>
+                    <p style="color: var(--text-muted);">Перейдите в каталог, чтобы добавить фильмы</p>
+                    <a href="/" class="browse-movies-btn">Перейти в каталог</a>
+                </div>
+            `;
+        }
+        const headerCount = document.getElementById('favourites-count');
+        if (headerCount) {
+            headerCount.textContent = '0';
+            headerCount.style.display = 'none';
+        }
+    }
+
+    function showClearFavouritesModal() {
+        document.getElementById('clearFavouritesModal').classList.add('show');
+    }
+
+    function hideClearFavouritesModal() {
+        document.getElementById('clearFavouritesModal').classList.remove('show');
     }
 </script>
 

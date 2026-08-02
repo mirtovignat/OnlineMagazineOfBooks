@@ -42,7 +42,6 @@ public class MinIOConfig {
                 );
             }
 
-            // Политика анонимного чтения для всех файлов бакета
             String policy = """
                 {
                   "Version": "2012-10-17",

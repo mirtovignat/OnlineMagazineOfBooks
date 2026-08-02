@@ -27,7 +27,7 @@ public class LoginController {
     @GetMapping
     public String loginPage(Model model) {
         if (!model.containsAttribute("loginForm")) {
-            model.addAttribute("loginForm", new LoginFormDTO(null, "", ""));
+            model.addAttribute("loginForm", LoginFormDTO.builder().build());
         }
         return "login";
     }
@@ -46,7 +46,7 @@ public class LoginController {
             User user = authorizeService.validateLogin(loginFormDTO);
             UserForOwnerViewDTO userForOwnerViewDTO = authorizeService.login(user);
             httpSession.setAttribute("userForOwnerViewDTO", userForOwnerViewDTO);
-            return "redirect:/"; // Исправлено: редирект в корень каталога
+            return "redirect:/";
         } catch (BusinessException e) {
             ErrorCode errorCode = e.getErrorCode();
             if (errorCode == ErrorCode.PASSWORD_INVALID) {

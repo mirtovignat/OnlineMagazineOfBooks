@@ -1,5 +1,6 @@
 package com.example.demo.dto.user;
 
+import com.example.demo.validation.ValidEmailDomain;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
@@ -12,6 +13,7 @@ public record ProfileSettingsDTO(
 
         @NotBlank(message = "Email не может быть пустым")
         @Email(message = "Некорректный email адрес")
+        @ValidEmailDomain(message = "Почтовый домен не существует")
         String email,
 
         @Pattern(regexp = "^$|\\+\\d{1,3}[\\s\\-]?\\(?\\d{1,3}\\)?[\\s\\-]?\\d{3}[\\s\\-]?\\d{2}[\\s\\-]?\\d{2}",

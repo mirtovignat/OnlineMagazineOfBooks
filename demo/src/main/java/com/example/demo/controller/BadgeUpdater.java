@@ -10,12 +10,13 @@ import com.example.demo.service.RatedService;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.springframework.ui.Model;
+
 @AllArgsConstructor
 @Component
 public class BadgeUpdater {
     private final AbstractLinkedCollectionService<FavouriteMovie, FavouriteMovieForOwnerViewDTO> favouritesService;
     private final AbstractLinkedCollectionService<CartItem, CartMovieForOwnerViewDTO> cartService;
-    private final RatedService ratedService; // <-- Добавляем сервис оценок
+    private final RatedService ratedService;
 
     public void updateBadges(UserForOwnerViewDTO userForOwnerViewDTO, Model model) {
         if (userForOwnerViewDTO == null) {
@@ -25,7 +26,7 @@ public class BadgeUpdater {
         } else {
             model.addAttribute("cartCount", cartService.getCount(userForOwnerViewDTO.username()));
             model.addAttribute("favouritesCount", favouritesService.getCount(userForOwnerViewDTO.username()));
-            model.addAttribute("reviewsCount", ratedService.getReviewsCountByUsername(userForOwnerViewDTO.username())); // <-- Добавили
+            model.addAttribute("reviewsCount", ratedService.getReviewsCountByUsername(userForOwnerViewDTO.username()));
         }
     }
 }

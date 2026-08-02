@@ -292,7 +292,13 @@
         }
     </style>
 
-    <h1 class="logo-link"><a href="/">🎬 Cinema Service</a></h1>
+    <div class="logo-link" style="display: flex; align-items: center; gap: 8px;">
+        <a href="/favicon.ico" target="_blank" title="Открыть favicon">
+            <img src="/favicon.ico" alt="Favicon" style="height: 32px; width: auto; display: block;">
+        </a>
+        <a href="/" style="text-decoration: none; color: inherit; font-weight: 700; font-size: 1.2rem;">Cinema
+            Service</a>
+    </div>
     <div class="header-actions">
         <button type="button" class="filters-toggle-btn" onclick="toggleFiltersModal(true)">
             🎛️ Фильтры
@@ -311,12 +317,16 @@
             <div id="headerSuggestions" class="header-suggestions"></div>
         </div>
 
-        <a th:href="@{/favourites}" class="action-button favourites-btn" title="Избранное" onclick="return requireAuth(event, this.href)">
-            ♥ <span id="favourites-count" class="count-badge" th:text="${favouritesCount != null ? favouritesCount : 0}" th:style="${favouritesCount == null || favouritesCount == 0} ? 'display: none;' : ''">0</span>
+        <a th:href="@{/favourites}" class="action-button favourites-btn" title="Избранное"
+           onclick="return requireAuth(event, this.href)">
+            ♥ <span id="favourites-count" class="count-badge" th:text="${favouritesCount != null ? favouritesCount : 0}"
+                    th:style="${favouritesCount == null || favouritesCount == 0} ? 'display: none;' : ''">0</span>
         </a>
 
-        <a th:href="@{/cart}" class="action-button cart-btn" title="Корзина" onclick="return requireAuth(event, this.href)">
-            🛒 <span id="cart-count" class="count-badge" th:text="${cartCount != null ? cartCount : 0}" th:style="${cartCount == null || cartCount == 0} ? 'display: none;' : ''">0</span>
+        <a th:href="@{/cart}" class="action-button cart-btn" title="Корзина"
+           onclick="return requireAuth(event, this.href)">
+            🛒 <span id="cart-count" class="count-badge" th:text="${cartCount != null ? cartCount : 0}"
+                    th:style="${cartCount == null || cartCount == 0} ? 'display: none;' : ''">0</span>
         </a>
 
         <div th:if="${session.userForOwnerViewDTO != null}" class="user-menu" id="userMenu">
@@ -358,7 +368,7 @@
                 </div>
 
                 <div class="filter-group">
-                    <label for="ratingFrom">Рейтинг Кинопоиска</label>
+                    <label for="ratingFrom">Рейтинг CinemaService</label>
                     <div class="filter-row">
                         <input type="number" id="ratingFrom" name="ratingFrom" step="0.1" min="0" max="10"
                                class="filter-input" placeholder="От 0.0">
@@ -501,7 +511,6 @@
         }
     }
 
-    // ============ НОВЫЙ ОБРАБОТЧИК ДЛЯ ССЫЛОК ============
     document.addEventListener('DOMContentLoaded', function() {
         var favLink = document.getElementById('favourites-link');
         var cartLink = document.getElementById('cart-link');
@@ -528,7 +537,6 @@
         }
     });
 
-    // ============ ОСТАЛЬНЫЕ СКРИПТЫ БЕЗ ИЗМЕНЕНИЙ ============
     (function() {
         var positiveInputs = document.querySelectorAll('.positive-int');
         positiveInputs.forEach(function(input) {

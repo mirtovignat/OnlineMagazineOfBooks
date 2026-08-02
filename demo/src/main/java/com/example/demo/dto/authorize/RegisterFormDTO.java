@@ -2,16 +2,20 @@ package com.example.demo.dto.authorize;
 
 import com.example.demo.exception.BusinessException;
 import com.example.demo.exception.ErrorCode;
+import com.example.demo.validation.ValidEmailDomain;
 import jakarta.validation.constraints.*;
+import lombok.Builder;
 
 import java.util.Objects;
 
+@Builder
 public record RegisterFormDTO(
         @NotBlank(message = "Введите username")
         @Size(min = 6, max = 20) String username,
 
         @NotBlank(message = "Введите email")
         @Email(message = "Некорректный email адрес")
+        @ValidEmailDomain(message = "Почтовый домен не существует")
         String email,
 
         @NotBlank(message = "Введите пароль")
@@ -45,9 +49,11 @@ public record RegisterFormDTO(
         @Pattern(regexp = "[A-Z]{3}", message = "Неверный формат валюты")
         String currencyCode
 ) {
+
     public void ifMismatch() {
         if (!Objects.equals(rawPassword(), repeatRawPassword())) {
             throw BusinessException.of(ErrorCode.PASSWORDS_MISMATCH);
         }
     }
+
 }

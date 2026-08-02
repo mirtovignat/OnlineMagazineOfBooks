@@ -15,7 +15,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 @Controller
 @AllArgsConstructor
@@ -26,56 +25,42 @@ public class RegistrationController {
     @GetMapping
     public String getRegisterForm(Model model) {
         model.addAttribute("registerForm",
-                new RegisterFormDTO("", "", "", "", "", "", "", "", "RUB"));
+                RegisterFormDTO.builder().currencyCode("RUB").build());
         return "register";
     }
 
     @PostMapping
-    public String register(@Valid @ModelAttribute("registerForm") RegisterFormDTO registerFormDTO,
+    public String register(@Valid @ModelAttribute("registerForm")
+                           RegisterFormDTO registerFormDTO,
                            BindingResult bindingResult,
                            Model model,
-                           RedirectAttributes redirectAttributes,
                            HttpSession httpSession) {
         if (bindingResult.hasErrors()) {
-            model.addAttribute("registerForm", sanitize(registerFormDTO));
+            model.addAttribute("registerForm", registerFormDTO);
             return "register";
         }
         try {
             authorizeService.validateRegister(registerFormDTO);
             UserForOwnerViewDTO userForOwnerViewDTO = authorizeService.register(registerFormDTO);
             httpSession.setAttribute("userForOwnerViewDTO", userForOwnerViewDTO);
-            redirectAttributes.addFlashAttribute("successMessage", "Регистрация прошла успешно!");
             return "redirect:/";
-        } catch (BusinessException e) {
-            ErrorCode errorCode = e.getErrorCode();
-            redirectAttributes.addFlashAttribute("registerForm", sanitize(registerFormDTO));
-
+        } catch (BusinessException businessException) {
+            ErrorCode errorCode = businessException.getErrorCode();
+            model.addAttribute("registerForm", registerFormDTO);
             if (errorCode == ErrorCode.PASSWORDS_MISMATCH) {
-                redirectAttributes.addFlashAttribute("passwordsMismatchExceptionMessage", e.getMessage());
+                model.addAttribute("passwordsMismatchExceptionMessage",
+                        businessException.getMessage());
             } else if (errorCode == ErrorCode.ALREADY_REGISTERED) {
-                redirectAttributes.addFlashAttribute("alreadyRegisteredExceptionMessage", e.getMessage());
+                model.addAttribute("alreadyRegisteredExceptionMessage",
+                        businessException.getMessage());
             } else {
-                redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
+                model.addAttribute("errorMessage", businessException.getMessage());
             }
-            return "redirect:/register";
+            return "register";
         } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("registerForm", sanitize(registerFormDTO));
-            redirectAttributes.addFlashAttribute("errorMessage", "Ошибка регистрации");
-            return "redirect:/register";
+            model.addAttribute("registerForm", registerFormDTO);
+            model.addAttribute("errorMessage", "Ошибка регистрации");
+            return "register";
         }
-    }
-
-    private RegisterFormDTO sanitize(RegisterFormDTO registerFormDTO) {
-        return new RegisterFormDTO(
-                registerFormDTO.username(),
-                registerFormDTO.email(),
-                "",
-                "",
-                registerFormDTO.phone(),
-                registerFormDTO.surname(),
-                registerFormDTO.name(),
-                registerFormDTO.patronymic(),
-                registerFormDTO.currencyCode()
-        );
     }
 }

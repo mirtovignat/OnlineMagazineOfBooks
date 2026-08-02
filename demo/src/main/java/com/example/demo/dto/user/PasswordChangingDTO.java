@@ -4,9 +4,11 @@ import com.example.demo.exception.BusinessException;
 import com.example.demo.exception.ErrorCode;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
+import lombok.Builder;
 
 import java.util.Objects;
 
+@Builder
 public record PasswordChangingDTO(
         @NotBlank(message = "Введите текущий пароль")
         @Size(min = 8, message = "Пароль минимум 8 символов")

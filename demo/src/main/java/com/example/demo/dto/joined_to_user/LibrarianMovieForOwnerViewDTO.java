@@ -28,6 +28,8 @@ public record LibrarianMovieForOwnerViewDTO(
 
         String posterUrl,
 
-        String director
+        String director,
+
+        Long ratingsCount
 ) {
 }

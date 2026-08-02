@@ -25,8 +25,6 @@ public interface PurchasedMovieRepository extends JpaRepository<PurchasedMovie, 
                                            @Param("username")
                                            String username);
 
-    void deleteByUserUsername(String username);
-
     boolean existsByMovieIdAndUserUsername(Long movieId,
                                            String username);
 

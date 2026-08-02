@@ -46,8 +46,13 @@ public class AuthorizeService {
         if (userRepository.existsByEmail(registerFormDTO.email())) {
             throw BusinessException.of(ErrorCode.ALREADY_REGISTERED);
         }
-        if (registerFormDTO.phone() != null && !registerFormDTO.phone().isBlank() && userRepository.existsByPhone(registerFormDTO.phone())) {
-            throw BusinessException.of(ErrorCode.ALREADY_REGISTERED);
+
+        String phone = registerFormDTO.phone();
+        if (phone != null) {
+            phone = phone.trim();
+            if (!phone.isEmpty() && userRepository.existsByPhone(phone)) {
+                throw BusinessException.of(ErrorCode.ALREADY_REGISTERED);
+            }
         }
     }
 

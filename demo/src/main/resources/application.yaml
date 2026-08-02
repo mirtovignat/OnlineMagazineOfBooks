@@ -29,6 +29,9 @@ spring:
 
 server:
   port: 8080
+  servlet:
+    session:
+      tracking-modes: cookie
 
 minio:
   endpoint: ${MINIO_ENDPOINT:http://localhost:9000}
@@ -47,3 +50,4 @@ app:
       added: "Товар добавлен в избранное"
       removed: "Товар убран из избранного"
       cleared: "Избранное очищено"
+

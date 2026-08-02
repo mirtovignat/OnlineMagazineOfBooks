@@ -1,4 +1,4 @@
-package com.example.demo.model;
+package com.example.demo.model.converters;
 
 import jakarta.persistence.AttributeConverter;
 import jakarta.persistence.Converter;

@@ -5,7 +5,10 @@ import com.example.demo.exception.ErrorCode;
 import com.example.demo.model.Movie;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.repository.*;
+import org.springframework.data.jpa.repository.EntityGraph;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
@@ -18,7 +21,11 @@ public interface MovieRepository extends JpaRepository<Movie, Long>, JpaSpecific
                 .orElseThrow(() -> BusinessException.of(ErrorCode.ENTITY_NOT_FOUND));
     }
 
-    @Query("SELECT movie.rating FROM Movie movie WHERE movie.id = :id")
+    @Query("""
+            SELECT movie.rating
+            FROM Movie movie
+            WHERE movie.id = :id
+            """)
     Optional<Double> findRatingById(@Param("id") Long id);
 
     @EntityGraph(attributePaths = {"purchases"})
@@ -31,7 +38,7 @@ public interface MovieRepository extends JpaRepository<Movie, Long>, JpaSpecific
     @Query("""
             SELECT movie
             FROM Movie movie
-            WHERE (:title IS NULL OR :title = '' OR LOWER(movie.title) LIKE LOWER(CONCAT(:title, '%')))
+            WHERE (:title IS NULL OR :title = '' OR LOWER(movie.title) LIKE LOWER(CONCAT('%', :title, '%')))
               AND (:releaseYear IS NULL OR EXTRACT(YEAR FROM movie.releaseDate) = :releaseYear)
               AND (:genre IS NULL OR LOWER(movie.genre) = LOWER(CAST(:genre AS string)))
               AND (:director IS NULL OR LOWER(movie.director) = LOWER(CAST(:director AS string)))
@@ -43,23 +50,6 @@ public interface MovieRepository extends JpaRepository<Movie, Long>, JpaSpecific
             @Param("director") String director,
             Pageable pageable
     );
-
-    @Modifying(flushAutomatically = true)
-    @Query("""
-            UPDATE Movie movie
-            SET movie.ratingsCount = movie.ratingsCount + 1
-            WHERE movie.id = :id
-            """)
-    void incrementRatingsCount(@Param("id") Long id);
-
-    @Modifying(flushAutomatically = true)
-    @Query("""
-            UPDATE Movie movie
-            SET movie.ratingsCount = movie.ratingsCount - 1
-            WHERE movie.id = :id
-              AND movie.ratingsCount > 0
-            """)
-    void decrementRatingsCount(@Param("id") Long id);
 
     @Query("""
             SELECT DISTINCT movie.director
@@ -91,5 +81,5 @@ public interface MovieRepository extends JpaRepository<Movie, Long>, JpaSpecific
             @Param("releaseYear") Integer releaseYear
     );
 
-    Page<Movie> findByTitleStartingWithIgnoreCase(String title, Pageable pageable);
+    Page<Movie> findByTitleContainingIgnoreCase(String title, Pageable pageable);
 }
