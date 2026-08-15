@@ -1,12 +1,13 @@
 package com.example.demo.model;
 
-import jakarta.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 import lombok.Getter;
 import lombok.Setter;
-import org.hibernate.annotations.CreationTimestamp;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
 
 @Getter
 @Setter
@@ -19,19 +20,7 @@ import java.time.LocalDateTime;
                 }
         )
 )
-public class PurchasedMovie extends AbstractEntity {
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false)
-    private User user;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "movie_id", nullable = false)
-    private Movie movie;
-
-    @Column(name = "purchased_at", nullable = false)
-    @CreationTimestamp
-    private LocalDateTime purchasedAt;
-
+public class PurchasedMovie extends AbstractCatalogItem {
     @Column(name = "price_snapshot", nullable = false)
     private BigDecimal priceSnapshot;
 

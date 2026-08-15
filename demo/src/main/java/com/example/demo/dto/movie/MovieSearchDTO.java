@@ -7,7 +7,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 public record MovieSearchDTO(
         Long id,
         String title,
-        @JsonProperty("releaseYear") Integer releaseYear,
+        @JsonProperty("releaseYear")
+        Integer releaseYear,
         String genre,
         String director
 ) {

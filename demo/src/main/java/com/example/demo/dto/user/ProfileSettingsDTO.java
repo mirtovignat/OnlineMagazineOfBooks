@@ -8,7 +8,7 @@ import jakarta.validation.constraints.Size;
 
 public record ProfileSettingsDTO(
         @NotBlank(message = "Никнейм не может быть пустым")
-        @Size(min = 6, max = 20, message = "Никнейм должен быть от 6 до 20 символов")
+        @Size(min = 6, max = 20, message = "Никнейм должен содержать от 6 до 20 символов")
         String username,
 
         @NotBlank(message = "Email не может быть пустым")

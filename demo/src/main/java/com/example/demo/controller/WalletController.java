@@ -4,7 +4,7 @@ import com.example.demo.dto.user.UserForOwnerViewDTO;
 import com.example.demo.dto.wallet.TopUpFormDTO;
 import com.example.demo.exception.SuccessCode;
 import com.example.demo.model.User;
-import com.example.demo.service.UserService;
+import com.example.demo.service.user.UserService;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
@@ -27,7 +27,8 @@ public class WalletController {
         if (!model.containsAttribute("topUpFormDTO")) {
             model.addAttribute("topUpFormDTO", new TopUpFormDTO(null));
         }
-        model.addAttribute("wallet", userService.getWalletForOwner(userForOwnerViewDTO.username()));
+        model.addAttribute("wallet", userService.getWalletForOwner(
+                userForOwnerViewDTO.username()));
         return "top-up";
     }
 
@@ -38,26 +39,15 @@ public class WalletController {
                         HttpSession httpSession,
                         RedirectAttributes redirectAttributes) {
         if (bindingResult.hasErrors()) {
-            redirectAttributes.addFlashAttribute("errorMessage", "Сумма должна быть положительной (минимум 0.01)");
-            return "redirect:/wallet/top-up";
+            return "top-up";
         }
-        User user = userService.findUserByUsername(userForOwnerViewDTO.username());
-        try {
-            userService.topUp(topUpFormDTO, user);
-            UserForOwnerViewDTO freshData = userService.getUserForOwner(userForOwnerViewDTO.username());
-            UserForOwnerViewDTO updatedInSession = new UserForOwnerViewDTO(
-                    freshData.id(), freshData.username(),
-                    userForOwnerViewDTO.cartCount(), userForOwnerViewDTO.favouritesCount(),
-                    freshData.email(), freshData.phone(), freshData.balance(),
-                    freshData.currencyCode(),
-                    userForOwnerViewDTO.purchasesCount(), userForOwnerViewDTO.ratingsCount()
-            );
-            httpSession.setAttribute("userForOwnerViewDTO", updatedInSession);
-            redirectAttributes.addFlashAttribute("successMessage",
-                    SuccessCode.BALANCE_HAS_BEEN_TOPPED_UP_SUCCESSFULLY.format(topUpFormDTO.amount()));
-        } catch (Exception exception) {
-            redirectAttributes.addFlashAttribute("errorMessage", exception.getMessage());
-        }
+        User user = userService.getUser(userForOwnerViewDTO.username());
+        userService.validateTopUp(topUpFormDTO, user);
+        userService.saveTopUp(topUpFormDTO.amount(), user);
+        UserForOwnerViewDTO freshData = userService.getUserForOwner(userForOwnerViewDTO.username());
+        httpSession.setAttribute("userForOwnerViewDTO", freshData);
+        redirectAttributes.addFlashAttribute("successMessage",
+                SuccessCode.BALANCE_HAS_BEEN_TOPPED_UP_SUCCESSFULLY.format(topUpFormDTO.amount()));
         return "redirect:/wallet/top-up";
     }
 }

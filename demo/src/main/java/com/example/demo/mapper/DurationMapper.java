@@ -17,5 +17,4 @@ public interface DurationMapper {
         Long secs = seconds % 60;
         return String.format("%d:%02d:%02d", hours, minutes, secs);
     }
-
 }

@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="ru">
+<head>
+    <title>📜 История покупок — Cinema Service</title>
+    <th:block th:replace="~{fragments/head :: head}"></th:block>
+    <style>
+        html {
+            height: auto !important;
+            min-height: 100%;
+            overflow-y: scroll !important;
+        }
+        body {
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            background-color: #0b0f19;
+            color: #f8fafc;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+        }
+        main.catalog-wrapper {
+            display: block;
+            padding: 1.5rem 2rem 4rem 2rem;
+            box-sizing: border-box;
+            width: 100%;
+            max-width: 1600px;
+            margin: 0 auto;
+            min-height: calc(100vh - 120px);
+        }
+        .catalog-header {
+            text-align: center;
+            padding: 0.5rem 0 1.5rem 0;
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 1rem;
+        }
+        .catalog-header h1 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #e0e7ff, #a78bfa);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            margin: 0;
+        }
+        .catalog-count {
+            background: rgba(255, 255, 255, 0.08);
+            padding: 0.3rem 1rem;
+            border-radius: 60px;
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            color: #cbd5e1;
+            font-size: 0.85rem;
+        }
+        .history-container {
+            width: 100%;
+            max-width: 1100px;
+            display: flex;
+            flex-direction: column;
+            gap: 0.4rem;
+            margin: 0 auto;
+        }
+        .history-row {
+            background: rgba(15, 23, 42, 0.75);
+            border: 1px solid rgba(52, 211, 153, 0.2);
+            border-radius: 10px;
+            padding: 0.45rem 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            backdrop-filter: blur(12px);
+            box-sizing: border-box;
+            transition: border-color 0.2s, background 0.2s;
+        }
+        .history-row:hover {
+            border-color: rgba(52, 211, 153, 0.5);
+            background: rgba(15, 23, 42, 0.9);
+        }
+        .history-main {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+        }
+        .history-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            background: rgba(16, 185, 129, 0.15);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            color: #34d399;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.9rem;
+            font-weight: bold;
+            flex-shrink: 0;
+        }
+        .history-info {
+            display: flex;
+            flex-direction: column;
+            gap: 0.1rem;
+        }
+        .history-title {
+            font-weight: 600;
+            color: #f8fafc;
+            text-decoration: none;
+            font-size: 0.9rem;
+        }
+        .history-title:hover {
+            color: #34d399;
+        }
+        .history-date {
+            font-size: 0.75rem;
+            color: #64748b;
+        }
+        .history-amount {
+            font-family: monospace, sans-serif;
+            font-weight: 700;
+            font-size: 0.9rem;
+            color: #f8fafc;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 0.25rem 0.6rem;
+            border-radius: 6px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .empty-state {
+            text-align: center;
+            padding: 4rem 2rem;
+            color: #94a3b8;
+        }
+        .empty-state p {
+            font-size: 1.2rem;
+            margin-bottom: 1.5rem;
+        }
+        .watch-btn {
+            display: inline-block;
+            padding: 0.75rem 2rem;
+            background: #34d399;
+            color: #0b0f19;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: background 0.2s;
+        }
+        .watch-btn:hover {
+            background: #6ee7b7;
+        }
+    </style>
+</head>
+<body>
+
+<th:block th:replace="~{fragments/header :: header}"></th:block>
+<th:block th:replace="~{fragments/flash-messages :: flashMessages}"></th:block>
+
+<main class="catalog-wrapper">
+    <div class="catalog-header">
+        <h1>📜 История покупок</h1>
+        <div class="catalog-count" th:if="${items != null}">
+            Всего: <strong th:text="${#lists.size(items)}">0</strong>
+        </div>
+    </div>
+
+    <div th:if="${items != null and not #lists.isEmpty(items)}" class="history-container">
+        <div th:each="item : ${items}" class="history-row">
+            <div class="history-main">
+                <div class="history-icon">✓</div>
+                <div class="history-info">
+                    <a th:href="@{/movies/{id}(id=${item.id})}" class="history-title" th:text="${item.title}">Название
+                        фильма</a>
+                    <div class="history-date" th:if="${item.addedAt != null}"
+                         th:text="${#temporals.format(item.addedAt, 'dd MMM yyyy, HH:mm')}">01 янв 2026, 15:30
+                    </div>
+                </div>
+            </div>
+            <div class="history-amount">
+                <span th:if="${item.priceSnapshot != null}" th:text="${'- ' + item.priceSnapshot + ' ₽'}">- 329 ₽</span>
+                <span style="color: #64748b;" th:if="${item.priceSnapshot == null}">—</span>
+            </div>
+        </div>
+    </div>
+
+    <div th:if="${items == null or #lists.isEmpty(items)}" class="empty-state">
+        <p>У вас пока нет покупок</p>
+        <a href="/" class="watch-btn">Перейти в каталог</a>
+    </div>
+</main>
+
+<script th:src="@{/js/main.js}" defer></script>
+<th:block th:replace="~{fragments/footer :: footer}"></th:block>
+</body>
+</html>

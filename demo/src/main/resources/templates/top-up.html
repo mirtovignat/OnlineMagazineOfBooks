@@ -289,11 +289,30 @@
             <form th:action="@{/wallet/top-up}" th:object="${topUpFormDTO}" method="post" id="depositForm">
                 <div class="form-group">
                     <label for="amount">Сумма пополнения</label>
-                    <div class="amount-input">
-                        <span class="currency-symbol"
-                              th:text="${wallet.currencyCode == 'RUB' ? '₽' : (wallet.currencyCode == 'USD' ? '$' : '€')}"></span>
+                    <div class="amount-input-with-stepper">
+                        <span class="currency-symbol" th:text="${wallet.currencyCode == 'RUB' ? '₽' : (wallet.currencyCode == 'USD' ? '$' : '€')}"></span>
                         <input type="number" id="amount" th:field="*{amount}" min="0.01" step="0.01" placeholder="0.00"
                                th:classappend="${#fields.hasErrors('amount')} ? 'has-error' : ''">
+                        <div class="stepper-buttons">
+                            <button type="button" class="stepper-btn up"
+                                    onmousedown="startSteppingAmount(0.01, this)"
+                                    onmouseup="stopSteppingAmount(this)"
+                                    onmouseleave="stopSteppingAmount(this)"
+                                    ontouchstart="startSteppingAmount(0.01, this)"
+                                    ontouchend="stopSteppingAmount(this)"
+                                    title="Увеличить на 0.01">
+                                ▲
+                            </button>
+                            <button type="button" class="stepper-btn down"
+                                    onmousedown="startSteppingAmount(-0.01, this)"
+                                    onmouseup="stopSteppingAmount(this)"
+                                    onmouseleave="stopSteppingAmount(this)"
+                                    ontouchstart="startSteppingAmount(-0.01, this)"
+                                    ontouchend="stopSteppingAmount(this)"
+                                    title="Уменьшить на 0.01">
+                                ▼
+                            </button>
+                        </div>
                     </div>
                     <div th:if="${#fields.hasErrors('amount')}" th:errors="*{amount}" class="error-message show"></div>
                     <div class="error-message" id="amountError"></div>
@@ -386,6 +405,58 @@
             setTimeout(() => msg.remove(), 500);
         });
     }, 5000);
+
+    let _amountStepInterval = null;
+    let _amountStepTimeout = null;
+
+    function stepAmount(delta) {
+        const input = document.getElementById('amount');
+        if (!input) return;
+        let current = parseFloat(input.value.replace(',', '.'));
+        if (isNaN(current)) current = 0;
+        let newValue = current + delta;
+        newValue = Math.round(newValue * 100) / 100;
+        if (newValue < 0.01) newValue = 0.01;
+        if (newValue > 1000000) newValue = 1000000;
+        input.value = newValue.toFixed(2);
+        const event = new Event('input', { bubbles: true });
+        input.dispatchEvent(event);
+        document.querySelectorAll('.quick-amount-btn').forEach(b => b.classList.remove('active'));
+    }
+
+    function startSteppingAmount(delta, button) {
+        stopSteppingAmount(button);
+        if (button) button.classList.add('holding');
+        stepAmount(delta);
+        _amountStepTimeout = setTimeout(function() {
+            _amountStepInterval = setInterval(function() {
+                stepAmount(delta);
+            }, 10);
+        }, 250);
+    }
+
+    function stopSteppingAmount(button) {
+        if (button) button.classList.remove('holding');
+
+        if (_amountStepTimeout) {
+            clearTimeout(_amountStepTimeout);
+            _amountStepTimeout = null;
+        }
+
+        if (_amountStepInterval) {
+            clearInterval(_amountStepInterval);
+            _amountStepInterval = null;
+        }
+    }
+
+    document.querySelectorAll('.quick-amount-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const amount = this.getAttribute('data-amount');
+            document.getElementById('amount').value = amount;
+            document.querySelectorAll('.quick-amount-btn').forEach(b => b.classList.remove('active'));
+            this.classList.add('active');
+        });
+    });
 </script>
 </body>
 </html>

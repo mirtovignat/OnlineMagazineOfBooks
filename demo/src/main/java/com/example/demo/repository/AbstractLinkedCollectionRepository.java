@@ -26,8 +26,6 @@ public interface AbstractLinkedCollectionRepository<T extends AbstractLinkedColl
     List<T> findAllByUsername(@Param("username")
                               String username);
 
-    boolean existsByMovieTitleAndUserUsername(String movieTitle, String userUsername);
-
     boolean existsByMovieIdAndUserUsername(Long movieId, String userUsername);
 
     @Modifying
@@ -54,8 +52,8 @@ public interface AbstractLinkedCollectionRepository<T extends AbstractLinkedColl
             FROM #{#entityName} item
             WHERE item.user.username = :username
             """)
-    int countByUsername(@Param("username")
-                        String username);
+    Long countByUsername(@Param("username")
+                         String username);
 
     @Query("""
             SELECT item.movie.id

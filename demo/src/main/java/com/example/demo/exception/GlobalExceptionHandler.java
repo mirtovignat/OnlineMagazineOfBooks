@@ -1,6 +1,8 @@
 package com.example.demo.exception;
 
+import com.example.demo.web.util.RequestUtils;
 import jakarta.servlet.http.HttpServletRequest;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
@@ -12,31 +14,13 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.Map;
 
+@Slf4j
 @ControllerAdvice
 public class GlobalExceptionHandler {
 
-    private boolean isAjax(HttpServletRequest request) {
-        return "XMLHttpRequest".equals(request.getHeader("X-Requested-With"));
-    }
-
-    private String fallbackPath(HttpServletRequest request) {
-        String uri = request.getRequestURI();
-        if (uri == null) {
-            return "/";
-        }
-        if (uri.startsWith("/register")) {
-            return "/register";
-        }
-        if (uri.startsWith("/login")) {
-            return "/login";
-        }
-        if (uri.startsWith("/cart")) {
-            return "/cart";
-        }
-        if (uri.startsWith("/favourites")) {
-            return "/favourites";
-        }
-        return "/";
+    private String fallbackPath(HttpServletRequest httpServletRequest) {
+        String referer = httpServletRequest.getHeader("Referer");
+        return (referer != null && !referer.isBlank()) ? referer : "/";
     }
 
     @ExceptionHandler(BusinessException.class)
@@ -46,63 +30,72 @@ public class GlobalExceptionHandler {
         String message = businessException.getMessage();
         ErrorCode errorCode = businessException.getErrorCode();
 
-        if (isAjax(httpServletRequest)) {
+        if (RequestUtils.isAjaxRequest(httpServletRequest)) {
             HttpStatus httpStatus = switch (errorCode) {
                 case USER_NOT_FOUND, ENTITY_NOT_FOUND -> HttpStatus.NOT_FOUND;
                 case PASSWORD_INVALID, NOT_AUTHORIZED -> HttpStatus.UNAUTHORIZED;
                 case INSUFFICIENT_FUNDS -> HttpStatus.PAYMENT_REQUIRED;
-                case ALREADY_REGISTERED, DATA_COINCIDENCE -> HttpStatus.CONFLICT;
+                case ALREADY_REGISTERED, DATA_COINCIDENCE, ALREADY_TAKEN -> HttpStatus.CONFLICT;
                 default -> HttpStatus.BAD_REQUEST;
             };
             return ResponseEntity.status(httpStatus).body(Map.of("message", message));
+        }
+
+        if (errorCode == ErrorCode.PASSWORD_INVALID) {
+            redirectAttributes.addFlashAttribute("invalidPasswordExceptionMessage", message);
+        } else if (errorCode == ErrorCode.USER_NOT_FOUND) {
+            redirectAttributes.addFlashAttribute("userNotFoundExceptionMessage", message);
+        } else {
+            redirectAttributes.addFlashAttribute("errorMessage", message);
+        }
+        return "redirect:" + fallbackPath(httpServletRequest);
+    }
+
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public Object handleValidationException(MethodArgumentNotValidException methodArgumentNotValidException,
+                                            HttpServletRequest httpServletRequest,
+                                            RedirectAttributes redirectAttributes) {
+        String message = methodArgumentNotValidException.getBindingResult()
+                .getFieldErrors()
+                .stream()
+                .findFirst()
+                .map(FieldError::getDefaultMessage)
+                .orElse(ErrorCode.VALIDATION_ERROR.getMessage());
+
+        if (RequestUtils.isAjaxRequest(httpServletRequest)) {
+            return ResponseEntity.badRequest().body(Map.of("message", message));
         }
         redirectAttributes.addFlashAttribute("errorMessage", message);
         return "redirect:" + fallbackPath(httpServletRequest);
     }
 
-    @ExceptionHandler(MethodArgumentNotValidException.class)
-    public Object handleValidationException(
-            MethodArgumentNotValidException exception,
-            HttpServletRequest request,
-            RedirectAttributes redirectAttributes) {
-        String message = exception.getBindingResult()
-                .getFieldErrors()
-                .stream()
-                .findFirst()
-                .map(FieldError::getDefaultMessage)
-                .orElse("Ошибка валидации");
-        if (isAjax(request)) {
-            return ResponseEntity
-                    .badRequest()
-                    .body(Map.of("message", message));
+    @ExceptionHandler(ServletRequestBindingException.class)
+    public Object handleMissingSessionAttribute(HttpServletRequest httpServletRequest,
+                                                RedirectAttributes redirectAttributes) {
+        String message = ErrorCode.NOT_AUTHORIZED.getMessage();
+        if (com.example.demo.web.util.RequestUtils.isAjaxRequest(httpServletRequest)) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("message", message));
         }
         redirectAttributes.addFlashAttribute("errorMessage", message);
-        return "redirect:" + fallbackPath(request);
+        return "redirect:/login";
     }
 
     @ExceptionHandler(Exception.class)
     public Object handleGeneric(Exception exception,
                                 HttpServletRequest httpServletRequest,
                                 RedirectAttributes redirectAttributes) {
-        if (isAjax(httpServletRequest)) {
+        String userMessage = ErrorCode.ERROR.getMessage();
+        if (RequestUtils.isAjaxRequest(httpServletRequest)) {
+            log.error("Ошибка при AJAX запросе", exception);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(Map.of("message", "Внутренняя ошибка: " + exception.getMessage()));
+                    .body(Map.of("message", userMessage));
         }
-        redirectAttributes.addFlashAttribute("errorMessage",
-                "Произошла ошибка: " + exception.getMessage());
-        return "redirect:" + fallbackPath(httpServletRequest);
-    }
-
-    @ExceptionHandler(ServletRequestBindingException.class)
-    public Object handleMissingSessionAttribute(ServletRequestBindingException servletRequestBindingException,
-                                                HttpServletRequest request,
-                                                RedirectAttributes redirectAttributes) {
-        String message = "Авторизуйтесь!";
-        if (isAjax(request)) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(Map.of("message", message));
+        String referer = httpServletRequest.getHeader("Referer");
+        String currentUri = httpServletRequest.getRequestURI();
+        if (referer == null || referer.isBlank() || referer.contains(currentUri)) {
+            throw new RuntimeException(exception);
         }
-        redirectAttributes.addFlashAttribute("errorMessage", message);
-        return "redirect:/login";
+        redirectAttributes.addFlashAttribute("errorMessage", userMessage);
+        return "redirect:" + referer;
     }
 }

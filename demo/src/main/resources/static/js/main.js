@@ -2,24 +2,41 @@ let _deleteMovieId = null;
 let _ratingModalMode = 'add';
 
 function handleResponse(response) {
-    if (response.status === 401) {
-        return response.json().then(data => {
-            throw new Error(data.message || 'Авторизуйтесь!');
-        }).catch(err => {
-            throw new Error(err.message || 'Авторизуйтесь!');
-        });
+    if (response.redirected && response.url.includes('/login')) {
+        return Promise.reject({ status: 401, message: 'Авторизуйтесь!' });
     }
+    if (response.status === 401) {
+        return Promise.reject({ status: 401, message: 'Авторизуйтесь!' });
+    }
+
     return response.text().then(text => {
+        const contentType = response.headers.get('content-type');
+        if (contentType && contentType.includes('text/html')) {
+            window.location.href = '/login';
+            return new Promise(() => {});
+        }
         let data = {};
         if (text) {
             try {
                 data = JSON.parse(text);
             } catch (e) {
-                if (!response.ok) throw new Error('Ошибка сервера');
+                if (!response.ok) {
+                    return Promise.reject({
+                        status: response.status,
+                        message: 'Ошибка сервера'
+                    });
+                }
                 throw new Error('Некорректный ответ сервера');
             }
         }
-        if (!response.ok) throw new Error(data.message || 'Произошла ошибка');
+
+        if (!response.ok) {
+            return Promise.reject({
+                status: response.status,
+                message: data.message || 'Произошла ошибка'
+            });
+        }
+
         if (!data.message) data.message = '';
         return data;
     });
@@ -48,6 +65,18 @@ function showFlashMessage(message, type, autoHide = true) {
     }
 }
 
+function saveFlashAndRedirect(message, type = 'success', redirectUrl = '/') {
+    if (message) {
+        sessionStorage.setItem('flashMessage', JSON.stringify({ message, type }));
+    }
+    window.location.href = redirectUrl;
+}
+
+function isAuthenticated() {
+    const authStatus = document.getElementById('authStatus');
+    return authStatus && authStatus.dataset.authenticated === 'true';
+}
+
 function getMovieId(element) {
     return element?.getAttribute('data-movie-id') || '';
 }
@@ -58,8 +87,7 @@ function refreshCounts() {
 }
 
 function requireAuth(event, url) {
-    var userMenu = document.querySelector('.user-menu');
-    if (!userMenu) {
+    if (!isAuthenticated()) {
         event.preventDefault();
         showFlashMessage('Авторизуйтесь!', 'error');
         return false;
@@ -104,7 +132,7 @@ function applyStatusesFromSession() {
             const cartBtn = card.querySelector('.cart-button, .in-cart-btn-details, .to-cart-btn-details');
             if (cartBtn) {
                 if (cartStatus) {
-                    cartBtn.textContent = 'В корзине →';
+                    cartBtn.textContent = 'В корзине → Перейти';
                     cartBtn.className = 'cart-button in-cart-btn-details';
                     cartBtn.onclick = function() { window.location.href = '/cart'; };
                 } else {
@@ -133,9 +161,27 @@ function applyStatusesFromSession() {
 }
 
 function addToCart(button) {
+    if (!isAuthenticated()) {
+        showFlashMessage('Авторизуйтесь!', 'error');
+        if (button && button.tagName && button.tagName.toLowerCase() === 'button') {
+            button.disabled = false;
+        }
+        return;
+    }
+
     const movieId = getMovieId(button);
-    if (!movieId) return;
-    if (button.tagName.toLowerCase() === 'button') button.disabled = true;
+    if (!movieId) {
+        showFlashMessage('Ошибка: не удалось определить фильм', 'error');
+        if (button && button.tagName && button.tagName.toLowerCase() === 'button') {
+            button.disabled = false;
+        }
+        return;
+    }
+
+    if (button && button.tagName && button.tagName.toLowerCase() === 'button') {
+        button.disabled = true;
+    }
+
     fetch('/cart/add/' + encodeURIComponent(movieId), {
         method: 'POST',
         headers: { 'X-Requested-With': 'XMLHttpRequest' }
@@ -145,23 +191,37 @@ function addToCart(button) {
         showFlashMessage(data.message, 'success');
         updateCartCount();
         setCartStatus(movieId, true);
-        button.textContent = 'В корзине →';
-        button.className = 'cart-button in-cart-btn-details';
-        button.onclick = function() {
-            window.location.href = '/cart';
-        };
-        button.disabled = false;
+        if (button) {
+            button.textContent = 'В корзине → Перейти';
+            button.className = 'cart-button in-cart-btn-details';
+            button.onclick = function() {
+                window.location.href = '/cart';
+            };
+            button.disabled = false;
+        }
     })
     .catch(err => {
-        showFlashMessage(err.message || 'Ошибка', 'error');
-        if (button.tagName.toLowerCase() === 'button') button.disabled = false;
+        if (err.status === 401) {
+            showFlashMessage('Авторизуйтесь!', 'error');
+        } else {
+            showFlashMessage(err.message || 'Ошибка', 'error');
+        }
+        if (button && button.tagName && button.tagName.toLowerCase() === 'button') {
+            button.disabled = false;
+        }
     });
 }
 
 function removeFromCart(button) {
+    if (!isAuthenticated()) {
+        showFlashMessage('Авторизуйтесь!', 'error');
+        return;
+    }
+
     const movieId = getMovieId(button);
     if (!movieId) return;
     if (button.tagName.toLowerCase() === 'button') button.disabled = true;
+
     fetch('/cart/remove/' + encodeURIComponent(movieId), {
         method: 'POST',
         headers: { 'X-Requested-With': 'XMLHttpRequest' }
@@ -191,7 +251,11 @@ function removeFromCart(button) {
         }
     })
     .catch(err => {
-        showFlashMessage(err.message || 'Ошибка', 'error');
+        if (err.status === 401) {
+            showFlashMessage('Авторизуйтесь!', 'error');
+        } else {
+            showFlashMessage(err.message || 'Ошибка', 'error');
+        }
         if (button.tagName.toLowerCase() === 'button') button.disabled = false;
     });
 }
@@ -210,10 +274,16 @@ function updateCartCount() {
 }
 
 function toggleFavourite(button) {
+    if (!isAuthenticated()) {
+        showFlashMessage('Авторизуйтесь!', 'error');
+        return;
+    }
+
     const movieId = getMovieId(button);
     const action = button.getAttribute('data-action');
     if (!movieId || !action) return;
     button.disabled = true;
+
     fetch('/favourites/' + action + '/' + encodeURIComponent(movieId), {
         method: 'POST',
         headers: { 'X-Requested-With': 'XMLHttpRequest' }
@@ -242,7 +312,13 @@ function toggleFavourite(button) {
         }
         updateFavouritesCount();
     })
-    .catch(err => showFlashMessage(err.message || 'Ошибка', 'error'))
+    .catch(err => {
+        if (err.status === 401) {
+            showFlashMessage('Авторизуйтесь!', 'error');
+        } else {
+            showFlashMessage(err.message || 'Ошибка', 'error');
+        }
+    })
     .finally(() => button.disabled = false);
 }
 
@@ -260,11 +336,11 @@ function updateFavouritesCount() {
 }
 
 function showBuyModal(button) {
-    const userMenu = document.querySelector('.user-menu');
-    if (!userMenu) {
+    if (!isAuthenticated()) {
         showFlashMessage('Авторизуйтесь!', 'error');
         return;
     }
+
     const movieId = getMovieId(button);
     if (!movieId) {
         showFlashMessage('Ошибка: не удалось определить фильм', 'error');
@@ -288,6 +364,11 @@ function hideBuyModal() {
 }
 
 function confirmPurchase() {
+    if (!isAuthenticated()) {
+        showFlashMessage('Авторизуйтесь!', 'error');
+        return;
+    }
+
     const modalTitle = document.getElementById('modalMovieTitle');
     if (!modalTitle) return;
     const movieId = modalTitle.dataset.movieId || modalTitle.innerText;
@@ -396,9 +477,30 @@ function confirmPurchase() {
     })
     .catch(error => {
         hideBuyModal();
-        showFlashMessage(error.message || 'Ошибка при покупке', 'error');
+        if (error.status === 401) {
+            showFlashMessage('Авторизуйтесь!', 'error');
+        } else {
+            showFlashMessage(error.message || 'Ошибка при покупке', 'error');
+        }
         if (btn) { btn.disabled = false; btn.textContent = 'Подтвердить'; }
     });
+}
+
+function getDeclension(n) {
+    n = Math.abs(n);
+    const lastDigit = n % 10;
+    const lastTwoDigits = n % 100;
+
+    if (lastTwoDigits >= 11 && lastTwoDigits <= 19) {
+        return 'отзывов';
+    }
+    if (lastDigit === 1) {
+        return 'отзыв';
+    }
+    if (lastDigit >= 2 && lastDigit <= 4) {
+        return 'отзыва';
+    }
+    return 'отзывов';
 }
 
 function updateReviewsCount(movieId) {
@@ -416,23 +518,96 @@ function updateReviewsCount(movieId) {
             });
             const reviewsCounter = document.getElementById('reviewsCount');
             if (reviewsCounter) {
-                reviewsCounter.textContent = `(${num} отзывов)`;
+                reviewsCounter.textContent = num + ' ' + getDeclension(num);
             }
         })
         .catch(console.warn);
 }
 
+function updateRatingBadge(movieId, rating) {
+    const hasRating = rating !== null && rating !== '-' && rating !== undefined && !isNaN(parseFloat(rating));
+    const numericRating = hasRating ? parseFloat(rating).toFixed(1) : null;
+
+    document.querySelectorAll(`.js-rating-badge[data-movie-id="${movieId}"]`).forEach(el => {
+        el.textContent = numericRating ? `★ ${numericRating} / 10` : '★ —';
+    });
+
+    document.querySelectorAll(`.rating-val[data-movie-id="${movieId}"]`).forEach(el => {
+        el.textContent = numericRating ? `★ ${numericRating}` : '★ —';
+    });
+
+    const ratingValueEl = document.querySelector('.rating-value');
+    if (ratingValueEl) {
+        ratingValueEl.textContent = numericRating ? `${numericRating} / 10` : '—';
+    }
+
+    document.querySelectorAll(`.favourites-card[data-movie-id="${movieId}"] .favourites-rating-badge`).forEach(el => {
+        const ratingValueEl2 = el.querySelector('.rating-value');
+        if (ratingValueEl2) {
+            if (numericRating) {
+                ratingValueEl2.textContent = numericRating;
+                el.style.display = 'flex';
+            } else {
+                el.style.display = 'none';
+            }
+        }
+    });
+
+    document.querySelectorAll(`.favourites-card[data-movie-id="${movieId}"] .rating-value`).forEach(el => {
+        if (numericRating) {
+            el.textContent = numericRating;
+        } else {
+            el.textContent = '—';
+        }
+    });
+}
+
+function updateMovieRating(movieId) {
+    if (!movieId) return;
+    fetch('/movies/' + encodeURIComponent(movieId) + '/rating?_=' + Date.now())
+        .then(r => {
+            if (!r.ok) throw new Error('Ошибка получения рейтинга');
+            return r.json();
+        })
+        .then(data => {
+            updateRatingBadge(movieId, data.rating);
+        })
+        .catch(console.warn);
+}
+
+function applyRatingResponse(data, movieId) {
+    const payload = data?.data ?? data;
+
+    if (payload?.rating !== undefined) {
+        updateRatingBadge(movieId, payload.rating);
+    }
+
+    if (payload?.reviewsCount !== undefined) {
+        const count = Number(payload.reviewsCount) || 0;
+        document.querySelectorAll(`.js-reviews-count[data-movie-id="${movieId}"]`).forEach(badge => {
+            badge.textContent = count;
+            badge.style.display = count > 0 ? '' : 'none';
+        });
+        const reviewsCounter = document.getElementById('reviewsCount');
+        if (reviewsCounter) {
+            reviewsCounter.textContent = count + ' ' + getDeclension(count);
+        }
+    }
+}
+
 function showRatingModal(movieId, movieTitle, mode = 'add', existingRating = 5.0, existingReview = '') {
     if (window.event) window.event.stopPropagation();
-    const userMenu = document.querySelector('.user-menu');
-    if (!userMenu) {
+
+    if (!isAuthenticated()) {
         showFlashMessage('Авторизуйтесь!', 'error');
         return;
     }
+
     if (!movieId) {
         showFlashMessage('Ошибка: ID фильма не передан', 'error');
         return;
     }
+
     _ratingModalMode = mode;
     const modal = document.getElementById('ratingModal');
     const keyInput = document.getElementById('ratingFormTitle');
@@ -469,6 +644,11 @@ function hideRatingModal() {
 }
 
 function submitRating() {
+    if (!isAuthenticated()) {
+        showFlashMessage('Авторизуйтесь!', 'error');
+        return;
+    }
+
     const modal = document.getElementById('ratingModal');
     if (!modal) return;
 
@@ -488,19 +668,19 @@ function submitRating() {
     let rating = ratingInput.value.replace(',', '.');
     const review = document.getElementById('ratingComment').value;
 
-    const ratingRegex = /^(10(\.0)?|[0-9](\.[0-9])?)$/;
+    const ratingRegex = /^(10(\.0)?|([1-9](\.[0-9])?)|0\.[1-9])$/;
     if (!ratingRegex.test(rating)) {
         if (errorDiv) {
-            errorDiv.innerText = 'Введите число от 0.0 до 10.0 (одна цифра после точки)';
+            errorDiv.innerText = 'Введите число от 0.1 до 10.0 (одна цифра после точки)';
             errorDiv.style.display = 'block';
         }
         return;
     }
 
     const ratingValue = parseFloat(rating);
-    if (ratingValue < 0 || ratingValue > 10) {
+    if (ratingValue < 0.1 || ratingValue > 10) {
         if (errorDiv) {
-            errorDiv.innerText = 'Оценка должна быть от 0.0 до 10.0';
+            errorDiv.innerText = 'Оценка должна быть от 0.1 до 10.0';
             errorDiv.style.display = 'block';
         }
         return;
@@ -536,24 +716,12 @@ function submitRating() {
     .then(data => {
         hideRatingModal();
         showFlashMessage(data.message, 'success');
+
+        updateMovieRating(movieId);
         updateReviewsCount(movieId);
 
-        if (data.data && data.data.rating) {
-            const newRating = data.data.rating;
-            document.querySelectorAll(`.js-rating-badge[data-movie-id="${movieId}"]`).forEach(b => {
-                b.textContent = newRating !== '-' ? `★ ${newRating} / 10` : '-';
-            });
-        } else {
-            fetch('/rated/rating/' + encodeURIComponent(movieId) + '?_=' + Date.now())
-                .then(r => r.json())
-                .then(ratingData => {
-                    const newRating = ratingData.rating;
-                    document.querySelectorAll(`.js-rating-badge[data-movie-id="${movieId}"]`).forEach(b => {
-                        b.textContent = newRating !== null && newRating !== '-' ? `★ ${parseFloat(newRating).toFixed(1)} / 10` : '-';
-                    });
-                })
-                .catch(console.warn);
-        }
+        const rating = data.rating !== undefined ? data.rating : ratingValue;
+        const reviewsCount = data.reviewsCount !== undefined ? data.reviewsCount : null;
 
         const ownCard = document.querySelector(`.review-card[data-movie-id="${movieId}"][data-own="true"]`);
         if (ownCard) {
@@ -574,7 +742,7 @@ function submitRating() {
             const username = document.getElementById('currentUserData')?.dataset.username || 'Пользователь';
             const firstLetter = username.charAt(0).toUpperCase() || 'U';
             const newCardHtml = `
-                <div class="review-card" data-movie-id="${movieId}" data-own="true" style="animation-delay: 0s;">
+                <div class="review-card own-card" data-movie-id="${movieId}" data-own="true" style="animation-delay: 0s;">
                     <div class="review-header">
                         <div class="review-user">
                             <div class="avatar">${firstLetter}</div>
@@ -619,7 +787,11 @@ function submitRating() {
     })
     .catch(err => {
         hideRatingModal();
-        showFlashMessage(err.message || 'Ошибка сохранения', 'error');
+        if (err.status === 401) {
+            showFlashMessage('Авторизуйтесь!', 'error');
+        } else {
+            showFlashMessage(err.message || 'Ошибка сохранения', 'error');
+        }
     })
     .finally(() => {
         if (submitBtn) {
@@ -633,6 +805,10 @@ function submitRating() {
 }
 
 function deleteRating(movieId) {
+    if (!isAuthenticated()) {
+        showFlashMessage('Авторизуйтесь!', 'error');
+        return;
+    }
     if (!movieId) {
         showFlashMessage('Ошибка: не удалось считать ID фильма', 'error');
         return;
@@ -651,6 +827,7 @@ function hideConfirmDeleteModal() {
 function executeDelete() {
     if (!_deleteMovieId) return;
     const movieId = _deleteMovieId;
+
     fetch('/rated/remove/' + encodeURIComponent(movieId), {
         method: 'POST',
         headers: { 'X-Requested-With': 'XMLHttpRequest' }
@@ -659,23 +836,13 @@ function executeDelete() {
     .then(data => {
         hideConfirmDeleteModal();
         showFlashMessage(data.message, 'success');
+
+        updateMovieRating(movieId);
         updateReviewsCount(movieId);
-        if (data.data && data.data.rating) {
-            const newRating = data.data.rating;
-            document.querySelectorAll(`.js-rating-badge[data-movie-id="${movieId}"]`).forEach(b => {
-                b.textContent = newRating !== '-' ? `★ ${newRating} / 10` : '-';
-            });
-        } else {
-            fetch('/rated/rating/' + encodeURIComponent(movieId) + '?_=' + Date.now())
-                .then(r => r.json())
-                .then(ratingData => {
-                    const newRating = ratingData.rating;
-                    document.querySelectorAll(`.js-rating-badge[data-movie-id="${movieId}"]`).forEach(b => {
-                        b.textContent = newRating !== null && newRating !== '-' ? `★ ${parseFloat(newRating).toFixed(1)} / 10` : '-';
-                    });
-                })
-                .catch(console.warn);
-        }
+
+        const rating = data.rating !== undefined ? data.rating : null;
+        const reviewsCount = data.reviewsCount !== undefined ? data.reviewsCount : 0;
+
         const ownCard = document.querySelector(`.review-card[data-movie-id="${movieId}"][data-own="true"]`);
         if (ownCard) {
             ownCard.style.transition = 'all 0.3s ease';
@@ -695,7 +862,11 @@ function executeDelete() {
     })
     .catch(err => {
         hideConfirmDeleteModal();
-        showFlashMessage(err.message || 'Ошибка удаления', 'error');
+        if (err.status === 401) {
+            showFlashMessage('Авторизуйтесь!', 'error');
+        } else {
+            showFlashMessage(err.message || 'Ошибка удаления', 'error');
+        }
     });
 }
 
@@ -851,6 +1022,9 @@ function setupRatingInput() {
             if (num > 10) {
                 newValue = '10.0';
             }
+            if (num < 0.1 && num > 0) {
+                newValue = '0.1';
+            }
             if (num < 0) {
                 newValue = '0';
             }
@@ -884,7 +1058,7 @@ function setupRatingInput() {
         const cleaned = pasted.replace(/[^0-9.,]/g, '').replace(',', '.');
         const num = parseFloat(cleaned);
         if (!isNaN(num)) {
-            let val = Math.min(Math.max(num, 0), 10);
+            let val = Math.min(Math.max(num, 0.1), 10);
             if (Number.isInteger(val)) {
                 this.value = val.toString();
             } else {
@@ -904,87 +1078,145 @@ function setupRatingInput() {
         const num = parseFloat(this.value);
         if (!isNaN(num)) {
             if (num > 10) this.value = '10.0';
+            if (num < 0.1 && num > 0) this.value = '0.1';
             if (num < 0) this.value = '0';
-            if (Number.isInteger(num) && num >= 0 && num <= 10) {
+            if (Number.isInteger(num) && num >= 1 && num <= 10) {
                 this.value = num.toString();
             }
         }
     });
 }
 
-document.addEventListener('DOMContentLoaded', function() {
-    setupRatingInput();
-    clearAllStatuses();
-    initEmailValidation();
+function setupFilterRatingInput(inputId) {
+    const input = document.getElementById(inputId);
+    if (!input) return;
 
-    var flash = sessionStorage.getItem('flashMessage');
-    if (flash) {
-        try {
-            var data = JSON.parse(flash);
-            showFlashMessage(data.message, data.type);
-            sessionStorage.removeItem('flashMessage');
-        } catch (e) {}
-    }
-    var positiveInputs = document.querySelectorAll('.positive-int');
-    positiveInputs.forEach(function(input) {
-        input.addEventListener('keydown', function(e) {
-            if (e.ctrlKey || e.metaKey) return;
-            var allowedKeys = ['Backspace', 'Tab', 'ArrowLeft', 'ArrowRight', 'Delete', 'Enter', 'Escape'];
-            if (allowedKeys.includes(e.key)) return;
-            if (!/^[0-9]$/.test(e.key)) {
-                e.preventDefault();
-            }
-        });
-        input.addEventListener('input', function(e) {
-            e.target.value = e.target.value.replace(/\D/g, '');
-            calculateRangeMinutes();
-        });
+    input.addEventListener('input', function () {
+        let value = this.value;
+        if (value === '') return;
+        value = value.replace(',', '.');
+        let parts = value.split('.');
+        let intPart = parts[0].replace(/[^0-9]/g, '');
+        let decPart = parts.length > 1 ? parts[1].replace(/[^0-9]/g, '') : '';
+        if (intPart === '' && decPart !== '') intPart = '0';
+        if (intPart.length > 1 && intPart.startsWith('0')) {
+            intPart = intPart.replace(/^0+/, '');
+            if (intPart === '') intPart = '0';
+        }
+        if (intPart.length > 2) intPart = intPart.slice(0, 2);
+        let intNum = parseInt(intPart);
+        if (intNum > 10) intPart = '10';
+        if (decPart.length > 1) decPart = decPart.slice(0, 1);
+        let newValue = intPart;
+        if (decPart.length > 0 || (value.includes('.') && intPart !== '')) {
+            newValue = intPart + '.' + decPart;
+        }
+        const num = parseFloat(newValue);
+        if (!isNaN(num)) {
+            if (num > 10) newValue = '10.0';
+            if (num < 0.1 && num > 0) newValue = '0.1';
+            if (num < 0) newValue = '0';
+        }
+        if (value === '.' || value === ',') newValue = '0.';
+        if (value === '0.') newValue = '0.';
+        if (this.value !== newValue) this.value = newValue;
     });
-    calculateRangeMinutes();
-    var filterForm = document.getElementById('filterForm') || document.querySelector('form');
-    if (filterForm) {
-        filterForm.addEventListener('reset', function() {
-            setTimeout(calculateRangeMinutes, 0);
-        });
-    }
-    document.querySelectorAll('.js-reviews-count[data-movie-id]').forEach(function(el) {
-        var id = el.getAttribute('data-movie-id');
-        if (id) updateReviewsCount(id);
+
+    input.addEventListener('keydown', function (e) {
+        const allowedKeys = ['Backspace', 'Tab', 'ArrowLeft', 'ArrowRight', 'Delete', 'Enter', 'Escape', '.', ','];
+        if (allowedKeys.includes(e.key)) return;
+        if (e.key >= '0' && e.key <= '9') return;
+        e.preventDefault();
     });
-    var reviewsContainer = document.querySelector('.reviews-container');
-    if (reviewsContainer) {
-        var movieId = reviewsContainer.getAttribute('data-movie-id');
-        if (movieId) updateReviewsCount(movieId);
-    }
-});
 
-window.addEventListener('pageshow', function(event) {
-    if (event.persisted) {
-        applyStatusesFromSession();
-        refreshCounts();
-
-        document.querySelectorAll('.js-reviews-count[data-movie-id]').forEach(function(el) {
-            var id = el.getAttribute('data-movie-id');
-            if (id) updateReviewsCount(id);
-        });
-        document.querySelectorAll('.js-rating-badge[data-movie-id]').forEach(function(el) {
-            var id = el.getAttribute('data-movie-id');
-            if (id) {
-                fetch('/rated/rating/' + encodeURIComponent(id) + '?_=' + Date.now())
-                    .then(function(r) { return r.json(); })
-                    .then(function(data) {
-                        var rating = data.rating;
-                        el.textContent = rating !== null && rating !== '-' ? '★ ' + parseFloat(rating).toFixed(1) + ' / 10' : '-';
-                    })
-                    .catch(console.warn);
+    input.addEventListener('paste', function (e) {
+        e.preventDefault();
+        const pasted = (e.clipboardData || window.clipboardData).getData('text');
+        const cleaned = pasted.replace(/[^0-9.,]/g, '').replace(',', '.');
+        const num = parseFloat(cleaned);
+        if (!isNaN(num)) {
+            let val = Math.min(Math.max(num, 0.1), 10);
+            if (Number.isInteger(val)) {
+                this.value = val.toString();
+            } else {
+                this.value = val.toFixed(1);
             }
-        });
-    }
-});
+        } else if (cleaned === '.') {
+            this.value = '0.';
+        } else {
+            this.value = '';
+        }
+    });
 
-document.addEventListener('visibilitychange', function() {
-    if (document.visibilityState === 'visible') refreshCounts();
-});
+    input.addEventListener('blur', function () {
+        if (this.value === '.' || this.value === '0.') {
+            this.value = '0';
+        }
+        const num = parseFloat(this.value);
+        if (!isNaN(num)) {
+            if (num > 10) this.value = '10.0';
+            if (num < 0.1 && num > 0) this.value = '0.1';
+            if (num < 0) this.value = '0';
+            if (Number.isInteger(num) && num >= 1 && num <= 10) {
+                this.value = num.toString();
+            }
+        }
+    });
+}
+
+function setupFilterPriceInput(inputId) {
+    const input = document.getElementById(inputId);
+    if (!input) return;
+
+    input.addEventListener('input', function () {
+        let value = this.value;
+        if (value === '') return;
+        value = value.replace(',', '.');
+        let parts = value.split('.');
+        let intPart = parts[0].replace(/[^0-9]/g, '');
+        let decPart = parts.length > 1 ? parts[1].replace(/[^0-9]/g, '') : '';
+        if (intPart.length > 1 && intPart.startsWith('0')) {
+            intPart = intPart.replace(/^0+/, '');
+            if (intPart === '') intPart = '0';
+        }
+        if (decPart.length > 2) decPart = decPart.slice(0, 2);
+        let newValue = intPart;
+        if (decPart.length > 0 || (value.includes('.') && intPart !== '')) {
+            newValue = intPart + '.' + decPart;
+        }
+        if (value === '.' || value === ',') newValue = '0.';
+        if (this.value !== newValue) this.value = newValue;
+    });
+
+    input.addEventListener('keydown', function (e) {
+        const allowedKeys = ['Backspace', 'Tab', 'ArrowLeft', 'ArrowRight', 'Delete', 'Enter', 'Escape', '.', ','];
+        if (allowedKeys.includes(e.key)) return;
+        if (e.key >= '0' && e.key <= '9') return;
+        e.preventDefault();
+    });
+
+    input.addEventListener('paste', function (e) {
+        e.preventDefault();
+        const pasted = (e.clipboardData || window.clipboardData).getData('text');
+        const cleaned = pasted.replace(/[^0-9.,]/g, '').replace(',', '.');
+        const parts = cleaned.split('.');
+        const intPart = parts[0].replace(/[^0-9]/g, '');
+        const decPart = parts.length > 1 ? parts[1].replace(/[^0-9]/g, '').slice(0, 2) : '';
+        if (intPart !== '' || decPart !== '') {
+            this.value = decPart.length > 0 ? intPart + '.' + decPart : intPart;
+        } else if (cleaned === '.') {
+            this.value = '0.';
+        } else {
+            this.value = '';
+        }
+    });
+
+    input.addEventListener('blur', function () {
+        if (this.value === '.' || this.value === '0.') {
+            this.value = '0';
+        }
+    });
+}
 
 function openClearCartModal() {
     document.getElementById('clearCartModal')?.classList.add('show');
@@ -995,6 +1227,11 @@ function closeClearCartModal() {
 }
 
 function confirmClearCart() {
+    if (!isAuthenticated()) {
+        showFlashMessage('Авторизуйтесь!', 'error');
+        return;
+    }
+
     var button = document.querySelector('#clearCartModal .modal-confirm-btn');
     if (button) {
         button.disabled = true;
@@ -1020,10 +1257,598 @@ function confirmClearCart() {
     })
     .catch(function(err) {
         closeClearCartModal();
-        showFlashMessage(err.message || 'Ошибка очистки', 'error');
+        if (err.status === 401) {
+            showFlashMessage('Авторизуйтесь!', 'error');
+        } else {
+            showFlashMessage(err.message || 'Ошибка очистки', 'error');
+        }
         if (button) {
             button.disabled = false;
             button.textContent = 'Очистить корзину';
         }
     });
+}
+
+function setupDurationStrictFilter(id, maxVal) {
+    const input = document.getElementById(id);
+    if (!input) return;
+
+    input.addEventListener('beforeinput', function (e) {
+        if (e.data && !/^\d+$/.test(e.data)) {
+            e.preventDefault();
+            return;
+        }
+        if (e.data) {
+            const selStart = input.selectionStart;
+            const selEnd = input.selectionEnd;
+            const current = input.value;
+            const nextStr = current.slice(0, selStart) + e.data + current.slice(selEnd);
+            const nextNum = parseInt(nextStr, 10);
+            if (nextNum > maxVal) {
+                e.preventDefault();
+            }
+        }
+    });
+
+    input.addEventListener('keydown', function (e) {
+        const allowed = ['Backspace', 'Tab', 'ArrowLeft', 'ArrowRight', 'Delete', 'Enter', 'Escape'];
+        if (allowed.includes(e.key) || e.ctrlKey || e.metaKey) return;
+        if (!/^\d$/.test(e.key)) {
+            e.preventDefault();
+        }
+    });
+
+    input.addEventListener('input', function () {
+        let valStr = this.value.replace(/\D/g, '');
+        if (valStr !== '') {
+            let valNum = parseInt(valStr, 10);
+            if (valNum > maxVal) valNum = maxVal;
+            valStr = valNum.toString();
+        }
+        if (this.value !== valStr) {
+            this.value = valStr;
+        }
+        calculateRangeMinutes();
+    });
+
+    input.addEventListener('paste', function (e) {
+        e.preventDefault();
+        const pasted = (e.clipboardData || window.clipboardData).getData('text');
+        const digits = pasted.replace(/\D/g, '');
+        if (!digits) return;
+
+        const selStart = input.selectionStart;
+        const selEnd = input.selectionEnd;
+        const current = input.value;
+        const nextStr = current.slice(0, selStart) + digits + current.slice(selEnd);
+        let nextNum = parseInt(nextStr, 10);
+
+        if (!isNaN(nextNum)) {
+            if (nextNum > maxVal) nextNum = maxVal;
+            input.value = nextNum.toString();
+            calculateRangeMinutes();
+        }
+    });
+}
+
+function normalizeNumberInput(value, {
+    min = null,
+    max = null,
+    decimals = 0,
+    emptyValues = []
+} = {}) {
+    if (value === null || value === undefined) return '';
+    let str = String(value).trim().replace(',', '.');
+    if (str === '') return '';
+    str = str.replace(/[^\d.]/g, '');
+    if (!str) return '';
+    const firstDot = str.indexOf('.');
+    if (firstDot !== -1) {
+        str =
+            str.substring(0, firstDot + 1) +
+            str.substring(firstDot + 1).replace(/\./g, '');
+    }
+    let num = parseFloat(str);
+    if (isNaN(num)) return '';
+    if (emptyValues.some(v => num === v)) {
+        return '';
+    }
+    if (min !== null && num < min) {
+        return {
+            error: `Значение должно быть не меньше ${min}`
+        };
+    }
+    if (max !== null && num > max) {
+        return {
+            error: `Значение должно быть не больше ${max}`
+        };
+    }
+    if (decimals === 0) {
+        return String(Math.round(num));
+    }
+    return num.toFixed(decimals);
+}
+
+function normalizeDurationFilters() {
+    const fromH = parseInt(
+        document.getElementById('durationFromHours')?.value,
+        10
+    ) || 0;
+
+    const fromM = parseInt(
+        document.getElementById('durationFromMinutes')?.value,
+        10
+    ) || 0;
+
+    const fromS = parseInt(
+        document.getElementById('durationFromSeconds')?.value,
+        10
+    ) || 0;
+
+    const toH = parseInt(
+        document.getElementById('durationToHours')?.value,
+        10
+    ) || 0;
+
+    const toM = parseInt(
+        document.getElementById('durationToMinutes')?.value,
+        10
+    ) || 0;
+
+    const toS = parseInt(
+        document.getElementById('durationToSeconds')?.value,
+        10
+    ) || 0;
+    if (fromH === 0 && fromM === 0 && fromS === 0) {
+        document.getElementById('durationFromHours').value = '';
+        document.getElementById('durationFromMinutes').value = '';
+        document.getElementById('durationFromSeconds').value = '';
+    }
+    if (toH === 16 && toM === 59 && toS === 59) {
+        document.getElementById('durationToHours').value = '';
+        document.getElementById('durationToMinutes').value = '';
+        document.getElementById('durationToSeconds').value = '';
+    }
+
+    calculateRangeMinutes();
+}
+function validateFilter() {
+    normalizeDurationFilters();
+    const errorEl = document.getElementById('ratingFilterError');
+
+    function showError(message, input) {
+        if (errorEl) {
+            errorEl.innerText = '⚠️ ' + message;
+            errorEl.style.display = 'block';
+        }
+        if (input) {
+            input.focus();
+        }
+        return false;
+    }
+
+    if (errorEl) {
+        errorEl.style.display = 'none';
+        errorEl.innerText = '';
+    }
+
+    let hasMeaningfulFilter = false;
+
+    const priceFrom = document.getElementById('priceFrom');
+    if (priceFrom && priceFrom.value.trim() !== '') {
+        const normalized = normalizeNumberInput(priceFrom.value, {
+            min: 0,
+            decimals: 2,
+            emptyValues: [0]
+        });
+        if (typeof normalized === 'object') {
+            return showError('Цена "от" должна быть неотрицательным числом', priceFrom);
+        }
+        priceFrom.value = normalized;
+        if (normalized !== '') {
+            const value = parseFloat(normalized);
+            if (value > 0) {
+                hasMeaningfulFilter = true;
+            }
+        }
+    }
+
+    const priceTo = document.getElementById('priceTo');
+    if (priceTo && priceTo.value.trim() !== '') {
+        const normalized = normalizeNumberInput(priceTo.value, {
+            min: 0,
+            decimals: 2,
+            emptyValues: [0]
+        });
+        if (typeof normalized === 'object') {
+            return showError('Цена "до" должна быть неотрицательным числом', priceTo);
+        }
+        priceTo.value = normalized;
+        if (normalized !== '') {
+            const value = parseFloat(normalized);
+            if (value > 0) {
+                hasMeaningfulFilter = true;
+            }
+        }
+    }
+
+    const ratingFrom = document.getElementById('ratingFrom');
+    if (ratingFrom && ratingFrom.value.trim() !== '') {
+        const rawRatingFrom = parseFloat(ratingFrom.value.replace(',', '.'));
+        if (rawRatingFrom === 0 || rawRatingFrom === 0.1) {
+            ratingFrom.value = '';
+        } else {
+            const normalized = normalizeNumberInput(ratingFrom.value, {
+                min: 0.1,
+                max: 10,
+                decimals: 1,
+                emptyValues: [0, 0.1]
+            });
+            if (typeof normalized === 'object') {
+                return showError('Рейтинг "от" должен быть от 0.1 до 10.0', ratingFrom);
+            }
+            ratingFrom.value = normalized;
+            if (normalized !== '') {
+                hasMeaningfulFilter = true;
+            }
+        }
+    }
+
+    const ratingTo = document.getElementById('ratingTo');
+    if (ratingTo && ratingTo.value.trim() !== '') {
+        const rawRatingTo = parseFloat(ratingTo.value.replace(',', '.'));
+        if (isNaN(rawRatingTo)) {
+            return showError('Рейтинг "до" должен быть от 0.1 до 10.0', ratingTo);
+        }
+        if (rawRatingTo === 10) {
+            ratingTo.value = '';
+        } else {
+            const normalized = normalizeNumberInput(ratingTo.value, {
+                min: 0.1,
+                max: 10,
+                decimals: 1
+            });
+            if (typeof normalized === 'object') {
+                return showError('Рейтинг "до" должен быть от 0.1 до 10.0', ratingTo);
+            }
+            ratingTo.value = normalized;
+            if (normalized !== '') {
+                hasMeaningfulFilter = true;
+            }
+        }
+    }
+
+    const durationFromHours = document.getElementById('durationFromHours');
+    const durationFromMinutes = document.getElementById('durationFromMinutes');
+    const durationFromSeconds = document.getElementById('durationFromSeconds');
+
+    const fromH = parseInt(durationFromHours?.value, 10) || 0;
+    const fromM = parseInt(durationFromMinutes?.value, 10) || 0;
+    const fromS = parseInt(durationFromSeconds?.value, 10) || 0;
+
+    if (fromH !== 0 || fromM !== 0 || fromS !== 0) {
+        hasMeaningfulFilter = true;
+    } else {
+        if (durationFromHours) durationFromHours.value = '';
+        if (durationFromMinutes) durationFromMinutes.value = '';
+        if (durationFromSeconds) durationFromSeconds.value = '';
+    }
+
+    const durationToHours = document.getElementById('durationToHours');
+    const durationToMinutes = document.getElementById('durationToMinutes');
+    const durationToSeconds = document.getElementById('durationToSeconds');
+
+    const toH = parseInt(durationToHours?.value, 10) || 0;
+    const toM = parseInt(durationToMinutes?.value, 10) || 0;
+    const toS = parseInt(durationToSeconds?.value, 10) || 0;
+
+    if (toH === 16 && toM === 59 && toS === 59) {
+        if (durationToHours) durationToHours.value = '';
+        if (durationToMinutes) durationToMinutes.value = '';
+        if (durationToSeconds) durationToSeconds.value = '';
+    } else if (toH !== 0 || toM !== 0 || toS !== 0) {
+        hasMeaningfulFilter = true;
+    }
+
+    const dateFrom = document.getElementById('releaseDateFrom');
+    const dateTo = document.getElementById('releaseDateTo');
+    if (dateFrom && dateFrom.value && dateTo && dateTo.value) {
+        const from = new Date(dateFrom.value);
+        const to = new Date(dateTo.value);
+        if (from > to) {
+            return showError('Дата "от" не может быть позже даты "до"', dateFrom);
+        }
+        hasMeaningfulFilter = true;
+    } else if (dateFrom && dateFrom.value) {
+        hasMeaningfulFilter = true;
+    } else if (dateTo && dateTo.value) {
+        hasMeaningfulFilter = true;
+    }
+
+    const genresCheckboxes = document.querySelectorAll('input[name="genres"]:checked');
+    const directorsCheckboxes = document.querySelectorAll('input[name="directors"]:checked');
+    if (genresCheckboxes.length > 0 || directorsCheckboxes.length > 0) {
+        hasMeaningfulFilter = true;
+    }
+
+    const titleInput = document.getElementById('headerSearchInput');
+    if (titleInput && titleInput.value && titleInput.value.trim() !== '') {
+        hasMeaningfulFilter = true;
+    }
+
+    if (!hasMeaningfulFilter) {
+        return showError('Заполните хотя бы один фильтр для поиска', null);
+    }
+
+    return true;
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    setupRatingInput();
+    setupFilterRatingInput('ratingFrom');
+    setupFilterRatingInput('ratingTo');
+    setupFilterPriceInput('priceFrom');
+    setupFilterPriceInput('priceTo');
+
+    setupDurationStrictFilter('durationFromHours', 16);
+    setupDurationStrictFilter('durationToHours', 16);
+    setupDurationStrictFilter('durationFromMinutes', 59);
+    setupDurationStrictFilter('durationToMinutes', 59);
+    setupDurationStrictFilter('durationFromSeconds', 59);
+    setupDurationStrictFilter('durationToSeconds', 59);
+
+    clearAllStatuses();
+    initEmailValidation();
+
+    var flash = sessionStorage.getItem('flashMessage');
+    if (flash) {
+        try {
+            var data = JSON.parse(flash);
+            showFlashMessage(data.message, data.type);
+            sessionStorage.removeItem('flashMessage');
+        } catch (e) {}
+    }
+
+    calculateRangeMinutes();
+
+    var filterForm = document.getElementById('filterForm');
+    if (filterForm) {
+        filterForm.addEventListener('reset', function() {
+            setTimeout(calculateRangeMinutes, 0);
+        });
+    }
+
+    document.querySelectorAll('.js-reviews-count[data-movie-id]').forEach(function(el) {
+        var id = el.getAttribute('data-movie-id');
+        if (id) updateReviewsCount(id);
+    });
+
+    var reviewsContainer = document.querySelector('.reviews-container');
+    if (reviewsContainer) {
+        var movieId = reviewsContainer.getAttribute('data-movie-id');
+        if (movieId) updateReviewsCount(movieId);
+    }
+
+    var searchInput = document.getElementById('headerSearchInput');
+    var suggestionsBox = document.getElementById('headerSuggestions');
+    if (searchInput && suggestionsBox) {
+        var debounceTimer;
+
+        function fetchSuggestions(query) {
+            if (!query) {
+                suggestionsBox.style.display = 'none';
+                suggestionsBox.innerHTML = '';
+                return;
+            }
+            fetch('/search-suggestions?query=' + encodeURIComponent(query))
+                .then(function(resp) { return resp.json(); })
+                .then(function(data) {
+                    if (!data || data.length === 0) {
+                        suggestionsBox.style.display = 'none';
+                        suggestionsBox.innerHTML = '';
+                        return;
+                    }
+                    var html = '';
+                    data.forEach(function(item) {
+                        var title = item.title || '';
+                        var year = item.releaseDate ? new Date(item.releaseDate).getFullYear() : '';
+                        html += '<div class="suggestion-item" data-id="' + (item.id || '') + '">';
+                        html += '<span class="suggestion-title">' + title + '</span>';
+                        if (year) html += '<span class="suggestion-meta">' + year + '</span>';
+                        html += '</div>';
+                    });
+                    suggestionsBox.innerHTML = html;
+                    suggestionsBox.style.display = 'flex';
+                })
+                .catch(function() {
+                    suggestionsBox.style.display = 'none';
+                });
+        }
+
+        searchInput.addEventListener('input', function() {
+            var val = this.value.trim();
+            clearTimeout(debounceTimer);
+            debounceTimer = setTimeout(function() {
+                fetchSuggestions(val);
+            }, 300);
+        });
+
+        searchInput.addEventListener('blur', function() {
+            setTimeout(function() {
+                suggestionsBox.style.display = 'none';
+            }, 200);
+        });
+
+        suggestionsBox.addEventListener('mousedown', function(e) {
+            e.preventDefault();
+            var item = e.target.closest('.suggestion-item');
+            if (!item) return;
+            var movieId = item.getAttribute('data-id');
+            if (movieId && movieId !== 'null' && movieId !== 'undefined') {
+                window.location.href = '/movies/' + movieId;
+            } else {
+                var titleEl = item.querySelector('.suggestion-title');
+                if (titleEl) {
+                    searchInput.value = titleEl.textContent;
+                    searchForm.submit();
+                }
+            }
+        });
+    }
+
+    function loadFilterOptions(url, dropdownId) {
+        var dropdown = document.getElementById(dropdownId);
+        if (!dropdown) return;
+        fetch(url)
+            .then(function(resp) { return resp.json(); })
+            .then(function(items) {
+                if (!items || items.length === 0) {
+                    dropdown.innerHTML = '<div class="accordion-item" style="color:#94a3b8;">Нет данных</div>';
+                    return;
+                }
+                var nameAttr = (dropdownId === 'genresDropdown') ? 'genres' : 'directors';
+                var html = '';
+                items.forEach(function(name) {
+                    html += '<label class="accordion-item">';
+                    html += '<input type="checkbox" class="accordion-checkbox" name="' + nameAttr + '" value="' + name.replace(/"/g, '&quot;') + '">';
+                    html += ' ' + name;
+                    html += '</label>';
+                });
+                dropdown.innerHTML = html;
+                if (typeof initMultiSelects === 'function') {
+                    initMultiSelects();
+                }
+            })
+            .catch(function() {
+                dropdown.innerHTML = '<div class="accordion-item" style="color:#f87171;">Ошибка загрузки</div>';
+            });
+    }
+
+    var filterOverlay = document.getElementById('filtersModalOverlay');
+    if (filterOverlay) {
+        var observer = new MutationObserver(function() {
+            if (filterOverlay.classList.contains('show')) {
+                loadFilterOptions('/genres', 'genresDropdown');
+                loadFilterOptions('/directors', 'directorsDropdown');
+                observer.disconnect();
+            }
+        });
+        observer.observe(filterOverlay, { attributes: true, attributeFilter: ['class'] });
+    }
+
+    document.addEventListener('click', function(e) {
+        var trigger = e.target.closest('.accordion-trigger');
+        if (!trigger) return;
+        var group = trigger.closest('.accordion-group');
+        if (!group) return;
+        group.classList.toggle('active');
+    });
+});
+
+window.addEventListener('pageshow', function(event) {
+    if (event.persisted) {
+        if (!isAuthenticated()) {
+            return;
+        }
+        applyStatusesFromSession();
+        refreshCounts();
+        document.querySelectorAll('.js-reviews-count[data-movie-id]').forEach(function(el) {
+            var id = el.getAttribute('data-movie-id');
+            if (id) updateReviewsCount(id);
+        });
+        document.querySelectorAll('.js-rating-badge[data-movie-id]').forEach(function(el) {
+            var id = el.getAttribute('data-movie-id');
+            if (id) updateMovieRating(id);
+        });
+    }
+});
+
+document.addEventListener('visibilitychange', function() {
+    if (document.visibilityState === 'visible') {
+        if (isAuthenticated()) {
+            refreshCounts();
+        }
+    }
+});
+
+let _stepInterval = null;
+let _stepTimeout = null;
+
+function stepRating(delta) {
+    const input = document.getElementById('ratingValue');
+    if (!input) return;
+    let current = parseFloat(input.value.replace(',', '.'));
+    if (isNaN(current)) current = 0;
+    let newValue = current + delta;
+    newValue = Math.round(newValue * 10) / 10;
+    if (newValue < 0.1) newValue = 0.1;
+    if (newValue > 10.0) newValue = 10.0;
+    input.value = newValue.toFixed(1);
+    const event = new Event('input', { bubbles: true });
+    input.dispatchEvent(event);
+}
+
+function startStepping(delta, button) {
+    stopStepping();
+    if (button) button.classList.add('holding');
+    stepRating(delta);
+    _stepTimeout = setTimeout(function() {
+        _stepInterval = setInterval(function() {
+            stepRating(delta);
+        }, 80);
+    }, 250);
+}
+
+function stopStepping(button) {
+    if (button) button.classList.remove('holding');
+    if (_stepTimeout) {
+        clearTimeout(_stepTimeout);
+        _stepTimeout = null;
+    }
+    if (_stepInterval) {
+        clearInterval(_stepInterval);
+        _stepInterval = null;
+    }
+}
+let _amountStepInterval = null;
+let _amountStepTimeout = null;
+
+function stepAmount(delta) {
+    const input = document.getElementById('amount');
+    if (!input) return;
+    let current = parseFloat(input.value.replace(',', '.'));
+    if (isNaN(current)) current = 0;
+    let newValue = current + delta;
+    newValue = Math.round(newValue * 100) / 100;
+    if (newValue < 0) newValue = 0;
+    if (newValue > 1000000) newValue = 1000000;
+    input.value = newValue.toFixed(2);
+    const event = new Event('input', { bubbles: true });
+    input.dispatchEvent(event);
+    document.querySelectorAll('.quick-amount-btn').forEach(b => b.classList.remove('active'));
+}
+
+function startSteppingAmount(delta, button) {
+    stopSteppingAmount(button);
+    if (button) button.classList.add('holding');
+
+    stepAmount(delta);
+
+    _amountStepTimeout = setTimeout(function() {
+        _amountStepInterval = setInterval(function() {
+            stepAmount(delta);
+        }, 80);
+    }, 250);
+}
+
+function stopSteppingAmount(button) {
+    if (button) button.classList.remove('holding');
+    if (_amountStepTimeout) {
+        clearTimeout(_amountStepTimeout);
+        _amountStepTimeout = null;
+    }
+    if (_amountStepInterval) {
+        clearInterval(_amountStepInterval);
+        _amountStepInterval = null;
+    }
 }

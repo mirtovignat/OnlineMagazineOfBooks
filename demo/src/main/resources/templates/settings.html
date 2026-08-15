@@ -81,8 +81,7 @@
     </div>
 </main>
 
-<script th:src="@{/js/main.js}" defer></script>
-<script>
+<script th:src="@{/js/main.js}" defer></script><script>
     function formatPhone(input) {
         let digits = input.value.replace(/\D/g, '');
         if (digits.startsWith('8') || digits.startsWith('7')) {

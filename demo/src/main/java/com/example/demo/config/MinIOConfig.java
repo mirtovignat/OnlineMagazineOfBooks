@@ -27,21 +27,19 @@ public class MinIOConfig {
 
     @Bean
     public MinioClient minioClient() {
-        MinioClient client = MinioClient.builder()
+        MinioClient minioClient = MinioClient.builder()
                 .endpoint(endpoint)
                 .credentials(accessKey, secretKey)
                 .build();
-
         try {
-            boolean found = client.bucketExists(
+            boolean found = minioClient.bucketExists(
                     io.minio.BucketExistsArgs.builder().bucket(bucketName).build()
             );
             if (!found) {
-                client.makeBucket(
+                minioClient.makeBucket(
                         io.minio.MakeBucketArgs.builder().bucket(bucketName).build()
                 );
             }
-
             String policy = """
                 {
                   "Version": "2012-10-17",
@@ -55,17 +53,15 @@ public class MinIOConfig {
                   ]
                 }
                 """.formatted(bucketName);
-
-            client.setBucketPolicy(
+            minioClient.setBucketPolicy(
                     io.minio.SetBucketPolicyArgs.builder()
                             .bucket(bucketName)
                             .config(policy)
                             .build()
             );
-        } catch (Exception e) {
-            e.printStackTrace();
+        } catch (Exception exception) {
+            exception.printStackTrace();
         }
-
-        return client;
+        return minioClient;
     }
 }

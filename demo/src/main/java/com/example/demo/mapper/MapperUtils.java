@@ -14,20 +14,25 @@ public class MapperUtils {
 
     private final SecurityConfig securityConfig;
 
+    @Named("trimToNull")
+    public String trimToNull(String value) {
+        if (value == null || value.isBlank()) {
+            return null;
+        }
+        return value.trim();
+    }
+
     @Named("toFullName")
     public String toFullName(String surname,
                              String name,
                              String patronymic) {
-        if (surname == null) {
+        if (surname == null || name == null) {
             return null;
         }
-        if (name == null) {
-            return null;
+        if (patronymic != null && !patronymic.trim().isEmpty()) {
+            return surname.trim() + " " + name.trim() + " " + patronymic.trim();
         }
-        if (patronymic == null) {
-            return null;
-        }
-        return surname + " " + name + " " + patronymic;
+        return surname.trim() + " " + name.trim();
     }
 
     @Named("rawToEncoded")
@@ -41,11 +46,6 @@ public class MapperUtils {
     @Named("sizeToLong")
     public Long sizeToLong(Collection<?> collection) {
         return collection == null ? 0L : (long) collection.size();
-    }
-
-    @Named("nullableNumberToLong")
-    public Long nullableNumberToLong(Number number) {
-        return number == null ? 0L : number.longValue();
     }
 
     @Named("yearFromLocalDate")

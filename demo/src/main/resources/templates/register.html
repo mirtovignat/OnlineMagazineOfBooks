@@ -5,7 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title id="pageTitle">Регистрация — Cinema Service</title>
     <link rel="icon" type="image/x-icon" th:href="@{/favicon.ico}">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700&display=swap"
+          rel="stylesheet">
     <link rel="stylesheet" th:href="@{/css/main.css}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <style>
@@ -79,7 +80,7 @@
                     <div th:if="${#fields.hasErrors('name')}" th:errors="*{name}" class="field-error show"></div>
                 </div>
                 <div class="form-group">
-                    <label for="patronymic" data-translate="lblPatronymic">Отчество *</label>
+                    <label for="patronymic" data-translate="lblPatronymic">Отчество</label>
                     <input type="text" th:field="*{patronymic}" id="patronymic" class="form-control"
                            placeholder="Иванович" data-placeholder="placeholderPatronymic"
                            th:classappend="${#fields.hasErrors('patronymic')} ? 'has-error' : ''"/>
@@ -102,8 +103,13 @@
                 </div>
                 <div class="form-group">
                     <label for="phone" data-translate="lblPhone">Телефон *</label>
-                    <input type="tel" th:field="*{phone}" id="phone" class="form-control"
+                    <input type="tel"
+                           th:field="*{phone}"
+                           id="phone"
+                           class="form-control"
                            placeholder="+7 (999) 123-45-67"
+                           inputmode="tel"
+                           autocomplete="tel"
                            th:classappend="${#fields.hasErrors('phone')} ? 'has-error' : ''"/>
                     <div th:if="${#fields.hasErrors('phone')}" th:errors="*{phone}" class="field-error show"></div>
                 </div>
@@ -113,7 +119,8 @@
                         <input type="password" th:field="*{rawPassword}" id="rawPassword" class="form-control"
                                placeholder="••••••••"
                                th:classappend="${#fields.hasErrors('rawPassword')} ? 'has-error' : ''"/>
-                        <button type="button" class="toggle-password" data-target="rawPassword"><i class="fas fa-eye-slash"></i></button>
+                        <button type="button" class="toggle-password" data-target="rawPassword"><i
+                                class="fas fa-eye-slash"></i></button>
                     </div>
                     <div th:if="${#fields.hasErrors('rawPassword')}" th:errors="*{rawPassword}"
                          class="field-error show"></div>
@@ -124,7 +131,8 @@
                         <input type="password" th:field="*{repeatRawPassword}" id="repeatRawPassword"
                                class="form-control" placeholder="••••••••"
                                th:classappend="${#fields.hasErrors('repeatRawPassword')} ? 'has-error' : ''"/>
-                        <button type="button" class="toggle-password" data-target="repeatRawPassword"><i class="fas fa-eye-slash"></i></button>
+                        <button type="button" class="toggle-password" data-target="repeatRawPassword"><i
+                                class="fas fa-eye-slash"></i></button>
                     </div>
                     <div th:if="${#fields.hasErrors('repeatRawPassword')}" th:errors="*{repeatRawPassword}"
                          class="field-error show"></div>
@@ -133,7 +141,9 @@
                 <input type="hidden" th:field="*{currencyCode}" id="currencyCode" value="RUB"/>
 
                 <div class="footer-actions">
-                    <button type="submit" class="btn-submit" id="btnSubmit" data-translate="btnSubmit">Зарегистрироваться →</button>
+                    <button type="submit" class="btn-submit" id="btnSubmit" data-translate="btnSubmit">
+                        Зарегистрироваться →
+                    </button>
                     <div class="login-link">
                         <span data-translate="hasAccount">Уже есть аккаунт?</span>
                         <a th:href="@{/login}" data-translate="loginLink">Войти</a>
@@ -145,56 +155,43 @@
 </div>
 
 <th:block th:replace="~{fragments/footer :: footer}"></th:block>
-<script th:src="@{/js/main.js}" defer></script>
-<script>
+<script th:src="@{/js/main.js}" defer></script><script>
     const translations = {
         ru: {
             title: "Регистрация", pageTitle: "Регистрация — Cinema Service",
             lblSurname: "Фамилия *", placeholderSurname: "Иванов",
             lblName: "Имя *", placeholderName: "Иван",
-            lblPatronymic: "Отчество *", placeholderPatronymic: "Иванович",
+            lblPatronymic: "Отчество", placeholderPatronymic: "Иванович",
             lblUsername: "Имя пользователя (логин) *",
             lblEmail: "Электронная почта *",
             lblPhone: "Телефон *",
             lblPassword: "Пароль (мин. 8 симв.) *",
             lblRepeatPassword: "Повторите пароль *",
             btnSubmit: "Зарегистрироваться →",
-            hasAccount: "Уже есть аккаунт? ",
-            loginLink: "Войти",
-            errLogin: "Введите логин",
-            errEmail: "Введите email",
+            hasAccount: "Уже есть аккаунт? ", loginLink: "Войти",
+            errLogin: "Введите логин", errEmail: "Введите email",
             errPhone: "Номер должен содержать 10 цифр после +7",
-            errSurname: "Введите фамилию",
-            errName: "Введите имя",
-            errPatronymic: "Введите отчество",
-            errPassEmpty: "Введите пароль",
-            errPassMin: "Минимум 8 символов",
-            errRepeatEmpty: "Повторите пароль",
-            errMatch: "Пароли не совпадают"
+            errSurname: "Введите фамилию", errName: "Введите имя", errPatronymic: "Введите отчество",
+            errPassEmpty: "Введите пароль", errPassMin: "Минимум 8 символов",
+            errRepeatEmpty: "Повторите пароль", errMatch: "Пароли не совпадают"
         },
         en: {
             title: "Registration", pageTitle: "Registration — Cinema Service",
             lblSurname: "Last Name *", placeholderSurname: "Smith",
             lblName: "First Name *", placeholderName: "John",
-            lblPatronymic: "Middle Name *", placeholderPatronymic: "Edward",
+            lblPatronymic: "Middle Name", placeholderPatronymic: "Edward",
             lblUsername: "Username *",
             lblEmail: "Email Address *",
             lblPhone: "Phone Number *",
-            lblPassword: "Password (min. 8 chars) *",
+            lblPassword: "Password (min. 8 chars)",
             lblRepeatPassword: "Confirm Password *",
             btnSubmit: "Sign Up →",
-            hasAccount: "Already have an account? ",
-            loginLink: "Log In",
-            errLogin: "Enter username",
-            errEmail: "Enter email",
+            hasAccount: "Already have an account? ", loginLink: "Log In",
+            errLogin: "Enter username", errEmail: "Enter email",
             errPhone: "Phone must contain 10 digits after +7",
-            errSurname: "Enter last name",
-            errName: "Enter first name",
-            errPatronymic: "Enter middle name",
-            errPassEmpty: "Enter password",
-            errPassMin: "Minimum 8 characters",
-            errRepeatEmpty: "Confirm your password",
-            errMatch: "Passwords do not match"
+            errSurname: "Enter last name", errName: "Enter first name", errPatronymic: "Enter middle name",
+            errPassEmpty: "Enter password", errPassMin: "Minimum 8 characters",
+            errRepeatEmpty: "Confirm your password", errMatch: "Passwords do not match"
         }
     };
 
@@ -203,18 +200,20 @@
     function applyLanguage(lang) {
         currentLang = lang;
         localStorage.setItem('cinema_lang', lang);
-        document.getElementById('lang-ru').classList.toggle('active', lang === 'ru');
-        document.getElementById('lang-en').classList.toggle('active', lang === 'en');
-        document.getElementById('pageTitle').textContent = translations[lang].pageTitle;
+        const langRu = document.getElementById('lang-ru');
+        const langEn = document.getElementById('lang-en');
+        const pageTitle = document.getElementById('pageTitle');
+        if (langRu) langRu.classList.toggle('active', lang === 'ru');
+        if (langEn) langEn.classList.toggle('active', lang === 'en');
+        if (pageTitle) pageTitle.textContent = translations[lang].pageTitle;
         document.querySelectorAll('[data-translate]').forEach(el => {
             const key = el.getAttribute('data-translate');
-            if (translations[lang][key]) {
-                if (el.tagName === 'BUTTON' || el.tagName === 'A' || el.tagName === 'SPAN' || el.tagName === 'H1' || el.tagName === 'LABEL') {
-                    if(key === 'btnSubmit' || key === 'title') {
-                        el.textContent = translations[lang][key];
-                    } else {
-                        el.innerHTML = translations[lang][key];
-                    }
+            if (!translations[lang][key]) return;
+            if (el.tagName === 'BUTTON' || el.tagName === 'A' || el.tagName === 'SPAN' || el.tagName === 'H1' || el.tagName === 'LABEL') {
+                if (key === 'btnSubmit' || key === 'title') {
+                    el.textContent = translations[lang][key];
+                } else {
+                    el.innerHTML = translations[lang][key];
                 }
             }
         });
@@ -228,33 +227,32 @@
 
     function changeLang(lang) { applyLanguage(lang); }
 
-    document.querySelectorAll('.toggle-password').forEach(btn => {
-        btn.addEventListener('click', function(e) {
-            e.preventDefault();
-            const targetId = this.getAttribute('data-target');
-            if (targetId) {
+    function initPasswordToggles() {
+        document.querySelectorAll('.toggle-password').forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                e.preventDefault();
+                const targetId = this.getAttribute('data-target');
+                if (!targetId) return;
                 const input = document.getElementById(targetId);
-                if (input) {
-                    const icon = this.querySelector('i');
-                    if (input.type === 'password') {
-                        input.type = 'text';
-                        icon.classList.remove('fa-eye-slash');
-                        icon.classList.add('fa-eye');
-                    } else {
-                        input.type = 'password';
-                        icon.classList.remove('fa-eye');
-                        icon.classList.add('fa-eye-slash');
-                    }
+                if (!input) return;
+                const icon = this.querySelector('i');
+                if (input.type === 'password') {
+                    input.type = 'text';
+                    if (icon) { icon.classList.remove('fa-eye-slash'); icon.classList.add('fa-eye'); }
+                } else {
+                    input.type = 'password';
+                    if (icon) { icon.classList.remove('fa-eye'); icon.classList.add('fa-eye-slash'); }
                 }
-            }
+            });
         });
-    });
+    }
 
     function formatPhone(input) {
         let digits = input.value.replace(/\D/g, '');
+        if (!digits) { input.value = ''; return; }
         if (digits.startsWith('8') || digits.startsWith('7')) {
             digits = '7' + digits.substring(1);
-        } else if (digits.length > 0) {
+        } else {
             digits = '7' + digits;
         }
         digits = digits.substring(0, 11);
@@ -291,102 +289,102 @@
     function validateProfileForm() {
         let isValid = true;
         const lang = currentLang;
-
-        // Убираем старые ошибки
         document.querySelectorAll('.field-error.show').forEach(el => el.classList.remove('show'));
         document.querySelectorAll('.has-error').forEach(el => el.classList.remove('has-error'));
 
-        const username = document.getElementById('username').value.trim();
-        if (!username) {
-            showError('usernameError', translations[lang].errLogin);
-            markError('username');
-            isValid = false;
+        const usernameElement = document.getElementById('username');
+        if (usernameElement) {
+            const username = usernameElement.value.trim();
+            if (!username) { showError('usernameError', translations[lang].errLogin); markError('username'); isValid = false; }
         }
 
-        const email = document.getElementById('email').value.trim();
-        if (!email) {
-            showError('emailError', translations[lang].errEmail);
-            markError('email');
-            isValid = false;
+        const emailElement = document.getElementById('email');
+        if (emailElement) {
+            const email = emailElement.value.trim();
+            if (!email) { showError('emailError', translations[lang].errEmail); markError('email'); isValid = false; }
         }
 
-        const phone = document.getElementById('phone').value;
-        const phoneDigits = phone.replace(/\D/g, '');
-        if (phoneDigits.length > 0 && phoneDigits.length !== 11) {
-            showError('phoneError', translations[lang].errPhone);
-            markError('phone');
-            isValid = false;
+        const phoneElement = document.getElementById('phone');
+        if (phoneElement) {
+            const phone = phoneElement.value;
+            const phoneDigits = phone.replace(/\D/g, '');
+            if (phoneDigits.length > 0 && phoneDigits.length !== 11) {
+                showError('phoneError', translations[lang].errPhone); markError('phone'); isValid = false;
+            }
         }
 
-        const surname = document.getElementById('surname').value.trim();
-        if (!surname) {
-            showError('surnameError', translations[lang].errSurname);
-            markError('surname');
-            isValid = false;
+        const surnameElement = document.getElementById('surname');
+        if (surnameElement) {
+            const surname = surnameElement.value.trim();
+            if (!surname) { showError('surnameError', translations[lang].errSurname); markError('surname'); isValid = false; }
         }
 
-        const name = document.getElementById('name').value.trim();
-        if (!name) {
-            showError('nameError', translations[lang].errName);
-            markError('name');
-            isValid = false;
+        const nameElement = document.getElementById('name');
+        if (nameElement) {
+            const name = nameElement.value.trim();
+            if (!name) { showError('nameError', translations[lang].errName); markError('name'); isValid = false; }
         }
 
-        const patronymic = document.getElementById('patronymic').value.trim();
-        if (!patronymic) {
-            showError('patronymicError', translations[lang].errPatronymic);
-            markError('patronymic');
-            isValid = false;
+        const passwordElement = document.getElementById('rawPassword');
+        if (passwordElement) {
+            const password = passwordElement.value;
+            if (!password) { showError('rawPasswordError', translations[lang].errPassEmpty); markError('rawPassword'); isValid = false; }
+            else if (password.length < 8) { showError('rawPasswordError', translations[lang].errPassMin); markError('rawPassword'); isValid = false; }
         }
 
-        const password = document.getElementById('rawPassword').value;
-        if (!password) {
-            showError('rawPasswordError', translations[lang].errPassEmpty);
-            markError('rawPassword');
-            isValid = false;
-        } else if (password.length < 8) {
-            showError('rawPasswordError', translations[lang].errPassMin);
-            markError('rawPassword');
-            isValid = false;
-        }
-
-        const repeatPass = document.getElementById('repeatRawPassword').value;
-        if (!repeatPass) {
-            showError('repeatPasswordError', translations[lang].errRepeatEmpty);
-            markError('repeatRawPassword');
-            isValid = false;
-        } else if (repeatPass.length < 8) {
-            showError('repeatPasswordError', translations[lang].errPassMin);
-            markError('repeatRawPassword');
-            isValid = false;
-        } else if (password !== repeatPass) {
-            showError('repeatPasswordError', translations[lang].errMatch);
-            markError('repeatRawPassword');
-            isValid = false;
+        const repeatPasswordElement = document.getElementById('repeatRawPassword');
+        if (repeatPasswordElement) {
+            const repeatPass = repeatPasswordElement.value;
+            const passwordElement = document.getElementById('rawPassword');
+            const password = passwordElement ? passwordElement.value : '';
+            if (!repeatPass) { showError('repeatPasswordError', translations[lang].errRepeatEmpty); markError('repeatRawPassword'); isValid = false; }
+            else if (repeatPass.length < 8) { showError('repeatPasswordError', translations[lang].errPassMin); markError('repeatRawPassword'); isValid = false; }
+            else if (password !== repeatPass) { showError('repeatPasswordError', translations[lang].errMatch); markError('repeatRawPassword'); isValid = false; }
         }
 
         return isValid;
     }
 
-    document.addEventListener('DOMContentLoaded', function() {
-        applyLanguage(currentLang);
-
+    function initPhoneField() {
         const phoneFields = ['phone'];
         phoneFields.forEach(id => {
             const field = document.getElementById(id);
-            if (field) {
-                field.addEventListener('input', function() { formatPhone(this); });
-                if (field.value) formatPhone(field);
-            }
+            if (!field) return;
+            field.addEventListener('beforeinput', function(e) {
+                if (e.inputType && (e.inputType.startsWith('delete') || e.inputType.startsWith('history'))) return;
+                if (e.data && !/^[0-9+\-() ]+$/.test(e.data)) e.preventDefault();
+            });
+            field.addEventListener('input', function() {
+                this.value = this.value.replace(/[^0-9+\-() ]/g, '');
+                formatPhone(this);
+            });
+            field.addEventListener('paste', function(e) {
+                e.preventDefault();
+                const clipboard = e.clipboardData || window.clipboardData;
+                if (!clipboard) return;
+                const pastedText = clipboard.getData('text');
+                const allowedText = pastedText.replace(/[^0-9+\-() ]/g, '');
+                const start = this.selectionStart ?? this.value.length;
+                const end = this.selectionEnd ?? this.value.length;
+                this.value = this.value.substring(0, start) + allowedText + this.value.substring(end);
+                formatPhone(this);
+                this.setSelectionRange(this.value.length, this.value.length);
+                this.dispatchEvent(new Event('input', { bubbles: true }));
+            });
+            if (field.value) formatPhone(field);
         });
+    }
 
+    document.addEventListener('DOMContentLoaded', function() {
+        applyLanguage(currentLang);
+        initPasswordToggles();
+        initPhoneField();
         const profileForm = document.getElementById('registerForm');
         if (profileForm) {
             profileForm.addEventListener('submit', function(e) {
                 if (!validateProfileForm()) e.preventDefault();
             });
         }
-
         setTimeout(() => {
             document.querySelectorAll('.flash-message').forEach(msg => {
                 msg.style.animation = 'fadeOut 0.3s ease forwards';

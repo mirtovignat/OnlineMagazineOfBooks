@@ -23,6 +23,6 @@ public enum SuccessCode {
     }
 
     public String format(Object... args) {
-        return String.format(message, args);
+        return String.format(getMessage(), args);
     }
 }

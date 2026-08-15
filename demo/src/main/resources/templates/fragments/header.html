@@ -4,17 +4,35 @@
     <title>Шапка Cinema Service</title>
 </head>
 <body>
-<header th:fragment="header">
+<header th:fragment="header" class="site-header">
     <style>
+        .site-header {
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            background: rgba(15, 23, 42, 0.85);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.6rem 1.5rem;
+            width: 100%;
+            box-sizing: border-box;
+            transition: background-color 0.3s ease;
+        }
+
         .filters-toggle-btn {
             display: inline-flex;
             align-items: center;
             gap: 0.5rem;
             padding: 0.6rem 1.2rem;
             border-radius: 2rem;
-            background: var(--glass-bg);
-            border: 1px solid var(--glass-border);
-            color: var(--text-light);
+            background: var(--glass-bg, rgba(255, 255, 255, 0.05));
+            border: 1px solid var(--glass-border, rgba(255, 255, 255, 0.1));
+            color: var(--text-light, #f1f5f9);
             cursor: pointer;
             font-size: 0.95rem;
             font-weight: 600;
@@ -22,10 +40,66 @@
             backdrop-filter: blur(4px);
         }
         .filters-toggle-btn:hover {
-            border-color: var(--glow-accent);
+            border-color: var(--glow-accent, #a855f7);
             color: #c084fc;
             box-shadow: 0 0 12px rgba(168, 85, 247, 0.3);
             transform: translateY(-2px);
+        }
+        .search-container {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+        .search-form {
+            display: flex;
+            gap: 0.5rem;
+        }
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        .header-suggestions {
+            position: absolute;
+            top: calc(100% + 8px);
+            left: 0;
+            min-width: 320px;
+            max-width: 450px;
+            background: #131730;
+            border: 1px solid rgba(168, 85, 247, 0.4);
+            border-radius: 14px;
+            padding: 0.6rem;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.8), 0 0 15px rgba(99, 102, 241, 0.2);
+            z-index: 999999 !important;
+            display: none;
+            flex-direction: column;
+            gap: 0.4rem;
+        }
+        .suggestion-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.6rem 0.9rem;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 10px;
+            cursor: pointer;
+            color: #f1f5f9;
+            font-size: 0.9rem;
+            transition: all 0.2s ease;
+        }
+        .suggestion-item:hover {
+            background: rgba(99, 102, 241, 0.25);
+            border-color: rgba(168, 85, 247, 0.5);
+            transform: translateX(3px);
+        }
+        .suggestion-title {
+            font-weight: 600;
+            color: #ffffff;
+        }
+        .suggestion-meta {
+            font-size: 0.78rem;
+            color: #94a3b8;
         }
         .filters-modal-overlay {
             position: fixed;
@@ -158,24 +232,49 @@
         }
         .accordion-dropdown {
             display: none;
-            position: absolute;
-            top: 100%;
+            position: relative;
+            margin-top: 6px;
             left: 0;
             right: 0;
             z-index: 10001;
             max-height: 220px;
             overflow-y: auto;
             background: #131730;
-            border: 1px solid var(--glass-border);
+            border: 1px solid var(--glass-border, rgba(255, 255, 255, 0.1));
             border-radius: 12px;
             padding: 0.5rem;
             box-shadow: 0 10px 25px rgba(0,0,0,0.5);
         }
+
+        .accordion-dropdown::-webkit-scrollbar,
+        #filterForm::-webkit-scrollbar {
+            width: 6px;
+        }
+        .accordion-dropdown::-webkit-scrollbar-track,
+        #filterForm::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+        }
+        .accordion-dropdown::-webkit-scrollbar-thumb,
+        #filterForm::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.35);
+            border-radius: 10px;
+        }
+        .accordion-dropdown::-webkit-scrollbar-thumb:hover,
+        #filterForm::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.6);
+        }
+        .accordion-dropdown,
+        #filterForm {
+            scrollbar-width: thin;
+            scrollbar-color: rgba(255, 255, 255, 0.35) rgba(255, 255, 255, 0.05);
+        }
+
         .accordion-group.active .accordion-dropdown {
             display: block;
         }
         .accordion-checkbox {
-            accent-color: var(--glow-accent);
+            accent-color: var(--glow-accent, #a855f7);
             margin-right: 0.5rem;
         }
         .accordion-item {
@@ -277,9 +376,15 @@
             text-align: right;
             font-size: 0.82rem;
         }
-        .field-hours .filter-input { padding-right: 1.3rem !important; }
-        .field-mins .filter-input  { padding-right: 2.1rem !important; }
-        .field-secs .filter-input  { padding-right: 2.1rem !important; }
+        .field-hours .filter-input {
+            padding-right: 1.3rem !important;
+        }
+        .field-mins .filter-input {
+            padding-right: 2.1rem !important;
+        }
+        .field-secs .filter-input {
+            padding-right: 2.1rem !important;
+        }
         .duration-field .unit {
             position: absolute;
             right: 0.3rem;
@@ -290,6 +395,45 @@
             pointer-events: none;
             user-select: none;
         }
+        .rating-error {
+            display: none;
+            color: #f87171;
+            font-size: 0.85rem;
+            margin-top: 6px;
+        }
+
+                /* Стилизация календарей (input type="date") в темной теме */
+        input[type="date"] {
+            color-scheme: dark; /* Включает темную тему для встроенного календаря браузера */
+            background: rgba(10, 13, 28, 0.6); /* Такой же фон, как у других полей */
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            color: #f1f5f9;
+            height: 42px; /* Выравниваем высоту с остальными инпутами */
+            padding: 0 0.85rem;
+            box-sizing: border-box;
+            width: 100%;
+            font-family: inherit;
+            font-size: 0.9rem;
+            outline: none;
+            transition: all 0.2s ease;
+        }
+
+        input[type="date"]::-webkit-calendar-picker-indicator {
+            filter: invert(1);
+            opacity: 0.6;
+            cursor: pointer;
+            transition: opacity 0.2s ease;
+        }
+        input[type="date"]::-webkit-calendar-picker-indicator:hover {
+            opacity: 1;
+        }
+
+        input[type="date"]:focus {
+            border-color: #6366f1;
+            background: rgba(10, 13, 28, 0.9);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+        }
     </style>
 
     <div class="logo-link" style="display: flex; align-items: center; gap: 8px;">
@@ -299,18 +443,16 @@
         <a href="/" style="text-decoration: none; color: inherit; font-weight: 700; font-size: 1.2rem;">Cinema
             Service</a>
     </div>
+
     <div class="header-actions">
         <button type="button" class="filters-toggle-btn" onclick="toggleFiltersModal(true)">
             🎛️ Фильтры
         </button>
 
         <div class="search-container">
-            <form id="headerSearchForm" action="/" method="get" class="search-form">
+            <form id="headerSearchForm" action="/search" method="get" class="search-form">
                 <label for="headerSearchInput" style="display:none;">Поиск по названию</label>
-                <input type="text"
-                       id="headerSearchInput"
-                       name="title"
-                       autocomplete="off"
+                <input type="text" id="headerSearchInput" name="title" autocomplete="off"
                        placeholder="Поиск фильмов...">
                 <button type="submit" class="search-btn">Найти</button>
             </form>
@@ -333,7 +475,7 @@
             <div class="user-menu-toggle" onclick="toggleUserMenu()">
                 <div class="user-avatar-letter"
                      th:text="${#strings.substring(session.userForOwnerViewDTO.username, 0, 1).toUpperCase()}"
-                     style="display:inline-flex; align-items:center; justify-content:center; width:32px; height:32px; border-radius:50%; background:linear-gradient(135deg, #4f46e5, #7c3aed); color:white; font-weight:700; font-size:1.2rem; text-transform:uppercase; flex-shrink:0; border:2px solid var(--glow-primary);">
+                     style="display:inline-flex; align-items:center; justify-content:center; width:32px; height:32px; border-radius:50%; background:linear-gradient(135deg, #4f46e5, #7c3aed); color:white; font-weight:700; font-size:1.2rem; text-transform:uppercase; flex-shrink:0; border:2px solid var(--glow-primary, #6366f1);">
                 </div>
                 <span class="toggle-icon">▼</span>
             </div>
@@ -357,32 +499,44 @@
                 <button type="button" class="filters-modal-close" onclick="toggleFiltersModal(false)">&times;</button>
             </div>
 
-            <form action="/search-by-filters" method="get" id="filterForm">
+            <form action="/search" method="get" id="filterForm" onsubmit="return validateFilter()">
                 <div class="filter-group">
                     <label for="priceFrom">Цена (₽)</label>
                     <div class="filter-row">
-                        <input type="number" id="priceFrom" name="priceFrom" class="filter-input" placeholder="От">
-                        <label for="priceTo"></label><input type="number" id="priceTo" name="priceTo"
-                                                            class="filter-input" placeholder="До">
+                        <input type="text" inputmode="decimal" id="priceFrom" name="priceFrom" class="filter-input"
+                               placeholder="От">
+                        <label for="priceTo"></label>
+                        <input type="text" inputmode="decimal" id="priceTo" name="priceTo" class="filter-input"
+                               placeholder="До">
                     </div>
                 </div>
 
                 <div class="filter-group">
                     <label for="ratingFrom">Рейтинг CinemaService</label>
                     <div class="filter-row">
-                        <input type="number" id="ratingFrom" name="ratingFrom" step="0.1" min="0" max="10"
-                               class="filter-input" placeholder="От 0.0">
-                        <label for="ratingTo"></label><input type="number" id="ratingTo" name="ratingTo" step="0.1"
-                                                             min="0" max="10"
-                                                             class="filter-input" placeholder="До 10.0">
+                        <input type="text"
+                               inputmode="decimal"
+                               id="ratingFrom"
+                               name="ratingFrom"
+                               class="filter-input"
+                               placeholder="От 0.0">
+
+                        <label for="ratingTo"></label>
+
+                        <input type="text"
+                               inputmode="decimal"
+                               id="ratingTo"
+                               name="ratingTo"
+                               class="filter-input"
+                               placeholder="До 10.0">
                     </div>
+                    <div id="ratingFilterError" class="rating-error"></div>
                 </div>
 
                 <div class="filter-group accordion-group">
                     <label class="accordion-trigger" data-target="directorsDropdown">
                         Режиссер ▾
                     </label>
-                    <input type="hidden" name="directors" id="directorsHiddenInput">
                     <div class="accordion-dropdown" id="directorsDropdown"></div>
                 </div>
 
@@ -390,7 +544,6 @@
                     <label class="accordion-trigger" data-target="genresDropdown">
                         Жанр кино ▾
                     </label>
-                    <input type="hidden" name="genres" id="genresHiddenInput">
                     <div class="accordion-dropdown" id="genresDropdown"></div>
                 </div>
 
@@ -412,19 +565,25 @@
                                 <div class="duration-field field-hours">
                                     <label for="durationFromHours"></label><input type="text" id="durationFromHours"
                                                                                   class="filter-input positive-int"
-                                                                                  placeholder="0" maxlength="3">
+                                                                                  placeholder="0" data-max="16"
+                                                                                  maxlength="2" inputmode="numeric"
+                                                                                  autocomplete="off">
                                     <span class="unit">ч.</span>
                                 </div>
                                 <div class="duration-field field-mins">
                                     <label for="durationFromMinutes"></label><input type="text" id="durationFromMinutes"
                                                                                     class="filter-input positive-int"
-                                                                                    placeholder="0" maxlength="2">
+                                                                                    placeholder="0" data-max="59"
+                                                                                    maxlength="2" inputmode="numeric"
+                                                                                    autocomplete="off">
                                     <span class="unit">мин.</span>
                                 </div>
                                 <div class="duration-field field-secs">
                                     <label for="durationFromSeconds"></label><input type="text" id="durationFromSeconds"
                                                                                     class="filter-input positive-int"
-                                                                                    placeholder="0" maxlength="2">
+                                                                                    placeholder="0" data-max="59"
+                                                                                    maxlength="2" inputmode="numeric"
+                                                                                    autocomplete="off">
                                     <span class="unit">сек.</span>
                                 </div>
                             </div>
@@ -438,19 +597,25 @@
                                 <div class="duration-field field-hours">
                                     <label for="durationToHours"></label><input type="text" id="durationToHours"
                                                                                 class="filter-input positive-int"
-                                                                                placeholder="0" maxlength="3">
+                                                                                placeholder="0" data-max="16"
+                                                                                maxlength="2" inputmode="numeric"
+                                                                                autocomplete="off">
                                     <span class="unit">ч.</span>
                                 </div>
                                 <div class="duration-field field-mins">
                                     <label for="durationToMinutes"></label><input type="text" id="durationToMinutes"
                                                                                   class="filter-input positive-int"
-                                                                                  placeholder="0" maxlength="2">
+                                                                                  placeholder="0" data-max="59"
+                                                                                  maxlength="2" inputmode="numeric"
+                                                                                  autocomplete="off">
                                     <span class="unit">мин.</span>
                                 </div>
                                 <div class="duration-field field-secs">
                                     <label for="durationToSeconds"></label><input type="text" id="durationToSeconds"
                                                                                   class="filter-input positive-int"
-                                                                                  placeholder="0" maxlength="2">
+                                                                                  placeholder="0" data-max="59"
+                                                                                  maxlength="2" inputmode="numeric"
+                                                                                  autocomplete="off">
                                     <span class="unit">сек.</span>
                                 </div>
                             </div>
@@ -514,7 +679,6 @@
     document.addEventListener('DOMContentLoaded', function() {
         var favLink = document.getElementById('favourites-link');
         var cartLink = document.getElementById('cart-link');
-
         function handleProtectedClick(e) {
             var userMenu = document.querySelector('.user-menu');
             if (!userMenu) {
@@ -528,7 +692,6 @@
             }
             return true;
         }
-
         if (favLink) {
             favLink.addEventListener('click', handleProtectedClick);
         }
@@ -538,64 +701,288 @@
     });
 
     (function() {
-        var positiveInputs = document.querySelectorAll('.positive-int');
-        positiveInputs.forEach(function(input) {
-            input.addEventListener('keydown', function(e) {
-                var allowedKeys = ['Backspace', 'Tab', 'ArrowLeft', 'ArrowRight', 'Delete'];
+        function setupFilterPriceInput(inputId) {
+            var input = document.getElementById(inputId);
+            if (!input) return;
+
+            input.addEventListener('input', function () {
+                var value = this.value;
+                if (value === '') return;
+                value = value.replace(',', '.');
+                var parts = value.split('.');
+                var intPart = parts[0].replace(/[^0-9]/g, '');
+                var decPart = parts.length > 1 ? parts[1].replace(/[^0-9]/g, '') : '';
+                if (intPart.length > 1 && intPart.startsWith('0')) {
+                    intPart = intPart.replace(/^0+/, '');
+                    if (intPart === '') intPart = '0';
+                }
+                if (decPart.length > 2) decPart = decPart.slice(0, 2);
+                var newValue = intPart;
+                if (decPart.length > 0 || (value.includes('.') && intPart !== '')) {
+                    newValue = intPart + '.' + decPart;
+                }
+                if (value === '.' || value === ',') newValue = '0.';
+                if (this.value !== newValue) this.value = newValue;
+            });
+
+            input.addEventListener('keydown', function (e) {
+                var allowedKeys = ['Backspace', 'Tab', 'ArrowLeft', 'ArrowRight', 'Delete', 'Enter', 'Escape', '.', ','];
                 if (allowedKeys.includes(e.key)) return;
-                if (!/^[0-9]$/.test(e.key)) {
-                    e.preventDefault();
+                if (e.key >= '0' && e.key <= '9') return;
+                e.preventDefault();
+            });
+
+            input.addEventListener('paste', function (e) {
+                e.preventDefault();
+                var pasted = (e.clipboardData || window.clipboardData).getData('text');
+                var cleaned = pasted.replace(/[^0-9.,]/g, '').replace(',', '.');
+                var parts = cleaned.split('.');
+                var intPart = parts[0].replace(/[^0-9]/g, '');
+                var decPart = parts.length > 1 ? parts[1].replace(/[^0-9]/g, '').slice(0, 2) : '';
+                if (intPart !== '' || decPart !== '') {
+                    this.value = decPart.length > 0 ? intPart + '.' + decPart : intPart;
+                } else if (cleaned === '.') {
+                    this.value = '0.';
+                } else {
+                    this.value = '';
+                }
+                this.dispatchEvent(new Event('input', { bubbles: true }));
+            });
+
+            input.addEventListener('blur', function () {
+                if (this.value === '.' || this.value === '0.') {
+                    this.value = '0';
                 }
             });
-            input.addEventListener('input', function(e) {
-                e.target.value = e.target.value.replace(/\D/g, '');
+        }
+
+        setupFilterPriceInput('priceFrom');
+        setupFilterPriceInput('priceTo');
+
+        function setupFilterRatingInput(inputId) {
+            var input = document.getElementById(inputId);
+            if (!input) return;
+
+            input.addEventListener('input', function () {
+                var value = this.value;
+                if (value === '') return;
+                value = value.replace(',', '.');
+                var parts = value.split('.');
+                var intPart = parts[0].replace(/[^0-9]/g, '');
+                var decPart = parts.length > 1 ? parts[1].replace(/[^0-9]/g, '') : '';
+                if (intPart === '' && decPart !== '') intPart = '0';
+                if (intPart.length > 1 && intPart.startsWith('0')) {
+                    intPart = intPart.replace(/^0+/, '');
+                    if (intPart === '') intPart = '0';
+                }
+                if (intPart.length > 2) intPart = intPart.slice(0, 2);
+                var intNum = parseInt(intPart, 10);
+                if (intNum > 10) intPart = '10';
+                if (decPart.length > 1) decPart = decPart.slice(0, 1);
+                var newValue = intPart;
+                if (decPart.length > 0 || (value.includes('.') && intPart !== '')) {
+                    newValue = intPart + '.' + decPart;
+                }
+                var num = parseFloat(newValue);
+                if (!isNaN(num)) {
+                    if (num > 10) newValue = '10.0';
+                    if (num < 0) newValue = '0';
+                }
+                if (value === '.' || value === ',') newValue = '0.';
+                if (value === '0.') newValue = '0.';
+                if (this.value !== newValue) this.value = newValue;
+            });
+
+            input.addEventListener('keydown', function (e) {
+                var allowedKeys = ['Backspace', 'Tab', 'ArrowLeft', 'ArrowRight', 'Delete', 'Enter', 'Escape', '.', ','];
+                if (allowedKeys.includes(e.key)) return;
+                if (e.key >= '0' && e.key <= '9') return;
+                e.preventDefault();
+            });
+
+            input.addEventListener('paste', function (e) {
+                e.preventDefault();
+                var pasted = (e.clipboardData || window.clipboardData).getData('text');
+                var cleaned = pasted.replace(/[^0-9.,]/g, '').replace(',', '.');
+                var num = parseFloat(cleaned);
+                if (!isNaN(num)) {
+                    var val = Math.min(Math.max(num, 0), 10);
+                    this.value = Number.isInteger(val) ? val.toString() : val.toFixed(1);
+                } else if (cleaned === '.') {
+                    this.value = '0.';
+                } else {
+                    this.value = '';
+                }
+                this.dispatchEvent(new Event('input', { bubbles: true }));
+            });
+        }
+
+        setupFilterRatingInput('ratingFrom');
+        setupFilterRatingInput('ratingTo');
+
+        var filterForm = document.getElementById('filterForm');
+
+        if (filterForm) {
+            filterForm.addEventListener('submit', function(e) {
+                var error = document.getElementById('ratingFilterError');
+                if (error) {
+                    error.style.display = 'none';
+                    error.innerText = '';
+                }
+
+                var inputs = [
+                    document.getElementById('ratingFrom'),
+                    document.getElementById('ratingTo')
+                ];
+                var ratingRegex = /^(10(\.0)?|[0-9](\.[0-9])?)$/;
+
+                for (var i = 0; i < inputs.length; i++) {
+                    var input = inputs[i];
+                    if (!input) continue;
+                    if (input.value.trim() === '') continue;
+
+                    var rating = input.value.replace(',', '.');
+                    if (!ratingRegex.test(rating)) {
+                        e.preventDefault();
+                        if (error) {
+                            error.innerText = 'Введите число от 0.0 до 10.0 (одна цифра после точки)';
+                            error.style.display = 'block';
+                        }
+                        input.focus();
+                        return;
+                    }
+                    var ratingValue = parseFloat(rating);
+                    if (ratingValue < 0 || ratingValue > 10) {
+                        e.preventDefault();
+                        if (error) {
+                            error.innerText = 'Оценка должна быть от 0.0 до 10.0';
+                            error.style.display = 'block';
+                        }
+                        input.focus();
+                        return;
+                    }
+                    input.value = rating;
+                }
+
+                function buildIsoDuration(hId, mId, sId) {
+                    var h = parseInt(document.getElementById(hId)?.value || '0', 10);
+                    var m = parseInt(document.getElementById(mId)?.value || '0', 10);
+                    var s = parseInt(document.getElementById(sId)?.value || '0', 10);
+                    if (!h && !m && !s) return '';
+                    var iso = 'PT';
+                    if (h > 0) iso += h + 'H';
+                    if (m > 0) iso += m + 'M';
+                    if (s > 0) iso += s + 'S';
+                    return iso;
+                }
+
+                var minDur = buildIsoDuration('durationFromHours', 'durationFromMinutes', 'durationFromSeconds');
+                var maxDur = buildIsoDuration('durationToHours', 'durationToMinutes', 'durationToSeconds');
+
+                var minInput = document.getElementById('minDuration');
+                var maxInput = document.getElementById('maxDuration');
+                if (minInput) minInput.value = minDur;
+                if (maxInput) maxInput.value = maxDur;
+            });
+        }
+
+        var positiveInputs = document.querySelectorAll('.positive-int');
+        positiveInputs.forEach(function(input) {
+            input.addEventListener('beforeinput', function(e) {
+                if (e.data && !/^\d+$/.test(e.data)) {
+                    e.preventDefault();
+                    return;
+                }
+                if (e.data) {
+                    var selectionStart = input.selectionStart;
+                    var selectionEnd = input.selectionEnd;
+                    var currentValue = input.value;
+                    var nextValueStr = currentValue.slice(0, selectionStart) + e.data + currentValue.slice(selectionEnd);
+                    var nextValueNum = parseInt(nextValueStr, 10);
+                    var max = parseInt(input.dataset.max || '60', 10);
+                    if (nextValueNum > max) {
+                        e.preventDefault();
+                    }
+                }
+            });
+
+            input.addEventListener('paste', function(e) {
+                e.preventDefault();
+                var pastedText = (e.clipboardData || window.clipboardData).getData('text');
+                if (!/^\d+$/.test(pastedText)) return;
+                var selectionStart = input.selectionStart;
+                var selectionEnd = input.selectionEnd;
+                var currentValue = input.value;
+                var nextValueStr = currentValue.slice(0, selectionStart) + pastedText + currentValue.slice(selectionEnd);
+                var nextValueNum = parseInt(nextValueStr, 10);
+                var max = parseInt(input.dataset.max || '60', 10);
+                if (nextValueNum >= 0 && nextValueNum <= max) {
+                    input.value = nextValueStr;
+                }
             });
         });
 
         var input = document.getElementById('headerSearchInput');
         var suggestionsDiv = document.getElementById('headerSuggestions');
         var searchForm = document.getElementById('headerSearchForm');
+
         if (input && suggestionsDiv && searchForm) {
             var debounceTimer;
+
             function escapeHtml(str) {
                 if (!str) return '';
                 return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
             }
+
             input.addEventListener('input', function() {
                 clearTimeout(debounceTimer);
                 var query = this.value.trim();
                 if (query.length === 0) {
                     suggestionsDiv.style.display = 'none';
+                    suggestionsDiv.innerHTML = '';
                     return;
                 }
                 debounceTimer = setTimeout(function() {
-                    fetch('/search-suggestions?movieSearchQuery=' + encodeURIComponent(query))
-                        .then(function(response) { return response.json(); })
+                    var fetchUrl = '/search-suggestions?query=' + encodeURIComponent(query);
+                    fetch(fetchUrl)
+                        .then(function(response) {
+                            if (!response.ok) throw new Error('Network error');
+                            return response.json();
+                        })
                         .then(function(data) {
                             if (data && data.length > 0) {
                                 suggestionsDiv.innerHTML = data.map(function(item) {
-                                    var text = escapeHtml(item.title);
-                                    if (item.releaseYear) text += ' (' + item.releaseYear + ')';
-                                    if (item.director) text += ' · ' + escapeHtml(item.director);
-                                    if (item.genre) text += ' · ' + escapeHtml(item.genre);
-                                    return '<div class="suggestion-item" data-id="' + item.id + '" data-title="' + escapeHtml(item.title) + '">' + text + '</div>';
+                                    var title = escapeHtml(item.title || item.name || item);
+                                    var id = item.id || null;
+                                    var meta = [];
+                                    if (item.releaseYear) meta.push(item.releaseYear);
+                                    if (item.genre) meta.push(escapeHtml(item.genre));
+                                    return '<div class="suggestion-item" data-id="' + id + '" data-title="' + title + '">' +
+                                        '<span class="suggestion-title">' + title + '</span>' +
+                                        (meta.length > 0 ? '<span class="suggestion-meta">' + meta.join(' · ') + '</span>' : '') +
+                                        '</div>';
                                 }).join('');
-                                suggestionsDiv.style.display = 'block';
+                                suggestionsDiv.style.display = 'flex';
                             } else {
                                 suggestionsDiv.style.display = 'none';
                             }
                         })
-                        .catch(function() { suggestionsDiv.style.display = 'none'; });
-                }, 200);
+                        .catch(function(err) {
+                            console.error('Ошибка загрузки автоподсказок:', err);
+                            suggestionsDiv.style.display = 'none';
+                        });
+                }, 150);
             });
-            input.addEventListener('blur', function() {
-                setTimeout(function() { suggestionsDiv.style.display = 'none'; }, 300);
+
+            suggestionsDiv.addEventListener('mousedown', function(e) {
+                e.preventDefault();
             });
+
             suggestionsDiv.addEventListener('click', function(e) {
                 var item = e.target.closest('.suggestion-item');
                 if (!item) return;
                 var movieId = item.getAttribute('data-id');
-                if (movieId) {
+                if (movieId && movieId !== 'null' && movieId !== 'undefined') {
                     window.location.href = '/movies/' + movieId;
                 } else {
                     input.value = item.getAttribute('data-title');
@@ -603,19 +990,22 @@
                     searchForm.submit();
                 }
             });
+
+            input.addEventListener('blur', function() {
+                suggestionsDiv.style.display = 'none';
+            });
         }
 
-        function setupAccordionMultiselect(triggerSelector, dropdownId, hiddenInputId, url) {
+        function setupAccordionMultiselect(triggerSelector, dropdownId, fieldName, url) {
             var trigger = document.querySelector(triggerSelector);
             var dropdown = document.getElementById(dropdownId);
-            var hiddenInput = document.getElementById(hiddenInputId);
-            if (!trigger || !dropdown || !hiddenInput) return;
+            if (!trigger || !dropdown) return;
             var group = trigger.closest('.accordion-group');
-            var selected = new Set();
+
             trigger.addEventListener('click', function(e) {
                 e.stopPropagation();
                 var isActive = group.classList.contains('active');
-                document.querySelectorAll('.accordion-group.active').forEach(function(g) {
+                document.querySelectorAll('.accordion-group').forEach(function(g) {
                     g.classList.remove('active');
                 });
                 if (!isActive) {
@@ -624,29 +1014,48 @@
                         fetch(url)
                             .then(function(r) { return r.json(); })
                             .then(function(data) {
+                                if (!data || data.length === 0) {
+                                    dropdown.innerHTML = '<div style="padding:0.5rem;color:#94a3b8;">Нет данных</div>';
+                                    return;
+                                }
                                 dropdown.innerHTML = data.map(function(item) {
-                                    return '<label class="accordion-item">' +
-                                        '<input type="checkbox" value="' + item + '" class="accordion-checkbox">' +
-                                        item +
+                                    return '<label class="accordion-item" style="display:flex; align-items:center; padding:0.4rem; cursor:pointer;">' +
+                                        '<input type="checkbox" value="' + escapeHtml(item) + '" class="accordion-checkbox" style="margin-right:8px;">' +
+                                        '<span>' + escapeHtml(item) + '</span>' +
                                         '</label>';
                                 }).join('');
                                 dropdown.dataset.loaded = 'true';
                                 dropdown.querySelectorAll('input[type="checkbox"]').forEach(function(cb) {
                                     cb.addEventListener('change', updateSelection);
-                                    if (selected.has(cb.value)) cb.checked = true;
                                 });
                             })
-                            .catch(console.error);
+                            .catch(function(err) {
+                                console.error('Ошибка загрузки ' + fieldName + ':', err);
+                                dropdown.innerHTML = '<div style="padding:0.5rem;color:#f87171;">Ошибка загрузки</div>';
+                            });
                     }
                 }
             });
+
+            dropdown.addEventListener('click', function(e) {
+                e.stopPropagation();
+            });
+
             function updateSelection() {
-                selected.clear();
-                dropdown.querySelectorAll('input[type="checkbox"]:checked').forEach(function(cb) {
-                    selected.add(cb.value);
+                var form = document.getElementById('filterForm');
+                if (!form) return;
+                form.querySelectorAll('input[type="hidden"][name="' + fieldName + '"]').forEach(function(el) {
+                    el.remove();
                 });
-                hiddenInput.value = Array.from(selected).join(',');
+                dropdown.querySelectorAll('input[type="checkbox"]:checked').forEach(function(cb) {
+                    var input = document.createElement('input');
+                    input.type = 'hidden';
+                    input.name = fieldName;
+                    input.value = cb.value;
+                    form.appendChild(input);
+                });
             }
+
             document.addEventListener('click', function(e) {
                 if (!group.contains(e.target)) {
                     group.classList.remove('active');
@@ -654,8 +1063,8 @@
             });
         }
 
-        setupAccordionMultiselect('[data-target="directorsDropdown"]', 'directorsDropdown', 'directorsHiddenInput', '/directors');
-        setupAccordionMultiselect('[data-target="genresDropdown"]', 'genresDropdown', 'genresHiddenInput', '/genres');
+        setupAccordionMultiselect('[data-target="directorsDropdown"]', 'directorsDropdown', 'directors', '/directors');
+        setupAccordionMultiselect('[data-target="genresDropdown"]', 'genresDropdown', 'genres', '/genres');
     })();
 
     updateBadges();
@@ -666,5 +1075,6 @@
         if (menu && !menu.contains(e.target)) menu.classList.remove('show');
     });
 </script>
+
 </body>
 </html>

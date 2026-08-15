@@ -5,31 +5,11 @@ import java.time.LocalDate;
 
 public record LibrarianMovieForOwnerViewDTO(
         Long id,
-
         String title,
-
-        BigDecimal price,
-
-        LocalDate releaseDate,
-
-        String formattedDuration,
-
         String genre,
-
-        BigDecimal rating,
-
-        String review,
-
-        String description,
-
-        Long purchasesCount,
-
-        Long reviewCount,
-
         String posterUrl,
-
-        String director,
-
-        Long ratingsCount
-) {
+        BigDecimal rating,
+        LocalDate releaseDate,
+        String director
+) implements CatalogMovieData {
 }

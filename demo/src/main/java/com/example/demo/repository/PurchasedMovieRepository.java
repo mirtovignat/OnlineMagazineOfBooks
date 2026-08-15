@@ -1,32 +1,23 @@
 package com.example.demo.repository;
 
 import com.example.demo.model.PurchasedMovie;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.repository.EntityGraph;
-import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
-public interface PurchasedMovieRepository extends JpaRepository<PurchasedMovie, Long> {
+@Repository
+public interface PurchasedMovieRepository extends AbstractCatalogRepository<PurchasedMovie> {
 
-    @EntityGraph(attributePaths = {
-            "movie",
-            "user"
-    })
     @Query("""
-            SELECT purchasedMovie
+            SELECT COUNT(purchasedMovie) > 0
             FROM PurchasedMovie purchasedMovie
-            WHERE purchasedMovie.user.username = :username
+            WHERE purchasedMovie.movie.id = :movieId
+            AND purchasedMovie.user.username = :username
             """)
-    Page<PurchasedMovie> findAllByUsername(Pageable pageable,
-                                           @Param("username")
-                                           String username);
-
-    boolean existsByMovieIdAndUserUsername(Long movieId,
-                                           String username);
+    boolean existsByMovieIdAndUserUsername(@Param("movieId") Long movieId,
+                                           @Param("username") String username);
 
     @Query("""
             SELECT purchasedMovie.movie.id
@@ -36,10 +27,4 @@ public interface PurchasedMovieRepository extends JpaRepository<PurchasedMovie, 
     List<Long> findMovieIdsByUsername(@Param("username")
                                       String username);
 
-    @Query("""
-            SELECT COUNT(purchasedMovie)
-            FROM PurchasedMovie purchasedMovie
-            WHERE purchasedMovie.user.username = :username
-            """)
-    int countByUserUsername(@Param("username") String username);
 }

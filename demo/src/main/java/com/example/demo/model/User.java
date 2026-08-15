@@ -1,25 +1,33 @@
 package com.example.demo.model;
 
+import com.example.demo.exception.BusinessException;
+import com.example.demo.exception.ErrorCode;
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
+import lombok.experimental.SuperBuilder;
 import org.hibernate.annotations.SQLRestriction;
 
 import java.math.BigDecimal;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
+@SuperBuilder
 @Getter
 @Setter
 @NoArgsConstructor
+@AllArgsConstructor
+@ToString(callSuper = true)
 @Entity
 @Table(name = "users")
 @SQLRestriction("deleted = false")
 public class User extends AbstractEntity {
 
+    public User(Long id) {
+        super(id);
+    }
+
     @Column(name = "deleted", nullable = false)
-    private boolean deleted;
+    private boolean deleted = false;
 
     @Column(name = "username", nullable = false, unique = true)
     private String username;
@@ -33,12 +41,6 @@ public class User extends AbstractEntity {
     @Column(name = "phone", unique = true)
     private String phone;
 
-    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
-    private Set<PurchasedMovie> purchases = new LinkedHashSet<>();
-
-    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
-    private Set<CartItem> cartItems = new LinkedHashSet<>();
-
     @Column(name = "full_name", nullable = false)
     private String fullName;
 
@@ -48,29 +50,36 @@ public class User extends AbstractEntity {
     @Column(name = "currency_code", nullable = false)
     private String currencyCode = "RUB";
 
-    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
+    @ToString.Exclude
+    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<PurchasedMovie> purchases = new LinkedHashSet<>();
+
+    @ToString.Exclude
+    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<CartItem> cartItems = new LinkedHashSet<>();
+
+    @ToString.Exclude
+    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<FavouriteMovie> favourites = new LinkedHashSet<>();
 
-    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
+    @ToString.Exclude
+    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<RatedMovie> ratings = new LinkedHashSet<>();
 
-
-
     public void addMoney(BigDecimal amount) {
+        if (amount == null || amount.signum() <= 0) {
+            throw new IllegalArgumentException("Сумма пополнения должна быть больше нуля");
+        }
         this.balance = this.balance.add(amount);
     }
 
     public void spendMoney(BigDecimal amount) {
         if (amount == null || amount.signum() <= 0) {
-            return;
+            throw new IllegalArgumentException("Сумма списания должна быть больше нуля");
         }
-
-        if (balance.compareTo(amount) < 0) {
-            return;
+        if (this.balance.compareTo(amount) < 0) {
+            throw BusinessException.of(ErrorCode.INSUFFICIENT_FUNDS);
         }
-
-        balance = balance.subtract(amount);
+        this.balance = this.balance.subtract(amount);
     }
 }
-
-

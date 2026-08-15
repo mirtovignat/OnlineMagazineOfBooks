@@ -24,5 +24,5 @@ public record FavouriteMovieForOwnerViewDTO(
         String formattedDuration,
 
         BigDecimal price
-) {
+) implements LinkedCollectionMovieData {
 }

@@ -3,8 +3,6 @@ package com.example.demo.dto.joined_to_user;
 import java.math.BigDecimal;
 
 public record CartMovieForOwnerViewDTO(
-        BigDecimal unitPriceSnapshot,
-
         Long id,
 
         String title,
@@ -26,5 +24,6 @@ public record CartMovieForOwnerViewDTO(
         String formattedDuration,
 
         BigDecimal price
-) {
+
+) implements LinkedCollectionMovieData {
 }

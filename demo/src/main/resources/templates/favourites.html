@@ -4,98 +4,509 @@
     <title>Избранное — Cinema Service</title>
     <th:block th:replace="~{fragments/head :: head}"></th:block>
     <style>
-        .favourites-header{text-align:center;padding:2rem 1rem 1rem;}
-        .favourites-header h2{font-size:2.5rem;font-weight:700;background:linear-gradient(135deg,#e0e7ff,#f472b6);-webkit-background-clip:text;background-clip:text;color:transparent;}
-        .favourites-count{display:inline-block;background:var(--card-bg);padding:0.5rem 1.5rem;border-radius:60px;border:1px solid var(--glass-border);}
-        .clear-favourites-btn{background:transparent;border:1px solid var(--glow-danger);color:var(--glow-danger);padding:0.75rem 2rem;border-radius:60px;font-weight:600;cursor:pointer;transition:0.2s;margin-bottom:1rem;}
-        .clear-favourites-btn:hover{background:var(--glow-danger);color:white;box-shadow:0 0 12px #f43f5e;}
-        .empty-message{text-align:center;padding:5rem 1rem;}
-        .empty-message h2{font-size:2rem;color:var(--text-muted);}
-        .browse-movies-btn{background:var(--glow-primary);color:white;padding:1rem 2.5rem;border-radius:60px;text-decoration:none;font-weight:600;display:inline-block;margin-top:2rem;}
-        .movie-poster-img{width:100%;aspect-ratio:2/3;object-fit:cover;border-bottom:1px solid var(--glass-border);}
-        .movie-attributes{display:grid;grid-template-columns:1fr 1fr;gap:0.4rem 1rem;margin-bottom:0.8rem;}
-        .attr-item{display:flex;flex-direction:column;}
-        .attr-label{font-size:0.6rem;text-transform:uppercase;letter-spacing:0.5px;color:#94a3b8;}
-        .attr-value{font-size:0.9rem;font-weight:500;color:#eef2ff;}
-        .badge-rating{background:rgba(251,191,36,0.2);color:#fde047;padding:0.1rem 0.6rem;border-radius:40px;display:inline-block;}
-        .badge-year{background:rgba(52,211,153,0.2);color:#6ee7b7;padding:0.1rem 0.6rem;border-radius:40px;display:inline-block;}
-        .badge-genre{background:rgba(96,165,250,0.2);color:#93c5fd;padding:0.1rem 0.6rem;border-radius:40px;display:inline-block;}
-        .price-label{font-size:0.75rem;color:#94a3b8;margin-top:0.5rem;}
-        .price{font-size:1.6rem;font-weight:700;color:#c084fc;margin:0.2rem 0 0.8rem;}
-        .remove-favourites-btn{background:transparent;border:1px solid var(--glass-border);color:var(--text-light);width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.5rem;cursor:pointer;transition:0.2s;}
-        .remove-favourites-btn:hover{border-color:var(--glow-danger);color:var(--glow-danger);transform:scale(1.1);}
+        .catalog-header {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+            padding: 0.5rem 0 1.2rem 0;
+            text-align: center;
+            position: relative;
+        }
+        .catalog-header h1 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #e0e7ff, #a78bfa);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            margin: 0;
+        }
+        .catalog-count {
+            background: rgba(255, 255, 255, 0.08);
+            padding: 0.2rem 0.9rem;
+            border-radius: 60px;
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            color: #cbd5e1;
+            font-size: 0.85rem;
+        }
+        .clear-favourites-btn {
+            margin-left: auto;
+            background: transparent;
+            border: 1px solid var(--glow-danger);
+            color: var(--glow-danger);
+            padding: 0.4rem 1.2rem;
+            border-radius: 60px;
+            font-weight: 600;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: 0.2s;
+            white-space: nowrap;
+        }
+        .clear-favourites-btn:hover {
+            background: var(--glow-danger);
+            color: white;
+            box-shadow: 0 0 12px #f43f5e;
+        }
+        .empty-message {
+            text-align: center;
+            padding: 5rem 1rem;
+        }
+        .empty-message h2 {
+            font-size: 2rem;
+            color: var(--text-muted);
+        }
+        .browse-movies-btn {
+            background: var(--glow-primary);
+            color: white;
+            padding: 1rem 2.5rem;
+            border-radius: 60px;
+            text-decoration: none;
+            font-weight: 600;
+            display: inline-block;
+            margin-top: 2rem;
+        }
+        main.catalog-wrapper {
+            flex: 1 0 auto;
+            padding: 1rem 1.5rem 3rem 1.5rem;
+            max-width: 1400px;
+            margin: 0 auto;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        .favourites-container {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 2rem 1.5rem;
+            width: 100%;
+            margin: 0 auto;
+            align-items: stretch;
+            padding-bottom: 2rem;
+            overflow: visible;
+        }
+        @media (max-width: 1100px) {
+            .favourites-container {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+        @media (max-width: 780px) {
+            .favourites-container {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 1.5rem;
+            }
+        }
+        @media (max-width: 480px) {
+            .favourites-container {
+                grid-template-columns: 1fr;
+                max-width: 320px;
+                margin: 0 auto;
+            }
+        }
+
+        .favourites-card {
+            display: flex;
+            flex-direction: column;
+            background: rgba(15, 23, 42, 0.6);
+            border-radius: 18px;
+            border: 1px solid rgba(72, 187, 255, 0.2);
+            backdrop-filter: blur(8px);
+            overflow: hidden;
+            width: 100%;
+            max-width: 320px;
+            box-sizing: border-box;
+            margin: 0 auto;
+            position: relative;
+            transition: all 0.3s ease;
+            height: 100%;
+            min-height: 480px;
+            align-self: stretch;
+        }
+        .favourites-card:hover {
+            transform: translateY(-6px);
+            border-color: rgba(129, 140, 248, 0.6);
+            box-shadow: 0 25px 45px -12px rgba(0, 0, 0, 0.5);
+        }
+
+        .favourites-poster-link {
+            width: 100%;
+            aspect-ratio: 2 / 3;
+            display: block;
+            overflow: hidden;
+            position: relative;
+            background-color: #0d1322;
+            flex: 0 0 auto;
+            height: auto;
+            text-decoration: none;
+            border-radius: 18px 18px 0 0;
+        }
+        .favourites-poster-link > a {
+            display: block;
+            width: 100%;
+            height: 100%;
+            text-decoration: none;
+            position: relative;
+        }
+        .favourites-poster-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+        .movie-poster-placeholder {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            background: #2d3748;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #718096;
+            font-size: 0.85rem;
+        }
+        .favourites-rating-badge {
+            position: absolute;
+            top: 0.8rem;
+            left: 0.8rem;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(8px);
+            padding: 0.3rem 0.8rem;
+            border-radius: 10px;
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: #fcd34d;
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+            border: 1px solid rgba(252, 211, 77, 0.25);
+            z-index: 5;
+            pointer-events: none;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+        }
+        .favourites-rating-badge .star {
+            font-size: 0.8rem;
+            color: #fcd34d;
+        }
+        .favourites-rating-badge .rating-value {
+            color: #fff;
+        }
+        .favourites-rating-badge .rating-max {
+            color: rgba(255, 255, 255, 0.4);
+            font-weight: 400;
+            font-size: 0.7rem;
+        }
+
+        .favourites-card-content {
+            padding: 0.4rem 0.5rem 0.5rem;
+            display: flex;
+            flex-direction: column;
+            flex: 1 1 auto;
+            min-height: 165px;
+            max-height: 165px;
+            height: 165px;
+            box-sizing: border-box;
+            background: rgba(15, 23, 42, 0.75);
+            border-radius: 0 0 18px 18px;
+            justify-content: space-between;
+            gap: 0.15rem;
+            overflow: hidden;
+        }
+
+        .favourites-card-title {
+            margin: 0;
+            font-size: 0.9rem;
+            font-weight: 700;
+            word-break: break-word;
+            line-height: 1.2;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            min-height: 2.1rem;
+            max-height: 2.1rem;
+            text-shadow: 0 0 6px rgba(167, 139, 250, 0.15);
+        }
+        .favourites-card-title a {
+            color: #f8fafc;
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+        .favourites-card:hover .favourites-card-title a {
+            color: #c4b5fd;
+        }
+
+        .favourites-info {
+            display: flex;
+            flex-direction: column;
+            flex: 1 1 auto;
+            justify-content: space-between;
+            min-height: 0;
+            gap: 0.45rem;
+        }
+
+        .favourites-details {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.35rem;
+            align-items: center;
+            padding-top: 0.35rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.06);
+        }
+        .favourites-details span {
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            color: #dbe4f3;
+            padding: 0.18rem 0.45rem;
+            border-radius: 999px;
+            font-size: 0.68rem;
+            line-height: 1;
+            white-space: nowrap;
+            cursor: default;
+            transition: background 0.2s;
+        }
+        .favourites-details span:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+        .favourites-details .separator {
+            display: none;
+        }
+
+        .favourites-price {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+            font-size: 1rem;
+            font-weight: 800;
+            color: #c084fc;
+            text-shadow: 0 0 10px rgba(192, 132, 252, 0.25);
+            white-space: nowrap;
+        }
+        .favourites-price::before {
+            content: "💰";
+            font-size: 0.8rem;
+        }
+
+        .favourites-price-and-actions {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding-top: 0.4rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            gap: 0.3rem;
+        }
+
+        .favourites-actions {
+            display: flex;
+            gap: 0.3rem;
+            align-items: center;
+            flex-shrink: 0;
+        }
+        .favourites-actions .icon-btn,
+        .favourites-actions .remove-favourites-btn {
+            width: 28px;
+            height: 28px;
+            font-size: 0.85rem;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.07);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05), 0 4px 10px rgba(0, 0, 0, 0.2);
+            color: var(--text-light);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: 0.2s;
+            text-decoration: none;
+            padding: 0;
+            line-height: 1;
+        }
+        .favourites-actions .icon-btn:hover {
+            transform: scale(1.1);
+            border-color: #f472b6;
+            color: #f472b6;
+            box-shadow: 0 0 15px rgba(244, 114, 182, 0.3);
+        }
+        .favourites-actions .remove-favourites-btn:hover {
+            transform: scale(1.1);
+            border-color: var(--glow-danger);
+            color: var(--glow-danger);
+            box-shadow: 0 0 15px rgba(244, 63, 94, 0.3);
+        }
+
+        .modal {
+            position: fixed;
+            inset: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            visibility: hidden;
+            background: rgba(8, 10, 25, 0.82);
+            backdrop-filter: blur(12px);
+            transition: opacity 0.25s ease, visibility 0.25s ease;
+            z-index: 5000;
+        }
+        .modal.show {
+            opacity: 1;
+            visibility: visible;
+        }
+        .modal-content {
+            width: min(430px, calc(100vw - 32px));
+            background: linear-gradient(180deg, rgba(25, 29, 53, 0.98), rgba(15, 18, 35, 0.98));
+            border: 1px solid rgba(110, 150, 255, 0.25);
+            border-radius: 18px;
+            padding: 26px;
+            box-shadow: 0 20px 70px rgba(0, 0, 0, 0.55), 0 0 40px rgba(90, 120, 255, 0.15);
+            transform: translateY(20px) scale(0.96);
+            transition: transform 0.25s ease;
+        }
+        .modal.show .modal-content {
+            transform: translateY(0) scale(1);
+        }
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+        .modal-header h2 {
+            font-size: 1.4rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #e0e7ff, #c084fc);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            margin: 0;
+        }
+        .modal-x {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            font-size: 1.6rem;
+            cursor: pointer;
+            transition: 0.2s;
+            line-height: 1;
+        }
+        .modal-x:hover {
+            color: var(--glow-danger);
+            transform: rotate(90deg);
+        }
+        .modal-buttons {
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+            margin-top: 24px;
+        }
+        .modal-cancel-btn {
+            background: transparent;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            color: #c7c9d9;
+            padding: 0.6rem 1.5rem;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+        .modal-cancel-btn:hover {
+            background: rgba(255, 255, 255, 0.06);
+        }
+        .modal-confirm-btn {
+            background: linear-gradient(135deg, var(--glow-success), #059669);
+            color: white;
+            padding: 0.6rem 1.5rem;
+            border-radius: 12px;
+            border: none;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        .modal-confirm-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 24px rgba(16, 185, 129, 0.4);
+        }
     </style>
 </head>
 <body>
 
 <th:block th:replace="~{fragments/header :: header}"></th:block>
-
-<div class="favourites-header">
-    <h2>❤️ Избранное</h2>
-    <div class="favourites-count">Фильмов в избранном: <span th:text="${favouritesCount}">0</span></div>
-</div>
-
 <th:block th:replace="~{fragments/flash-messages :: flashMessages}"></th:block>
 
-<main>
-    <div th:if="${favourites != null and !favourites.isEmpty()}">
-        <div style="text-align:center; margin:1rem 0 0;">
-            <button class="clear-favourites-btn" onclick="showClearFavouritesModal()">🗑️ Очистить всё избранное</button>
-        </div>
+<!-- ===== Проверка авторизации ===== -->
+<div id="authStatus"
+     th:data-authenticated="${session.userForOwnerViewDTO != null}"
+     style="display:none;"></div>
+
+<main class="catalog-wrapper">
+    <div class="catalog-header">
+        <h1>❤️ Избранное</h1>
+        <div class="catalog-count">Фильмов в избранном: <span th:text="${favouritesCount}">0</span></div>
+        <button class="clear-favourites-btn" th:if="${favourites != null and !favourites.isEmpty()}"
+                onclick="showClearFavouritesModal()">🗑️ Очистить избранное
+        </button>
     </div>
-    <div class="movies-grid" th:if="${favourites != null and !favourites.isEmpty()}">
-        <div class="movie-card" th:each="movie : ${favourites}"
-             th:style="'animation-delay: ' + (${movieStat.index} * 0.05) + 's'"
-             th:attr="data-movie-id=${movie.id}">
-            <a class="movie-poster-link" th:href="@{/movies/{id}(id=${movie.id})}">
-                <img th:if="${movie.posterUrl != null and !movie.posterUrl.isEmpty()}"
-                     th:src="${movie.posterUrl}" class="movie-poster-img" alt="Постер" src=""/>
-                <div th:unless="${movie.posterUrl != null and !movie.posterUrl.isEmpty()}"
-                     class="movie-poster-placeholder"><span>📽️ Постер</span></div>
-            </a>
-            <div class="movie-card-content">
-                <h3><a th:href="@{/movies/{id}(id=${movie.id})}" th:text="${movie.title}">Название</a></h3>
-                <div class="movie-attributes">
-                    <div class="attr-item">
-                        <span class="attr-label">Рейтинг</span>
-                        <span class="attr-value badge-rating" th:data-movie-id="${movie.id}"
-                              th:text="${movie.rating != null ? '★ ' + #numbers.formatDecimal(movie.rating, 1, 1) + ' / 10' : '-'}">-</span>
+
+    <div class="favourites-container" th:if="${favourites != null and !favourites.isEmpty()}">
+        <div class="favourites-card" th:each="movie : ${favourites}" th:attr="data-movie-id=${movie.id}">
+            <div class="favourites-poster-link">
+                <a th:href="@{/movies/{id}(id=${movie.id})}">
+                    <img th:if="${movie.posterUrl != null and !movie.posterUrl.isEmpty()}"
+                         th:src="${movie.posterUrl}"
+                         alt="Постер"
+                         class="favourites-poster-img"
+                         onerror="this.onerror=null; this.style.display='none'; this.nextElementSibling.style.display='flex';"
+                         src=""/>
+                    <div class="movie-poster-placeholder"
+                         th:style="${movie.posterUrl != null and !movie.posterUrl.isEmpty()} ? 'display:none;' : ''">
+                        <span>📽️ Постер</span>
                     </div>
-                    <div class="attr-item">
-                        <span class="attr-label">Год</span>
-                        <span class="attr-value badge-year"
-                              th:text="${movie.releaseYear != null ? movie.releaseYear : '-'}">-</span>
+                    <div class="favourites-rating-badge" th:if="${movie.rating != null}">
+                        <span class="star">★</span>
+                        <span class="rating-value" th:text="${#numbers.formatDecimal(movie.rating, 1, 1)}">8.5</span>
+                        <span class="rating-max">/ 10</span>
                     </div>
-                    <div class="attr-item">
-                        <span class="attr-label">Жанр</span>
-                        <span class="attr-value badge-genre" th:text="${movie.genre}">-</span>
+                </a>
+            </div>
+
+            <div class="favourites-card-content">
+                <h3 class="favourites-card-title">
+                    <a th:href="@{/movies/{id}(id=${movie.id})}" th:text="${movie.title}">Название</a>
+                </h3>
+
+                <div class="favourites-info">
+                    <div class="favourites-details">
+                        <span th:if="${movie.releaseYear != null}"
+                              th:text="'📅 ' + ${movie.releaseYear}"
+                              title="Год выпуска">📅 2014</span>
+                        <span class="separator" th:if="${movie.releaseYear != null and movie.genre != null}">•</span>
+                        <span th:if="${movie.genre != null and !movie.genre.isEmpty()}"
+                              th:text="'🎬 ' + ${movie.genre}"
+                              title="Жанр">🎬 Sci-Fi</span>
+                        <span class="separator"
+                              th:if="${movie.genre != null and movie.formattedDuration != null}">•</span>
+                        <span th:if="${movie.formattedDuration != null}"
+                              th:text="'⏱ ' + ${movie.formattedDuration}"
+                              title="Длительность">⏱ 2ч 49м</span>
                     </div>
-                    <div class="attr-item" th:if="${movie.director != null}">
-                        <span class="attr-label">Режиссёр</span>
-                        <span class="attr-value" th:text="${movie.director}">-</span>
+
+                    <div class="favourites-price-and-actions">
+                        <span class="favourites-price" th:text="${movie.price} + ' ₽'">600 ₽</span>
+                        <div class="favourites-actions">
+                            <button class="icon-btn rating-btn" th:data-movie-id="${movie.id}"
+                                    th:data-movie-title="${movie.title}"
+                                    onclick="showRatingModal(this.getAttribute('data-movie-id'), this.getAttribute('data-movie-title'))"
+                                    title="Оценить фильм">☆
+                            </button>
+                            <button class="remove-favourites-btn" th:data-movie-id="${movie.id}"
+                                    th:data-movie-title="${movie.title}"
+                                    onclick="showRemoveModal(this.getAttribute('data-movie-id'), this.getAttribute('data-movie-title'))"
+                                    title="Удалить из избранного">🗑️
+                            </button>
+                        </div>
                     </div>
-                    <div class="attr-item" th:if="${movie.formattedDuration != null}">
-                        <span class="attr-label">Длительность</span>
-                        <span class="attr-value" th:text="${movie.formattedDuration}">-</span>
-                    </div>
-                </div>
-                <div class="price-label">Стоимость</div>
-                <div class="price" th:text="${movie.price + ' ₽'}">329.99 ₽</div>
-                <div class="movie-actions">
-                    <button class="icon-btn rating-btn" th:data-movie-id="${movie.id}"
-                            th:data-movie-title="${movie.title}"
-                            onclick="showRatingModal(this.getAttribute('data-movie-id'), this.getAttribute('data-movie-title'))"
-                            title="Оценить фильм">☆
-                    </button>
-                    <button class="remove-favourites-btn" th:data-movie-id="${movie.id}"
-                            th:data-movie-title="${movie.title}"
-                            onclick="showRemoveModal(this.getAttribute('data-movie-id'), this.getAttribute('data-movie-title'))"
-                            title="Удалить из избранного">🗑️
-                    </button>
                 </div>
             </div>
         </div>
     </div>
+
     <div th:if="${favourites == null or favourites.isEmpty()}" class="empty-message">
         <h2>😔 В избранном пока ничего нет</h2>
         <p style="color: var(--text-muted);">Перейдите в каталог, чтобы добавить фильмы</p>
@@ -138,7 +549,8 @@
 
 <script th:src="@{/js/main.js}" defer></script>
 <script>
-    let movieToRemoveId = ''; let movieToRemoveTitle = '';
+    let movieToRemoveId = '';
+    let movieToRemoveTitle = '';
 
     function showRemoveModal(movieId, movieTitle) {
         movieToRemoveId = movieId;
@@ -154,7 +566,10 @@
     function confirmRemove() {
         if (!movieToRemoveId) return;
         const btn = document.querySelector('#removeFavouritesModal .modal-confirm-btn');
-        if (btn) { btn.textContent = 'Удаляем...'; btn.disabled = true; }
+        if (btn) {
+            btn.textContent = 'Удаляем...';
+            btn.disabled = true;
+        }
 
         fetch('/favourites/remove/' + encodeURIComponent(movieToRemoveId), {
             method: 'POST',
@@ -164,7 +579,7 @@
         .then(data => {
             hideRemoveModal();
 
-            const card = document.querySelector(`.movie-card[data-movie-id="${movieToRemoveId}"]`);
+            const card = document.querySelector(`.favourites-card[data-movie-id="${movieToRemoveId}"]`);
             if (card) {
                 card.style.transition = 'all .3s ease';
                 card.style.opacity = '0';
@@ -172,7 +587,7 @@
                 setTimeout(() => {
                     card.remove();
 
-                    const countSpan = document.querySelector('.favourites-count span');
+                    const countSpan = document.querySelector('.catalog-count span');
                     if (countSpan) {
                         let count = parseInt(countSpan.textContent) || 0;
                         count = Math.max(0, count - 1);
@@ -181,7 +596,7 @@
 
                     setFavouriteStatus(movieToRemoveId, false);
 
-                    const remainingCards = document.querySelectorAll('.movie-card');
+                    const remainingCards = document.querySelectorAll('.favourites-card');
                     if (remainingCards.length === 0) {
                         showEmptyFavourites();
                     }
@@ -192,19 +607,28 @@
 
             showFlashMessage(data.message || 'Фильм удалён из избранного', 'success');
             updateFavouritesCount();
-            if (btn) { btn.textContent = 'Удалить'; btn.disabled = false; }
+            if (btn) {
+                btn.textContent = 'Удалить';
+                btn.disabled = false;
+            }
             movieToRemoveId = '';
         })
         .catch(error => {
             showFlashMessage(error.message || 'Не удалось удалить', 'error', true);
-            if (btn) { btn.textContent = 'Удалить'; btn.disabled = false; }
+            if (btn) {
+                btn.textContent = 'Удалить';
+                btn.disabled = false;
+            }
             hideRemoveModal();
         });
     }
 
     function clearFavourites() {
         const btn = document.querySelector('#clearFavouritesModal .modal-confirm-btn');
-        if (btn) { btn.textContent = 'Очищаем...'; btn.disabled = true; }
+        if (btn) {
+            btn.textContent = 'Очищаем...';
+            btn.disabled = true;
+        }
 
         fetch('/favourites/clear', {
             method: 'POST',
@@ -214,7 +638,7 @@
         .then(data => {
             hideClearFavouritesModal();
 
-            const cards = document.querySelectorAll('.movie-card');
+            const cards = document.querySelectorAll('.favourites-card');
             if (cards.length) {
                 cards.forEach((card, index) => {
                     const id = card.getAttribute('data-movie-id');
@@ -227,7 +651,7 @@
                             setTimeout(() => {
                                 card.remove();
                                 showEmptyFavourites();
-                                const countSpan = document.querySelector('.favourites-count span');
+                                const countSpan = document.querySelector('.catalog-count span');
                                 if (countSpan) countSpan.textContent = '0';
                             }, 300);
                         } else {
@@ -237,31 +661,37 @@
                 });
             } else {
                 showEmptyFavourites();
-                const countSpan = document.querySelector('.favourites-count span');
+                const countSpan = document.querySelector('.catalog-count span');
                 if (countSpan) countSpan.textContent = '0';
             }
 
             showFlashMessage(data.message || 'Избранное очищено', 'success');
             updateFavouritesCount();
-            if (btn) { btn.textContent = 'Очистить избранное'; btn.disabled = false; }
+            if (btn) {
+                btn.textContent = 'Очистить избранное';
+                btn.disabled = false;
+            }
         })
         .catch(error => {
             showFlashMessage(error.message || 'Не удалось очистить избранное', 'error', true);
-            if (btn) { btn.textContent = 'Очистить избранное'; btn.disabled = false; }
+            if (btn) {
+                btn.textContent = 'Очистить избранное';
+                btn.disabled = false;
+            }
             hideClearFavouritesModal();
         });
     }
 
     function showEmptyFavourites() {
-        const grid = document.querySelector('.movies-grid');
+        const grid = document.querySelector('.favourites-container');
         if (grid) grid.remove();
 
-        const header = document.querySelector('.favourites-header');
+        const header = document.querySelector('.catalog-header');
         if (header) header.remove();
 
         const clearBtnWrapper = document.querySelector('div[style*="text-align:center"]');
         if (clearBtnWrapper) clearBtnWrapper.remove();
-        const main = document.querySelector('main');
+        const main = document.querySelector('main.catalog-wrapper');
         if (main) {
             main.innerHTML = `
                 <div class="empty-message">
@@ -271,11 +701,6 @@
                 </div>
             `;
         }
-        const headerCount = document.getElementById('favourites-count');
-        if (headerCount) {
-            headerCount.textContent = '0';
-            headerCount.style.display = 'none';
-        }
     }
 
     function showClearFavouritesModal() {
@@ -284,6 +709,22 @@
 
     function hideClearFavouritesModal() {
         document.getElementById('clearFavouritesModal').classList.remove('show');
+    }
+
+    function handleResponse(response) {
+        if (!response.ok) {
+            return response.json().then(err => { throw new Error(err.message || 'Ошибка сервера'); });
+        }
+        return response.json();
+    }
+
+    function updateFavouritesCount() {}
+
+    if (typeof setFavouriteStatus !== 'function') {
+        window.setFavouriteStatus = function(movieId, status) {};
+    }
+    if (typeof showFlashMessage !== 'function') {
+        window.showFlashMessage = function(message, type) { alert(message); };
     }
 </script>
 

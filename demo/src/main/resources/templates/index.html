@@ -4,9 +4,250 @@
     <title>Каталог — Cinema Service</title>
     <th:block th:replace="~{fragments/head :: head}"></th:block>
     <style>
-        .catalog-header{text-align:center;padding:0.75rem 1rem;}
-        .catalog-header h1{font-size:2rem;font-weight:700;background:linear-gradient(135deg,#e0e7ff,#a78bfa);-webkit-background-clip:text;background-clip:text;color:transparent;margin:0;}
-        .catalog-wrapper .movies-grid{padding-top:0;}
+        html, body {
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+        }
+        body {
+            display: flex;
+            flex-direction: column;
+        }
+        main.catalog-wrapper {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            align-items: center;
+            padding: 0.1rem 0.5rem 0.2rem;
+            box-sizing: border-box;
+        }
+
+        .poster-rating-badge {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            z-index: 5;
+            background: rgba(217, 119, 6, 0.85);
+            color: #ffffff;
+            font-weight: 700;
+            font-size: 0.75rem;
+            padding: 3px 8px;
+            border-radius: 12px;
+            border: 1px solid rgba(251, 191, 36, 0.4);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(4px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            line-height: 1;
+        }
+        .catalog-header {
+            text-align: center;
+            padding: 0.1rem 0 0.2rem;
+            width: 100%;
+        }
+        .catalog-header h1 {
+            font-size: 1.4rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #e0e7ff, #a78bfa);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            margin: 0;
+        }
+        .movies-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 250px);
+            gap: 2rem 1rem;
+            width: 100%;
+            max-width: 1340px;
+            justify-content: center;
+            align-items: stretch;
+        }
+        @media (max-width: 1350px) {
+            .movies-grid {
+                grid-template-columns: repeat(auto-fit, 250px);
+            }
+        }
+        .movie-card {
+            display: flex;
+            flex-direction: column;
+            background: rgba(15, 23, 42, 0.6);
+            border-radius: 18px;
+            border: 1px solid rgba(72, 187, 255, 0.2);
+            backdrop-filter: blur(8px);
+            overflow: hidden;
+            width: 250px;
+            box-sizing: border-box;
+            margin: 0 auto;
+            position: relative;
+        }
+
+        .movie-card-content .badges {
+             flex-grow: 1;
+        }
+        .movie-poster-link {
+            width: 100%;
+            height: 340px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            position: relative;
+            background-color: #0d1322;
+            flex-shrink: 0;
+            box-sizing: border-box;
+        }
+        .movie-poster-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+            max-width: 100%;
+        }
+        .movie-card-content {
+            padding: 0.4rem 0.6rem 0.9rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+            flex: 1;
+        }
+        .movie-poster-placeholder {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            background: #2d3748;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #718096;
+            font-size: 0.95rem;
+        }
+        .movie-card-title {
+            margin: 0;
+            font-size: 0.95rem;
+            font-weight: 700;
+            word-break: break-word;
+            line-height: 1.3;
+        }
+
+        .movie-card-title a {
+            color: #fff;
+            text-decoration: none;
+        }
+        .badges {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 3px;
+            margin-top: 4px;
+            margin-bottom: 4px;
+        }
+        .badge {
+            font-size: 0.65rem;
+            padding: 1px 5px;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #cbd5e1;
+            white-space: nowrap;
+        }
+        .price {
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: #c084fc;
+            margin: 0;
+            margin-top: auto;
+            margin-bottom: 0.2rem;
+            min-height: auto;
+        }
+        .movie-actions {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            min-height: 32px;
+            margin-top: 0.2rem;
+            margin-bottom: 0.2rem;
+        }
+
+        .icon-btn {
+            width: 39px;
+            height: 39px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(72, 187, 255, 0.25);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            cursor: pointer;
+            color: inherit;
+            position: relative;
+            text-decoration: none;
+            flex-shrink: 0;
+        }
+
+        .movie-actions {
+            min-height: 44px;
+        }
+        .purchase-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+            margin-top: auto;
+            padding-top: 0.2rem;
+            min-height: 72px;
+            justify-content: flex-end;
+        }
+
+        .cart-button,
+        .buy-now-btn,
+        .bought-btn {
+            padding: 0.2rem 0.7rem;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 0.75rem;
+            cursor: pointer;
+            border: none;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            white-space: nowrap;
+            width: 100%;
+            box-sizing: border-box;
+            min-height: 28px;
+            height: 32px;
+            line-height: 1;
+        }
+
+        .to-cart-btn-details {
+            background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+            color: white;
+        }
+        .in-cart-btn-details {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+        }
+        .buy-now-btn {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+        }
+        .bought-btn {
+            background: #64748b;
+            color: white;
+            cursor: pointer;
+            opacity: 0.8;
+            text-decoration: none;
+        }
+        main.catalog-wrapper > *:last-child,
+        [class*="pagination"],
+        [class*="pager"] {
+            margin-top: 0.2rem !important;
+            margin-bottom: 0 !important;
+            padding-top: 0 !important;
+            padding-bottom: 0 !important;
+        }
     </style>
 </head>
 <body>
@@ -14,42 +255,70 @@
 <th:block th:replace="~{fragments/header :: header}"></th:block>
 <th:block th:replace="~{fragments/flash-messages :: flashMessages}"></th:block>
 
+<!-- ===== ДОБАВЛЕНО: скрытый элемент для проверки авторизации ===== -->
+<div id="authStatus"
+     th:data-authenticated="${session.userForOwnerViewDTO != null}"
+     style="display:none;"></div>
+
 <main class="catalog-wrapper">
     <div class="catalog-header">
-        <h1>Каталог фильмов</h1>
+        <h1 th:if="${isSearch}" style="color: #a78bfa;">🔎 Результаты поиска</h1>
+        <h1 th:unless="${isSearch}">Каталог фильмов</h1>
     </div>
 
     <div class="movies-grid" th:if="${cardsPage != null and !cardsPage.empty}">
         <div class="movie-card" th:each="card : ${cardsPage.content}" th:data-movie-id="${card.movie.id}">
             <a class="movie-poster-link" th:href="@{/movies/{id}(id=${card.movie.id})}">
+
+                <span class="poster-rating-badge js-rating-badge"
+                      th:data-movie-id="${card.movie.id}"
+                      th:text="${card.movie.rating != null ? '★ ' + #numbers.formatDecimal(card.movie.rating, 1, 1) : '★ —'}">★ 3.0</span>
+
                 <img th:if="${card.movie.posterUrl != null and !card.movie.posterUrl.isEmpty()}"
-                     th:src="${card.movie.posterUrl}" alt="Постер" class="movie-poster-img" src=""/>
-                <div th:unless="${card.movie.posterUrl != null and !card.movie.posterUrl.isEmpty()}"
-                     class="movie-poster-placeholder"><span>📽️ Постер</span></div>
+                     th:src="@{${card.movie.posterUrl}}"
+                     alt="Постер"
+                     class="movie-poster-img"
+                     onerror="this.onerror=null; this.style.display='none'; this.nextElementSibling.style.display='flex';"
+                     src=""/>
+                <div class="movie-poster-placeholder"
+                     th:style="${card.movie.posterUrl != null and !card.movie.posterUrl.isEmpty()} ? 'display:none;' : ''">
+                    <span>📽️ Постер</span>
+                </div>
             </a>
 
             <div class="movie-card-content">
                 <h3 class="movie-card-title">
-                    <a th:href="@{/movies/{id}(id=${card.movie.id})}" th:text="${card.movie.title}">Название</a>
+                    <a th:href="@{/movies/{id}(id=${card.movie.id})}"
+                       th:text="${card.movie.title}">Название</a>
                 </h3>
 
                 <div class="badges">
-                    <span class="badge rating js-rating-badge" th:data-movie-id="${card.movie.id}"
-                          th:text="${card.movie.rating != null ? 'Рейтинг: ★ ' + #numbers.formatDecimal(card.movie.rating, 1, 1) : 'Рейтинг: —'}">Рейтинг: ★ -</span>
-                    <span class="badge year" th:if="${card.movie.releaseYear != null}"
-                          th:text="'Год: ' + ${card.movie.releaseYear}">Год: 2024</span>
-                    <span class="badge genre" th:if="${card.movie.genre != null}"
-                          th:text="'Жанр: ' + ${card.movie.genre}">Жанр: Комедия</span>
+            <span class="badge year"
+                  th:if="${card.movie.releaseYear != null}"
+                  th:text="'📅 Год: ' + ${card.movie.releaseYear}">📅 Год: 2024</span>
+
+                    <span class="badge genre"
+                          th:if="${card.movie.genre != null and !card.movie.genre.isEmpty()}"
+                          th:text="'🎭 Жанр: ' + ${card.movie.genre}">🎭 Жанр: Комедия</span>
+
+                    <span class="badge director"
+                          th:if="${card.movie.director != null and !card.movie.director.isEmpty()}"
+                          th:text="'🎬 Реж. ' + ${card.movie.director}">🎬 Реж. Гай Ричи</span>
+
+                    <span class="badge duration"
+                          th:if="${card.movie.formattedDuration != null and !card.movie.formattedDuration.isEmpty()}"
+                          th:text="'⏱ Время: ' + ${card.movie.formattedDuration}">⏱ Время: 1:40:00</span>
                 </div>
 
-                <div class="price" th:text="${card.movie.price + ' ₽'}">0 ₽</div>
+                <div class="price" th:text="'Цена: ' + ${card.movie.price} + ' ₽'">Цена: 0 ₽</div>
 
                 <div class="movie-actions">
                     <button class="icon-btn favourite-btn"
                             th:classappend="${card.status.inFavourites} ? 'active' : ''"
                             th:data-movie-id="${card.movie.id}"
                             th:data-action="${card.status.inFavourites} ? 'remove' : 'add'"
-                            onclick="toggleFavourite(this)" title="Избранное">
+                            onclick="toggleFavourite(this)"
+                            title="Избранное">
                         <span th:text="${card.status.inFavourites} ? '♥' : '♡'"></span>
                     </button>
 
@@ -60,25 +329,29 @@
                             title="Оценить">☆
                     </button>
 
-                    <a th:href="@{/rated/{id}/reviews(id=${card.movie.id})}" class="icon-btn comment-btn"
+                    <a th:href="@{/rated/{id}/reviews(id=${card.movie.id})}"
+                       class="icon-btn comment-btn"
                        title="Отзывы">
                         💬
                         <span class="reviews-badge js-reviews-count"
                               th:data-movie-id="${card.movie.id}"
                               th:text="${card.movie.ratingsCount}"
                               th:style="${card.movie.ratingsCount > 0} ? '' : 'display:none'">
-                        </span>
+                </span>
                     </a>
                 </div>
 
                 <div class="purchase-buttons">
                     <th:block th:if="${session.userForOwnerViewDTO != null}">
-                        <button type="button" th:if="${!card.status.bought and !card.status.inCart}"
+                        <button type="button"
+                                th:if="${!card.status.bought and !card.status.inCart}"
                                 class="cart-button to-cart-btn-details"
                                 th:data-movie-id="${card.movie.id}"
                                 onclick="addToCart(this)">В корзину
                         </button>
-                        <a th:if="${card.status.inCart}" href="/cart" class="cart-button in-cart-btn-details">В корзине →</a>
+                        <a th:if="${card.status.inCart}"
+                           href="/cart"
+                           class="cart-button in-cart-btn-details">В корзине → Перейти</a>
                         <button th:if="${!card.status.bought}"
                                 class="buy-now-btn"
                                 th:data-movie-id="${card.movie.id}"
@@ -86,11 +359,24 @@
                                 th:data-movie-title="${card.movie.title}"
                                 onclick="showBuyModal(this)">Купить сейчас
                         </button>
-                        <button th:if="${card.status.bought}" class="bought-btn" disabled>Куплено</button>
+                        <a th:if="${card.status.bought}"
+                           th:href="@{/library(highlight=${card.movie.id})}"
+                           class="bought-btn">Куплено → В библиотеку</a>
                     </th:block>
+
                     <th:block th:unless="${session.userForOwnerViewDTO != null}">
-                        <a th:href="@{/login}" class="cart-button to-cart-btn-details" onclick="return requireAuth(event, this.href)">В корзину</a>
-                        <a th:href="@{/login}" class="buy-now-btn" onclick="return requireAuth(event, this.href)">Купить сейчас</a>
+                        <button class="cart-button to-cart-btn-details"
+                                onclick="addToCart(this)"
+                                th:data-movie-id="${card.movie.id}">
+                            В корзину
+                        </button>
+                        <button class="buy-now-btn"
+                                onclick="showBuyModal(this)"
+                                th:data-movie-id="${card.movie.id}"
+                                th:data-movie-price="${card.movie.price}"
+                                th:data-movie-title="${card.movie.title}">
+                            Купить сейчас
+                        </button>
                     </th:block>
                 </div>
             </div>
@@ -98,17 +384,20 @@
     </div>
 
     <div class="empty-catalog" th:unless="${cardsPage != null and !cardsPage.empty}">
-        Фильмы не найдены
+        <h2 th:if="${isSearch}" style="color: #a78bfa; text-align: center;">По вашему запросу ничего не найдено</h2>
+        <h2 th:unless="${isSearch}" style="color: #94a3b8; text-align: center;">Фильмы не найдены</h2>
+        <p class="text-muted text-center" th:if="${isSearch}">Попробуйте изменить параметры поиска.</p>
+        <a th:if="${isSearch}" href="/" class="browse-movies-btn"
+           style="display: block; width: fit-content; margin: 1.5rem auto;">Вернуться в каталог</a>
     </div>
 
-    <th:block th:replace="~{fragments/pagination :: pager(page=${cardsPage}, url='/')}"></th:block>
+    <th:block th:replace="~{fragments/pagination :: pager(page=${cardsPage}, url='/search')}"></th:block>
 </main>
 
 <th:block th:replace="~{fragments/modals :: buyModal}"></th:block>
 <th:block th:replace="~{fragments/modals :: ratingModal}"></th:block>
 
 <script th:src="@{/js/main.js}" defer></script>
-
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         document.querySelectorAll('.js-reviews-count[data-movie-id]').forEach(el => {
@@ -116,6 +405,7 @@
             if (id) updateReviewsCount(id);
         });
     });
+
     window.addEventListener('pageshow', function(event) {
         if (event.persisted) {
             document.querySelectorAll('.js-reviews-count[data-movie-id]').forEach(el => {

@@ -10,10 +10,11 @@ import java.util.Objects;
 
 @Builder
 public record RegisterFormDTO(
-        @NotBlank(message = "Введите username")
-        @Size(min = 6, max = 20) String username,
+        @NotBlank(message = "Никнейм не может быть пустым")
+        @Size(min = 6, max = 20, message = "Никнейм должен содержать от 6 до 20 символов")
+        String username,
 
-        @NotBlank(message = "Введите email")
+        @NotBlank(message = "Email не может быть пустым")
         @Email(message = "Некорректный email адрес")
         @ValidEmailDomain(message = "Почтовый домен не существует")
         String email,
@@ -40,9 +41,9 @@ public record RegisterFormDTO(
         @Pattern(regexp = "^[А-ЯЁ][а-яё]+(-[А-ЯЁ][а-яё]+)?$")
         String name,
 
-        @NotBlank(message = "Введите отчество")
-        @Size(min = 2, max = 30, message = "Отчество должно быть от 2 до 30 символов")
-        @Pattern(regexp = "^[А-ЯЁ][а-яё]{3,29}(вич|вна|ич|на)$")
+        @Size(max = 30, message = "Отчество должно быть до 30 символов")
+        @Pattern(regexp = "^(|[А-ЯЁ][а-яё]{3,29}(вич|вна|ич|на))$",
+                message = "Неверный формат отчества")
         String patronymic,
 
         @NotNull
@@ -50,10 +51,15 @@ public record RegisterFormDTO(
         String currencyCode
 ) {
 
+    public static RegisterFormDTO initial() {
+        return builder()
+                .currencyCode("RUB")
+                .build();
+    }
+
     public void ifMismatch() {
         if (!Objects.equals(rawPassword(), repeatRawPassword())) {
             throw BusinessException.of(ErrorCode.PASSWORDS_MISMATCH);
         }
     }
-
 }

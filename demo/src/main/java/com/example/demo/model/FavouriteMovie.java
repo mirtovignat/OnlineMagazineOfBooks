@@ -20,6 +20,5 @@ import lombok.Setter;
         )
 )
 public class FavouriteMovie extends AbstractLinkedCollectionItem {
-
 }
 

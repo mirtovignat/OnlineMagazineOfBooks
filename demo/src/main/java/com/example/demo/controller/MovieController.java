@@ -6,9 +6,10 @@ import com.example.demo.dto.movie.MovieForUser;
 import com.example.demo.dto.movie.MovieSearchDTO;
 import com.example.demo.dto.user.UserForOwnerViewDTO;
 import com.example.demo.filter.MovieFilter;
-import com.example.demo.service.MovieService;
-import lombok.AllArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.example.demo.service.movie.MovieService;
+import com.example.demo.service.user.UserService;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -22,98 +23,73 @@ import java.util.List;
 import java.util.Map;
 
 @Controller
-@AllArgsConstructor
-@RequestMapping
+@RequiredArgsConstructor
 public class MovieController {
 
-    @Autowired
     private final MovieService movieService;
+    private final UserService userService;
 
     @GetMapping
-    public String showMovies(
-            @RequestParam(required = false) String title,
+    public String showCatalog(
             @SessionAttribute(required = false) UserForOwnerViewDTO userForOwnerViewDTO,
-            @PageableDefault(size = 12, sort = "releaseDate", direction = Sort.Direction.DESC) Pageable pageable,
-            Model model) {
-        String username = prepareModelAndGetUsername(userForOwnerViewDTO, model);
-        boolean isSearch = title != null && !title.isBlank();
-        MovieSearchDTO movieSearchDTO = isSearch ? new MovieSearchDTO(null, title,
-                null, null, null) : null;
-        Page<MovieForUser<MovieCardViewDTO>> cardsPage = movieService
-                .getMovieCards(username, movieSearchDTO, pageable);
+            @PageableDefault(size = 15, sort = "releaseDate", direction = Sort.Direction.DESC) Pageable pageable,
+            Model model
+    ) {
+        String username = userService.getUsername(userForOwnerViewDTO);
+        Page<MovieForUser<MovieCardViewDTO>> cardsPage = movieService.getCatalogPage(pageable, username);
         model.addAttribute("cardsPage", cardsPage);
+        model.addAttribute("isSearch", false);
         return "index";
     }
 
-    @PostMapping("/search")
+    @GetMapping("/search")
     public String searchMovies(
-            @RequestBody List<MovieSearchDTO> foundMovies,
+            @Valid @ModelAttribute MovieFilter movieFilter,
+            @PageableDefault(size = 15, sort = "releaseDate", direction = Sort.Direction.DESC) Pageable pageable,
             @SessionAttribute(required = false) UserForOwnerViewDTO userForOwnerViewDTO,
-            @PageableDefault(size = 12, sort = "releaseDate", direction = Sort.Direction.DESC) Pageable pageable,
-            Model model) {
-        String username = prepareModelAndGetUsername(userForOwnerViewDTO, model);
-        Page<MovieForUser<MovieCardViewDTO>> cardsPage = movieService.convertSearchDtoListToPage(
-                foundMovies, pageable, username);
-        model.addAttribute("cardsPage", cardsPage);
-        model.addAttribute("currentSuggestions", foundMovies);
-        return "index";
-    }
-
-    @GetMapping("/search-by-filters")
-    public String searchMovies(MovieFilter movieFilter,
-                               @SessionAttribute(required = false) UserForOwnerViewDTO userForOwnerViewDTO,
-                               @PageableDefault(size = 12, sort = "releaseDate", direction = Sort.Direction.DESC) Pageable pageable,
-                               Model model) {
-        String username = prepareModelAndGetUsername(userForOwnerViewDTO, model);
-        Page<MovieForUser<MovieCardViewDTO>> cardsPage = movieService.convertMovieFilterToPage(
-                movieFilter, pageable, username);
+            Model model
+    ) {
+        String username = userService.getUsername(userForOwnerViewDTO);
+        Page<MovieForUser<MovieCardViewDTO>> cardsPage = movieService.getMoviesByFilter(movieFilter, pageable, username);
         model.addAttribute("cardsPage", cardsPage);
         model.addAttribute("movieFilter", movieFilter);
+        model.addAttribute("isSearch", true);
         return "index";
     }
 
     @GetMapping("/movies/{id}")
     public String showMovie(
-            @PathVariable("id") Long id,
+            @PathVariable Long id,
             @SessionAttribute(required = false) UserForOwnerViewDTO userForOwnerViewDTO,
-            Model model) {
-        String username = prepareModelAndGetUsername(userForOwnerViewDTO, model);
+            Model model
+    ) {
+        String username = userService.getUsername(userForOwnerViewDTO);
         MovieForUser<MovieCardDetailsViewDTO> card = movieService.getCard(id, username);
         model.addAttribute("card", card);
         return "show";
     }
 
-    @GetMapping("/rating/{id}")
+    @GetMapping("/movies/{id}/rating")
     @ResponseBody
-    public ResponseEntity<Map<String, Object>> getMovieRating(@PathVariable Long id) {
-        Double rating = movieService.getMovieRating(id);
-        return ResponseEntity.ok(Map.of("rating", rating));
+    public ResponseEntity<Map<String, Double>> getMovieRating(@PathVariable Long id) {
+        return ResponseEntity.ok(Map.of("rating", movieService.getMovieRating(id)));
     }
 
     @GetMapping("/search-suggestions")
     @ResponseBody
-    public List<MovieSearchDTO> getSearchSuggestions(@RequestParam("movieSearchQuery") String movieSearchQuery) {
-        return movieService.getMovieSearchDTO(movieSearchQuery);
+    public ResponseEntity<List<MovieSearchDTO>> getSearchSuggestions(@RequestParam String query) {
+        return ResponseEntity.ok(movieService.getMovieSearchDTO(query));
     }
 
     @GetMapping("/directors")
     @ResponseBody
-    public List<String> getAllDirectors() {
-        return movieService.getAllDirectors();
+    public ResponseEntity<List<String>> getAllDirectors() {
+        return ResponseEntity.ok(movieService.getAllDirectors());
     }
 
     @GetMapping("/genres")
     @ResponseBody
-    public List<String> getAllGenres() {
-        return movieService.getAllGenres();
-    }
-
-    private String prepareModelAndGetUsername(UserForOwnerViewDTO userForOwnerViewDTO, Model model) {
-        if (userForOwnerViewDTO != null) {
-            
-            return userForOwnerViewDTO.username();
-
-        }
-        return null;
+    public ResponseEntity<List<String>> getAllGenres() {
+        return ResponseEntity.ok(movieService.getAllGenres());
     }
 }

@@ -7,23 +7,20 @@ import com.example.demo.model.RatedMovie;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
-@Mapper(componentModel = "spring", uses = {DurationMapper.class, MapperUtils.class})
+@Mapper(componentModel = "spring")
 public interface RatedMapper {
 
-    @Mapping(target = "title", source = "movie.title")
-    @Mapping(target = "username", source = "user.username")
-    @Mapping(target = "ratedAt", source = "ratedAt")
-    @Mapping(target = "ratingValue", source = "ratingValue")
     @Mapping(target = "reviewText", source = "review")
+    @Mapping(target = "username", source = "user.username")
+    @Mapping(target = "addedAt", source = "addedAt")
     ReviewViewDTO toReviewView(RatedMovie ratedMovie);
 
     default ReviewViewDTO toReviewView(RatedMovie ratedMovie, String currentUsername) {
         ReviewViewDTO reviewViewDTO = toReviewView(ratedMovie);
         boolean own = currentUsername != null && currentUsername.equals(reviewViewDTO.username());
         return new ReviewViewDTO(
-                reviewViewDTO.title(),
                 reviewViewDTO.username(),
-                reviewViewDTO.ratedAt(),
+                reviewViewDTO.addedAt(),
                 reviewViewDTO.ratingValue(),
                 reviewViewDTO.reviewText(),
                 own
@@ -32,20 +29,17 @@ public interface RatedMapper {
 
     @Mapping(target = "id", source = "movie.id")
     @Mapping(target = "title", source = "movie.title")
-    @Mapping(target = "price", source = "movie.price")
     @Mapping(target = "genre", source = "movie.genre")
-    @Mapping(target = "rating", source = "movie.rating")
-    @Mapping(target = "ratedAt", source = "ratedAt")
-    @Mapping(target = "ratingValue", source = "ratingValue")
-    @Mapping(target = "reviewText", source = "review")
     @Mapping(target = "posterUrl", source = "movie.posterUrl")
+    @Mapping(target = "rating", source = "movie.rating")
     @Mapping(target = "releaseDate", source = "movie.releaseDate")
-    @Mapping(target = "director", source = "movie.director")
-    @Mapping(target = "formattedDuration", source = "movie.duration", qualifiedByName = "durationToString")
+    @Mapping(target = "review", source = "review")
+    @Mapping(target = "addedAt", source = "addedAt")
+    @Mapping(target = "ratingValue", source = "ratingValue")
     RatedMovieForOwnerViewDTO toOwnerView(RatedMovie ratedMovie);
 
-    @Mapping(target = "id", source = "movie.id")
-    @Mapping(target = "review", source = "review")
+    @Mapping(target = "id", source = "id")
     @Mapping(target = "rating", source = "ratingValue")
+    @Mapping(target = "review", source = "review")
     RatedMovieForOwnerFormDTO toFormView(RatedMovie ratedMovie);
 }

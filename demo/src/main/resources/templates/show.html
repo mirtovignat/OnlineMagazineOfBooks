@@ -4,42 +4,332 @@
     <title th:text="${card.movie.title + ' — Cinema Service'}">Подробнее о фильме — Cinema Service</title>
     <th:block th:replace="~{fragments/head :: head}"></th:block>
     <style>
-        .movie-details-container{display:grid;grid-template-columns:380px 1fr;gap:3rem;max-width:1100px;margin:3rem auto;padding:2.5rem;background:rgba(15,23,42,0.6);border-radius:32px;border:1px solid rgba(72,187,255,0.2);backdrop-filter:blur(8px);align-items:start;}
-        .poster-sidebar{width:100%;}
-        .movie-poster-img,.movie-poster-placeholder{width:100%;aspect-ratio:2/3;border-radius:28px;object-fit:cover;box-shadow:0 25px 50px rgba(0,0,0,0.5);}
-        .movie-poster-placeholder{background:#2d3748;background-image:linear-gradient(145deg,#2d3748 0%,#1a202c 100%);display:flex;align-items:center;justify-content:center;color:#718096;font-size:1.1rem;}
-        .movie-info-block{width:100%;}
-        .movie-title{font-size:2.6rem;font-weight:700;line-height:1.2;margin-bottom:0.5rem;background:linear-gradient(135deg,#fff,#94a3b8);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
-        .movie-meta-actions{display:flex;align-items:center;gap:1rem;margin-bottom:1.5rem;flex-wrap:wrap;}
-        .rating-block{display:flex;flex-direction:column;}
-        .rating-label{font-size:0.65rem;text-transform:uppercase;letter-spacing:0.5px;color:#94a3b8;margin-bottom:2px;}
-        .rating-value{font-size:1.2rem;font-weight:700;color:#fde047;}
-        .info-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:16px;margin:20px 0;}
-        .info-item{background:rgba(255,255,255,0.03);border:1px solid rgba(72,187,255,0.15);border-radius:18px;padding:12px 16px;}
-        .info-label{font-size:0.75rem;color:#94a3b8;margin-bottom:4px;text-transform:uppercase;letter-spacing:0.3px;}
-        .info-value{font-size:1rem;font-weight:600;color:#eef2ff;}
-        .price-section{margin:1.5rem 0;padding:1rem 1.25rem;background:rgba(192,132,252,0.05);border:1px solid rgba(192,132,252,0.2);border-radius:20px;display:inline-block;}
-        .price-label{font-size:0.8rem;color:#94a3b8;}
-        .price-amount{font-size:2rem;font-weight:700;color:#c084fc;}
-        .details-actions{display:flex;gap:1rem;margin-top:1.5rem;flex-wrap:wrap;align-items:center;}
-        .icon-btn{width:46px;height:46px;border-radius:50%;background:rgba(255,255,255,0.05);border:1px solid rgba(72,187,255,0.25);display:flex;align-items:center;justify-content:center;font-size:1.4rem;cursor:pointer;color:inherit;transition:0.2s;position:relative;text-decoration:none;}
-        .icon-btn:hover{transform:scale(1.08);border-color:#f472b6;color:#f472b6;}
-        .icon-btn.active{color:#f472b6;border-color:#f472b6;}
-        .reviews-badge{font-size:0.7rem;background:var(--glow-primary,#4f46e5);color:white;padding:1px 5px;border-radius:10px;font-weight:600;position:absolute;top:-4px;right:-4px;}
-        .cart-button,.buy-now-btn,.bought-btn{padding:0.6rem 1.8rem;border-radius:60px;font-weight:600;font-size:1rem;cursor:pointer;border:none;text-decoration:none;display:inline-flex;align-items:center;justify-content:center;transition:0.2s;white-space:nowrap;}
-        .to-cart-btn-details{background:linear-gradient(135deg,#3b82f6,#1d4ed8);color:white;}
-        .to-cart-btn-details:hover{transform:translateY(-2px);box-shadow:0 8px 20px rgba(59,130,246,0.4);}
-        .in-cart-btn-details{background:linear-gradient(135deg,#10b981,#059669);color:white;}
-        .buy-now-btn{background:linear-gradient(135deg,#10b981,#059669);color:white;}
-        .buy-now-btn:hover{transform:translateY(-2px);box-shadow:0 8px 20px rgba(16,185,129,0.4);}
-        .bought-btn{background:#64748b;color:white;cursor:default;opacity:0.8;}
-        @media(max-width:850px){.movie-details-container{grid-template-columns:1fr;}.poster-sidebar{max-width:320px;margin:0 auto;}}
+        html, body {
+            height: 100vh;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+        }
+        body {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+        header, footer {
+            flex-shrink: 0;
+        }
+        main {
+            flex: 1;
+            display: flex;
+            align-items: flex-start;
+            justify-content: center;
+            padding: 0 2rem;
+            overflow: hidden;
+            box-sizing: border-box;
+        }
+        .movie-details-container {
+            display: grid;
+            grid-template-columns: 360px 1fr;
+            gap: 2.5rem;
+            max-width: 1300px;
+            width: 100%;
+            height: calc(100% - 40px);
+            margin-top: 20px;
+            padding: 2rem 2.5rem;
+            background: rgba(15, 23, 42, 0.6);
+            border-radius: 28px;
+            border: 1px solid rgba(72, 187, 255, 0.2);
+            backdrop-filter: blur(8px);
+            align-items: stretch;
+            box-sizing: border-box;
+            overflow: hidden;
+        }
+        .poster-sidebar {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+        .movie-poster-img, .movie-poster-placeholder {
+            width: 100%;
+            height: 100%;
+            max-height: 480px;
+            border-radius: 22px;
+            object-fit: cover;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+        }
+        .movie-poster-placeholder {
+            background: #2d3748;
+            background-image: linear-gradient(145deg, #2d3748 0%, #1a202c 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #718096;
+            font-size: 1.2rem;
+        }
+        .movie-info-block {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            min-height: 0;
+            width: 100%;
+            text-align: left;
+        }
+        .movie-title {
+            font-size: 2.6rem;
+            font-weight: 700;
+            line-height: 1.2;
+            margin-bottom: 0.8rem;
+            background: linear-gradient(135deg, #fff, #94a3b8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            flex-shrink: 0;
+        }
+        .movie-meta-actions {
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+            gap: 1.2rem;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+            width: 100%;
+            flex-shrink: 0;
+        }
+        .rating-block { display: flex; flex-direction: column; align-items: flex-start; }
+        .rating-label {
+            font-size: 0.7rem;
+            letter-spacing: 0.5px;
+            color: #94a3b8;
+            margin-bottom: 2px;
+        }
+        .rating-value { font-size: 1.3rem; font-weight: 700; color: #fde047; }
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+            gap: 12px;
+            margin: 14px 0;
+            width: 100%;
+            text-align: left;
+            flex-shrink: 0;
+        }
+        .info-item {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(72, 187, 255, 0.15);
+            border-radius: 16px;
+            padding: 10px 14px;
+        }
+        .info-label {
+            font-size: 0.7rem;
+            color: #94a3b8;
+            margin-bottom: 4px;
+            letter-spacing: 0.3px;
+        }
+        .info-value { font-size: 0.95rem; font-weight: 600; color: #eef2ff; }
+        .price-description-row {
+            display: flex;
+            align-items: stretch;
+            gap: 2rem;
+            width: 100%;
+            margin: 0.5rem 0 0.8rem;
+            flex: 1 1 auto;
+            min-height: 0;
+        }
+        .movie-description {
+            padding: 0.8rem 1.2rem;
+            background: rgba(255, 255, 255, 0.02);
+            border-left: 3px solid rgba(72, 187, 255, 0.4);
+            border-radius: 8px;
+            flex: 1 1 auto;
+            min-height: 0;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+        }
+        .movie-description::-webkit-scrollbar {
+            width: 6px;
+        }
+        .movie-description::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+        }
+        .movie-description::-webkit-scrollbar-thumb {
+            background: #3b82f6;
+            border-radius: 8px;
+        }
+        .movie-description::-webkit-scrollbar-thumb:hover {
+            background: #2563eb;
+        }
+        .movie-description {
+            scrollbar-width: thin;
+            scrollbar-color: #3b82f6 rgba(255, 255, 255, 0.05);
+        }
+        /* Уменьшаем отступ между "Описание" и текстом */
+        .movie-description .desc-label {
+            font-size: 0.7rem;
+            letter-spacing: 0.5px;
+            color: #94a3b8;
+            margin-bottom: 0;
+            line-height: 1.1;
+            flex-shrink: 0;
+        }
+        .movie-description .desc-text {
+            font-size: 1rem;
+            line-height: 1.6;
+            color: #e2e8f0;
+            margin: 2px 0 0;
+            white-space: pre-wrap;
+            word-break: break-word;
+            flex: 1;
+        }
+        .details-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 0.8rem;
+            margin-top: auto;
+            width: 100%;
+            flex-shrink: 0;
+            padding-top: 0.8rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.06);
+        }
+        .price-and-buttons {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1.5rem;
+            width: 100%;
+            flex-wrap: wrap;
+        }
+        .price-block {
+            display: flex;
+            align-items: baseline;
+            gap: 0.5rem;
+        }
+        .price-label {
+            font-size: 1.8rem;
+            font-weight: 400;
+            color: #94a3b8;
+            letter-spacing: 0.5px;
+        }
+        .price-amount {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #c084fc;
+            white-space: nowrap;
+        }
+        .action-buttons {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+        }
+        .action-buttons .cart-button,
+        .action-buttons .buy-now-btn,
+        .action-buttons .bought-btn {
+            padding: 0.6rem 1.8rem;
+            border-radius: 60px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            cursor: pointer;
+            border: none;
+            text-decoration: none;
+            white-space: nowrap;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .icon-btn {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(72, 187, 255, 0.25);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.3rem;
+            cursor: pointer;
+            color: inherit;
+            transition: 0.2s;
+            position: relative;
+            text-decoration: none;
+            flex-shrink: 0;
+        }
+        .icon-btn:hover { transform: scale(1.08); border-color: #f472b6; color: #f472b6; }
+        .icon-btn.active { color: #f472b6; border-color: #f472b6; }
+        .reviews-badge {
+            font-size: 0.7rem;
+            background: var(--glow-primary, #4f46e5);
+            color: white;
+            padding: 1px 5px;
+            border-radius: 10px;
+            font-weight: 600;
+            position: absolute;
+            top: -4px;
+            right: -4px;
+        }
+        .cart-button, .buy-now-btn, .bought-btn {
+            padding: 0.65rem 2rem;
+            border-radius: 60px;
+            font-weight: 600;
+            font-size: 0.95rem;
+            cursor: pointer;
+            border: none;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            transition: 0.2s;
+            white-space: nowrap;
+            width: auto;
+            flex-shrink: 0;
+        }
+        .to-cart-btn-details { background: linear-gradient(135deg, #3b82f6, #1d4ed8); color: white; }
+        .to-cart-btn-details:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(59, 130, 246, 0.4); }
+        .in-cart-btn-details { background: linear-gradient(135deg, #10b981, #059669); color: white; }
+        .buy-now-btn { background: linear-gradient(135deg, #10b981, #059669); color: white; }
+        .buy-now-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(16, 185, 129, 0.4); }
+        .bought-btn { background: #64748b; color: white; cursor: default; opacity: 0.8; }
+        .price-section {
+            display: none !important;
+        }
+        .price-inline {
+            display: none !important;
+        }
+        footer {
+            width: 100%;
+            z-index: 100;
+            flex-shrink: 0;
+        }
+        @media(max-width: 850px) {
+            html, body { overflow-y: auto; height: auto; }
+            .movie-details-container {
+                grid-template-columns: 1fr;
+                margin: 1rem auto;
+                height: auto;
+                max-height: none;
+                overflow-y: visible;
+                align-items: center;
+            }
+            .poster-sidebar { max-width: 280px; margin: 0 auto; }
+            .price-description-row { flex-direction: column; align-items: stretch; gap: 1rem; }
+            .price-and-buttons { flex-direction: column; align-items: stretch; }
+            .action-buttons { justify-content: center; }
+            .details-actions { flex-direction: column; align-items: stretch; }
+            .cart-button, .buy-now-btn, .bought-btn { width: 100%; justify-content: center; }
+        }
     </style>
 </head>
 <body>
 
 <header th:replace="~{fragments/header :: header}"></header>
 <th:block th:replace="~{fragments/flash-messages :: flashMessages}"></th:block>
+
+<div id="authStatus"
+     th:data-authenticated="${session.userForOwnerViewDTO != null}"
+     style="display:none;"></div>
 
 <main>
     <div class="movie-details-container" th:data-movie-id="${card.movie.id}">
@@ -80,44 +370,65 @@
             </div>
             <div class="info-grid">
                 <div class="info-item">
-                    <div class="info-label">Год выпуска</div>
-                    <div class="info-value" th:text="${card.movie.releaseDate != null ? #temporals.format(card.movie.releaseDate, 'yyyy') : '-'}">-</div>
+                    <div class="info-label">📅 Дата выпуска</div>
+                    <div class="info-value"
+                         th:text="${card.movie.releaseDate != null ? #temporals.format(card.movie.releaseDate, 'dd.MM.yyyy') : '-'}">
+                        -
+                    </div>
                 </div>
                 <div class="info-item">
-                    <div class="info-label">Жанр</div>
+                    <div class="info-label">🎭 Жанр</div>
                     <div class="info-value" th:text="${card.movie.genre != null ? card.movie.genre : '-'}">-</div>
                 </div>
                 <div class="info-item" th:if="${card.movie.director != null}">
-                    <div class="info-label">Режиссёр</div>
+                    <div class="info-label">🎬 Режиссёр</div>
                     <div class="info-value" th:text="${card.movie.director}">-</div>
                 </div>
                 <div class="info-item" th:if="${card.movie.formattedDuration != null}">
-                    <div class="info-label">Длительность</div>
+                    <div class="info-label">⏱ Длительность</div>
                     <div class="info-value" th:text="${card.movie.formattedDuration}">-</div>
                 </div>
             </div>
-            <div class="price-section">
-                <div class="price-label">Стоимость покупки</div>
-                <div class="price-amount" th:text="${card.movie.price + ' ₽'}">0 ₽</div>
+
+            <div class="price-description-row">
+                <div class="movie-description"
+                     th:if="${card.movie.description != null and !card.movie.description.isEmpty()}">
+                    <div class="desc-label">📖 Описание</div>
+                    <p class="desc-text" th:text="${card.movie.description}"></p>
+                </div>
             </div>
+
             <div class="details-actions">
-                <th:block th:if="${session.userForOwnerViewDTO != null}">
-                    <button type="button" th:if="${!card.status.bought and !card.status.inCart}"
-                            class="cart-button to-cart-btn-details"
-                            th:data-movie-id="${card.movie.id}" onclick="addToCart(this)">В корзину</button>
-                    <a th:if="${card.status.inCart}" href="/cart" class="cart-button in-cart-btn-details">В корзине →</a>
-                    <button th:if="${!card.status.bought}"
-                            class="buy-now-btn"
-                            th:data-movie-id="${card.movie.id}"
-                            th:data-movie-price="${card.movie.price}"
-                            th:data-movie-title="${card.movie.title}"
-                            onclick="showBuyModal(this)">Купить сейчас</button>
-                    <button th:if="${card.status.bought}" class="bought-btn" disabled>Куплено</button>
-                </th:block>
-                <th:block th:unless="${session.userForOwnerViewDTO != null}">
-                    <a th:href="@{/login}" class="cart-button to-cart-btn-details" onclick="return requireAuth(event, this.href)">В корзину</a>
-                    <a th:href="@{/login}" class="buy-now-btn" onclick="return requireAuth(event, this.href)">Купить сейчас</a>
-                </th:block>
+                <div class="price-and-buttons">
+                    <div class="price-block">
+                        <span class="price-label">💰Цена: </span>
+                        <span class="price-amount" th:text="${card.movie.price + ' ₽'}">0 ₽</span>
+                    </div>
+                    <div class="action-buttons">
+                        <th:block th:if="${session.userForOwnerViewDTO != null}">
+                            <button type="button" th:if="${!card.status.bought and !card.status.inCart}"
+                                    class="cart-button to-cart-btn-details"
+                                    th:data-movie-id="${card.movie.id}" onclick="addToCart(this)">В корзину
+                            </button>
+                            <a th:if="${card.status.inCart}" href="/cart" class="cart-button in-cart-btn-details">В
+                                корзине →</a>
+                            <button th:if="${!card.status.bought}"
+                                    class="buy-now-btn"
+                                    th:data-movie-id="${card.movie.id}"
+                                    th:data-movie-price="${card.movie.price}"
+                                    th:data-movie-title="${card.movie.title}"
+                                    onclick="showBuyModal(this)">Купить сейчас
+                            </button>
+                            <button th:if="${card.status.bought}" class="bought-btn" disabled>Куплено</button>
+                        </th:block>
+                        <th:block th:unless="${session.userForOwnerViewDTO != null}">
+                            <a th:href="@{/login}" class="cart-button to-cart-btn-details"
+                               onclick="return requireAuth(event, this.href)">В корзину</a>
+                            <a th:href="@{/login}" class="buy-now-btn" onclick="return requireAuth(event, this.href)">Купить
+                                сейчас</a>
+                        </th:block>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -128,7 +439,6 @@
 <th:block th:replace="~{fragments/modals :: confirmDeleteModal}"></th:block>
 
 <script th:src="@{/js/main.js}" defer></script>
-
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         const container = document.querySelector('.movie-details-container');

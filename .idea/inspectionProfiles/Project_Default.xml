@@ -4,7 +4,7 @@
     <inspection_tool class="HtmlUnknownAttribute" enabled="true" level="WARNING" enabled_by_default="true">
       <option name="myValues">
         <value>
-          <list size="49">
+          <list size="53">
             <item index="0" class="java.lang.String" itemvalue="th:href" />
             <item index="1" class="java.lang.String" itemvalue="th:each" />
             <item index="2" class="java.lang.String" itemvalue="th:text" />
@@ -54,6 +54,10 @@
             <item index="46" class="java.lang.String" itemvalue="..." />
             <item index="47" class="java.lang.String" itemvalue="th:for" />
             <item index="48" class="java.lang.String" itemvalue="th:data-own" />
+            <item index="49" class="java.lang.String" itemvalue="th:title" />
+            <item index="50" class="java.lang.String" itemvalue="th:data-authenticated" />
+            <item index="51" class="java.lang.String" itemvalue="ontouchstart" />
+            <item index="52" class="java.lang.String" itemvalue="ontouchend" />
           </list>
         </value>
       </option>
@@ -62,7 +66,7 @@
     <inspection_tool class="HtmlUnknownTag" enabled="true" level="WARNING" enabled_by_default="true">
       <option name="myValues">
         <value>
-          <list size="11">
+          <list size="12">
             <item index="0" class="java.lang.String" itemvalue="nobr" />
             <item index="1" class="java.lang.String" itemvalue="noembed" />
             <item index="2" class="java.lang.String" itemvalue="comment" />
@@ -74,6 +78,7 @@
             <item index="8" class="java.lang.String" itemvalue="th:block" />
             <item index="9" class="java.lang.String" itemvalue="style" />
             <item index="10" class="java.lang.String" itemvalue="th" />
+            <item index="11" class="java.lang.String" itemvalue="head" />
           </list>
         </value>
       </option>

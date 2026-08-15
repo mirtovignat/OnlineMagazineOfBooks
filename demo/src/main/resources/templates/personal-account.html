@@ -98,27 +98,29 @@
 
         <div class="profile-right">
             <div class="stats-grid">
-                <div class="stat-card">
-                    <div class="stat-value"
-                         th:text="${userForOwner.purchasesCount != null ? userForOwner.purchasesCount : 0}">0
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-value"
+                             th:text="${purchasesCount ?: 0}">0
+                        </div>
+                        <div class="stat-label">Покупок</div>
                     </div>
-                    <div class="stat-label">Покупок</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-value"
-                         th:text="${userForOwner.ratingsCount != null ? userForOwner.ratingsCount : 0}">0
+                    <div class="stat-card">
+                        <div class="stat-value"
+                             th:text="${ratingsCount ?: 0}">0
+                        </div>
+                        <div class="stat-label">Оценок</div>
                     </div>
-                    <div class="stat-label">Оценок</div>
                 </div>
             </div>
 
             <div class="sections-grid">
-                <a th:href="@{/orders/history}" class="section-link">
+                <a th:href="@{/history}" class="section-link">
                     <span class="section-icon">📜</span>
                     <span class="section-title">История покупок</span>
                     <span class="section-desc">Просмотр приобретённых фильмов</span>
                 </a>
-                <a th:href="@{/orders/library}" class="section-link">
+                <a th:href="@{/library}" class="section-link">
                     <span class="section-icon">📚</span>
                     <span class="section-title">Библиотека</span>
                     <span class="section-desc">Все купленные фильмы</span>
@@ -148,7 +150,6 @@
     </div>
 </main>
 
-<!-- Модалки -->
 <div id="deleteAccountModal" class="modal">
     <div class="modal-content">
         <div class="modal-header">
@@ -232,8 +233,7 @@
     </div>
 </div>
 
-<script th:src="@{/js/main.js}" defer></script>
-<script>
+<script th:src="@{/js/main.js}" defer></script><script>
     function formatPhone(input) {
         let raw = input.value.replace(/\D/g, '');
         let digits = raw;
@@ -346,7 +346,7 @@
     }
     document.getElementById('confirmDeletePhoneBtn')?.addEventListener('click', deletePhone);
 
-    var usernameRegex = /^[a-zA-Z0-9_]{6,20}$/;
+    var usernameRegex = /^[a-zA-Zа-яА-Я0-9_\- ]{6,20}$/;
     var phoneRegex = /^$|^\+\d{1,3}\s?\(?\d{1,3}\)?\s?\d{3}[\s\-]?\d{2}[\s\-]?\d{2}$/;
 
     function validateUsername() {

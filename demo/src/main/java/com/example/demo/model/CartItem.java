@@ -8,8 +8,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.math.BigDecimal;
-
 @Getter
 @Setter
 @NoArgsConstructor
@@ -22,9 +20,6 @@ public class CartItem extends AbstractLinkedCollectionItem {
 
     @Column(name = "quantity", nullable = false)
     private Short quantity = 1;
-
-    @Column(name = "unit_price_snapshot", nullable = false)
-    private BigDecimal unitPriceSnapshot;
 
 }
 

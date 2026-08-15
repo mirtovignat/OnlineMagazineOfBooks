@@ -2,29 +2,35 @@ package com.example.demo.repository.specification;
 
 import com.example.demo.filter.MovieFilter;
 import com.example.demo.model.Movie;
-import jakarta.persistence.criteria.JoinType;
+import jakarta.persistence.criteria.Expression;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.stereotype.Component;
 
+import java.time.Duration;
 import java.util.Collection;
 import java.util.Objects;
 import java.util.stream.Stream;
 
-public final class MovieSpecifications {
+@Component
+public class MovieSpecifications {
 
-    private MovieSpecifications() {
-    }
-
-    public static Specification<Movie> byFilter(MovieFilter movieFilter) {
+    public Specification<Movie> byFilter(MovieFilter movieFilter) {
         if (movieFilter == null) {
             return Specification.unrestricted();
         }
+        String rawTitle = movieFilter.title();
+        String cleanTitle = (rawTitle != null && !rawTitle.isBlank())
+                ? sanitizeSearchString(rawTitle)
+                : null;
+
         return Stream.of(
+                        cleanTitle != null ? titleStartsWithNormalized(cleanTitle) : null,
                         movieFilter.priceFrom() != null ? greaterThanOrEqualTo("price", movieFilter.priceFrom()) : null,
                         movieFilter.priceTo() != null ? lessThanOrEqualTo("price", movieFilter.priceTo()) : null,
                         movieFilter.releaseDateFrom() != null ? greaterThanOrEqualTo("releaseDate", movieFilter.releaseDateFrom()) : null,
                         movieFilter.releaseDateTo() != null ? lessThanOrEqualTo("releaseDate", movieFilter.releaseDateTo()) : null,
-                        movieFilter.durationFrom() != null ? greaterThanOrEqualTo("duration", movieFilter.durationFrom()) : null,
-                        movieFilter.durationTo() != null ? lessThanOrEqualTo("duration", movieFilter.durationTo()) : null,
+                        movieFilter.durationFrom() != null ? greaterThanOrEqualTo("duration", Duration.ofMinutes(movieFilter.durationFrom())) : null,
+                        movieFilter.durationTo() != null ? lessThanOrEqualTo("duration", Duration.ofMinutes(movieFilter.durationTo())) : null,
                         movieFilter.ratingFrom() != null ? greaterThanOrEqualTo("rating", movieFilter.ratingFrom()) : null,
                         movieFilter.ratingTo() != null ? lessThanOrEqualTo("rating", movieFilter.ratingTo()) : null,
                         (movieFilter.genres() != null && !movieFilter.genres().isEmpty()) ? isInCollection("genre", movieFilter.genres()) : null,
@@ -34,30 +40,31 @@ public final class MovieSpecifications {
                 .reduce(Specification.unrestricted(), Specification::and);
     }
 
-    public static Specification<Movie> fetchPurchasesAndReviews() {
+    private String sanitizeSearchString(String input) {
+        if (input == null) return "";
+        return input.toLowerCase().replaceAll("[^a-zа-я0-9]", "");
+    }
+
+    private Specification<Movie> titleStartsWithNormalized(String sanitizedSearchQuery) {
         return (root, query, criteriaBuilder) -> {
-            assert query != null;
-            if (Long.class.equals(query.getResultType())) {
-                return null;
+            Expression<String> expr = criteriaBuilder.lower(root.get("title"));
+            String[] charsToRemove = new String[]{" ", "-", ":", ",", ".", "!", "?", "—", "'", "\"", "«", "»"};
+            for (String c : charsToRemove) {
+                expr = criteriaBuilder.function("replace", String.class, expr, criteriaBuilder.literal(c), criteriaBuilder.literal(""));
             }
-            root.fetch("purchases", JoinType.LEFT);
-            query.distinct(true);
-            return null;
+            return criteriaBuilder.like(expr, sanitizedSearchQuery + "%");
         };
     }
 
-    private static <Y extends Comparable<? super Y>> Specification<Movie> greaterThanOrEqualTo(String fieldName,
-                                                                                               Y value) {
+    private <Y extends Comparable<? super Y>> Specification<Movie> greaterThanOrEqualTo(String fieldName, Y value) {
         return (root, query, criteriaBuilder) -> criteriaBuilder.greaterThanOrEqualTo(root.get(fieldName), value);
     }
 
-    private static <Y extends Comparable<? super Y>> Specification<Movie> lessThanOrEqualTo(String fieldName,
-                                                                                            Y value) {
+    private <Y extends Comparable<? super Y>> Specification<Movie> lessThanOrEqualTo(String fieldName, Y value) {
         return (root, query, criteriaBuilder) -> criteriaBuilder.lessThanOrEqualTo(root.get(fieldName), value);
     }
 
-    private static <Y> Specification<Movie> isInCollection(String fieldName,
-                                                           Collection<Y> collection) {
+    private <Y> Specification<Movie> isInCollection(String fieldName, Collection<Y> collection) {
         return (root, query, criteriaBuilder) -> root.get(fieldName).in(collection);
     }
 }
