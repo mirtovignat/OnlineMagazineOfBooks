@@ -1,12 +1,9 @@
 package com.example.demo.service.purchased;
 
-import com.example.demo.dto.joined_to_user.CartMovieForOwnerViewDTO;
+import com.example.demo.dto.catalog.CartMovieForOwnerViewDTO;
 import com.example.demo.exception.BusinessException;
 import com.example.demo.exception.ErrorCode;
-import com.example.demo.model.CartItem;
-import com.example.demo.model.Movie;
-import com.example.demo.model.PurchasedMovie;
-import com.example.demo.model.User;
+import com.example.demo.model.*;
 import com.example.demo.repository.MovieRepository;
 import com.example.demo.repository.PurchasedMovieRepository;
 import com.example.demo.service.linked_collection.AbstractLinkedCollectionService;
@@ -24,39 +21,40 @@ import java.util.Set;
 public class PurchasedCommandService {
 
     private final PurchasedMovieRepository purchasedMovieRepository;
-    protected final AbstractLinkedCollectionService<CartItem,
-            CartMovieForOwnerViewDTO> cartService;
+    protected final AbstractLinkedCollectionService<CartItem, CartMovieForOwnerViewDTO> cartService;
     private final MovieRepository movieRepository;
     private final UserService userService;
     private final PurchasedQueryService purchasedQueryService;
 
     @Transactional
-    public void purchase(Long movieId, String username) {
-        purchaseMovies(List.of(movieId), username, true);
+    public BigDecimal purchase(Long movieId, Long userId) {
+        return purchaseMovies(List.of(movieId), userId, true);
     }
 
     @Transactional
-    public void purchaseBulk(String username) {
-        List<CartItem> cartItems = cartService.findAll(username);
+    public BigDecimal purchaseBulk(Long userId) {
+        List<CartItem> cartItems = cartService.findAll(userId);
         if (cartItems.isEmpty()) {
-            return;
+            return userService.getBalance(userId);
         }
         List<Long> movieIds = cartItems.stream()
                 .map(item -> item.getMovie().getId())
                 .toList();
-        purchaseMovies(movieIds, username, false);
+        return purchaseMovies(movieIds, userId, false);
     }
 
-    private void purchaseMovies(List<Long> requestedMovieIds, String username, boolean isSinglePurchase) {
-        User user = userService.getUser(username);
-        Set<Long> alreadyPurchasedIds = purchasedQueryService.getPurchasedMovieIds(username);
+    private BigDecimal purchaseMovies(List<Long> requestedMovieIds, Long userId,
+                                      boolean isSinglePurchase) {
+        User user = userService.getUser(userId);
+        Set<Long> alreadyPurchasedIds = purchasedQueryService.getPurchasedMovieIds(userId);
         List<Long> idsToBuy = requestedMovieIds.stream()
                 .filter(id -> !alreadyPurchasedIds.contains(id))
                 .distinct()
                 .toList();
+
         if (idsToBuy.isEmpty()) {
-            clearCartFor(requestedMovieIds, username, isSinglePurchase);
-            return;
+            clearCartFor(requestedMovieIds, userId, isSinglePurchase);
+            return user.getBalance();
         }
         List<Movie> moviesToBuy = movieRepository.findAllById(idsToBuy);
         BigDecimal totalPrice = moviesToBuy.stream()
@@ -70,23 +68,20 @@ public class PurchasedCommandService {
         List<PurchasedMovie> purchases = moviesToBuy.stream()
                 .map(movie -> {
                     PurchasedMovie purchased = new PurchasedMovie();
-                    purchased.setMovie(movie);
-                    purchased.setUser(user);
                     purchased.setPriceSnapshot(movie.getPrice());
-                    return purchased;
+                    return AbstractCatalogItem.init(purchased, user, movie);
                 })
                 .toList();
         purchasedMovieRepository.saveAll(purchases);
-        clearCartFor(requestedMovieIds, username, isSinglePurchase);
+        clearCartFor(requestedMovieIds, userId, isSinglePurchase);
+        return user.getBalance();
     }
 
-    private void clearCartFor(List<Long> requestedMovieIds,
-                              String username,
-                              Boolean isSinglePurchase) {
+    private void clearCartFor(List<Long> requestedMovieIds, Long userId, Boolean isSinglePurchase) {
         if (isSinglePurchase && !requestedMovieIds.isEmpty()) {
-            cartService.remove(requestedMovieIds.get(0), username);
+            cartService.remove(requestedMovieIds.get(0), userId);
         } else {
-            cartService.deleteAll(username);
+            cartService.deleteAll(userId);
         }
     }
 }

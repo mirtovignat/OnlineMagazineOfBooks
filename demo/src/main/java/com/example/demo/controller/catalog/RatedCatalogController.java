@@ -1,7 +1,7 @@
 package com.example.demo.controller.catalog;
 
-import com.example.demo.dto.joined_to_user.RatedMovieForOwnerViewDTO;
-import com.example.demo.dto.user.UserForOwnerViewDTO;
+import com.example.demo.dto.catalog.RatedMovieForOwnerViewDTO;
+import com.example.demo.dto.user.SessionUser;
 import com.example.demo.service.catalog.RatedCatalogService;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Controller;
@@ -22,9 +22,10 @@ public class RatedCatalogController {
     @GetMapping
     public String getRatedHistory(
             Model model,
-            @SessionAttribute UserForOwnerViewDTO userForOwnerViewDTO
+            @SessionAttribute SessionUser sessionUser
     ) {
-        List<RatedMovieForOwnerViewDTO> items = ratedCatalogService.getCatalog(userForOwnerViewDTO.username());
+        Long userId = sessionUser.id();
+        List<RatedMovieForOwnerViewDTO> items = ratedCatalogService.getCatalog(userId);
         model.addAttribute("items", items);
         return "catalog/rated";
     }

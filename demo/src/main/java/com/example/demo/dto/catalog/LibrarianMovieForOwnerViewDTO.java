@@ -1,18 +1,15 @@
-package com.example.demo.dto.joined_to_user;
+package com.example.demo.dto.catalog;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 
-public record RatedMovieForOwnerViewDTO(
+public record LibrarianMovieForOwnerViewDTO(
         Long id,
         String title,
         String genre,
         String posterUrl,
         BigDecimal rating,
         LocalDate releaseDate,
-        String review,
-        LocalDateTime addedAt,
-        BigDecimal ratingValue
+        String director
 ) implements CatalogMovieData {
 }

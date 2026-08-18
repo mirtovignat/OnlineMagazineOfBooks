@@ -1,6 +1,6 @@
 package com.example.demo.service.rated;
 
-import com.example.demo.dto.joined_to_user.ReviewViewDTO;
+import com.example.demo.dto.catalog.ReviewViewDTO;
 import com.example.demo.dto.response.ReviewsPageResponse;
 import com.example.demo.service.catalog.RatedCatalogService;
 import com.example.demo.service.movie.MovieService;
@@ -21,21 +21,21 @@ public class ReviewsQueryService {
     private final MovieService movieService;
 
     @Transactional(readOnly = true)
-    public ReviewsPageResponse buildReviewsPage(Long movieId, String currentUsername) {
-        List<ReviewViewDTO> reviews = ratedQueryService.getReviewsByMovieId(movieId, currentUsername);
+    public ReviewsPageResponse buildReviewsPage(Long movieId, Long userId) {
+        List<ReviewViewDTO> reviews = ratedQueryService.getReviewsByMovieId(movieId, userId);
         List<ReviewViewDTO> sortedReviews = Sorter.sortByReleaseDateConsideringOwn(reviews);
-        BigDecimal avgRating = ratedQueryService.getMovieRating(movieId);
+        BigDecimal averageRating = ratedQueryService.getMovieRating(movieId);
         long totalReviews = ratedQueryService.getReviewsCountForMovie(movieId);
-        boolean hasOwnReview = currentUsername != null &&
-                ratedCatalogService.existsByMovieIdAndUsername(movieId, currentUsername);
+        boolean hasOwnReview = userId != null &&
+                ratedCatalogService.existsByMovieIdAndUserId(movieId, userId);
         String movieTitle = movieService.getMovie(movieId).getTitle();
-        return new ReviewsPageResponse(
+        return ReviewsPageResponse.of(
                 sortedReviews,
-                avgRating,
+                averageRating,
                 totalReviews,
                 hasOwnReview,
-                movieTitle != null ? movieTitle : "Фильм",
-                movieId != 0 ? movieId : 0
+                movieTitle,
+                movieId
         );
     }
 }

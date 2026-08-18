@@ -23,7 +23,6 @@
             box-sizing: border-box;
             transition: background-color 0.3s ease;
         }
-
         .filters-toggle-btn {
             display: inline-flex;
             align-items: center;
@@ -245,7 +244,6 @@
             padding: 0.5rem;
             box-shadow: 0 10px 25px rgba(0,0,0,0.5);
         }
-
         .accordion-dropdown::-webkit-scrollbar,
         #filterForm::-webkit-scrollbar {
             width: 6px;
@@ -269,7 +267,6 @@
             scrollbar-width: thin;
             scrollbar-color: rgba(255, 255, 255, 0.35) rgba(255, 255, 255, 0.05);
         }
-
         .accordion-group.active .accordion-dropdown {
             display: block;
         }
@@ -401,15 +398,13 @@
             font-size: 0.85rem;
             margin-top: 6px;
         }
-
-                /* Стилизация календарей (input type="date") в темной теме */
         input[type="date"] {
-            color-scheme: dark; /* Включает темную тему для встроенного календаря браузера */
-            background: rgba(10, 13, 28, 0.6); /* Такой же фон, как у других полей */
+            color-scheme: dark;
+            background: rgba(10, 13, 28, 0.6);
             border: 1px solid rgba(255, 255, 255, 0.1);
             border-radius: 10px;
             color: #f1f5f9;
-            height: 42px; /* Выравниваем высоту с остальными инпутами */
+            height: 42px;
             padding: 0 0.85rem;
             box-sizing: border-box;
             width: 100%;
@@ -418,7 +413,6 @@
             outline: none;
             transition: all 0.2s ease;
         }
-
         input[type="date"]::-webkit-calendar-picker-indicator {
             filter: invert(1);
             opacity: 0.6;
@@ -428,11 +422,50 @@
         input[type="date"]::-webkit-calendar-picker-indicator:hover {
             opacity: 1;
         }
-
         input[type="date"]:focus {
             border-color: #6366f1;
             background: rgba(10, 13, 28, 0.9);
             box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+        }
+
+        .amount-input-with-stepper {
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+            position: relative;
+            flex: 1;
+        }
+        .amount-input-with-stepper .filter-input {
+            flex: 1;
+            min-width: 0;
+        }
+        .amount-input-with-stepper .stepper-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 1px;
+        }
+        .stepper-btn {
+            background: rgba(255,255,255,0.08);
+            border: 1px solid rgba(255,255,255,0.15);
+            border-radius: 4px;
+            color: #cbd5e1;
+            font-size: 0.6rem;
+            padding: 0.1rem 0.25rem;
+            cursor: pointer;
+            line-height: 1;
+            transition: 0.15s;
+            height: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .stepper-btn:hover {
+            background: rgba(255,255,255,0.18);
+            border-color: #818cf8;
+        }
+        .stepper-btn.holding {
+            background: rgba(99,102,241,0.3);
+            border-color: #6366f1;
         }
     </style>
 
@@ -471,10 +504,10 @@
                     th:style="${cartCount == null || cartCount == 0} ? 'display: none;' : ''">0</span>
         </a>
 
-        <div th:if="${session.userForOwnerViewDTO != null}" class="user-menu" id="userMenu">
+        <div th:if="${session.sessionUser != null}" class="user-menu" id="userMenu">
             <div class="user-menu-toggle" onclick="toggleUserMenu()">
                 <div class="user-avatar-letter"
-                     th:text="${#strings.substring(session.userForOwnerViewDTO.username, 0, 1).toUpperCase()}"
+                     th:text="${session.sessionUser != null ? session.sessionUser.firstUsernameLetter() : 'U'}"
                      style="display:inline-flex; align-items:center; justify-content:center; width:32px; height:32px; border-radius:50%; background:linear-gradient(135deg, #4f46e5, #7c3aed); color:white; font-weight:700; font-size:1.2rem; text-transform:uppercase; flex-shrink:0; border:2px solid var(--glow-primary, #6366f1);">
                 </div>
                 <span class="toggle-icon">▼</span>
@@ -489,7 +522,7 @@
             </div>
         </div>
 
-        <a th:if="${session.userForOwnerViewDTO == null}" th:href="@{/login}" class="login-button">👤 Войти</a>
+        <a th:if="${session.sessionUser == null}" th:href="@{/login}" class="login-button">👤 Войти</a>
     </div>
 
     <div id="filtersModalOverlay" class="filters-modal-overlay" onclick="handleOverlayClick(event)">
@@ -503,32 +536,84 @@
                 <div class="filter-group">
                     <label for="priceFrom">Цена (₽)</label>
                     <div class="filter-row">
-                        <input type="text" inputmode="decimal" id="priceFrom" name="priceFrom" class="filter-input"
-                               placeholder="От">
-                        <label for="priceTo"></label>
-                        <input type="text" inputmode="decimal" id="priceTo" name="priceTo" class="filter-input"
-                               placeholder="До">
+                        <div class="amount-input-with-stepper">
+                            <input type="text" inputmode="decimal" id="priceFrom" name="priceFrom" class="filter-input"
+                                   placeholder="От">
+                            <div class="stepper-buttons">
+                                <button type="button" class="stepper-btn up"
+                                        onmousedown="startSteppingFilter('priceFrom', 0.01, 0, null, 2, this)"
+                                        onmouseup="stopSteppingFilter(this)" onmouseleave="stopSteppingFilter(this)"
+                                        ontouchstart="startSteppingFilter('priceFrom', 0.01, 0, null, 2, this)"
+                                        ontouchend="stopSteppingFilter(this)" title="Увеличить">▲
+                                </button>
+                                <button type="button" class="stepper-btn down"
+                                        onmousedown="startSteppingFilter('priceFrom', -0.01, 0, null, 2, this)"
+                                        onmouseup="stopSteppingFilter(this)" onmouseleave="stopSteppingFilter(this)"
+                                        ontouchstart="startSteppingFilter('priceFrom', -0.01, 0, null, 2, this)"
+                                        ontouchend="stopSteppingFilter(this)" title="Уменьшить">▼
+                                </button>
+                            </div>
+                        </div>
+                        <div class="amount-input-with-stepper">
+                            <input type="text" inputmode="decimal" id="priceTo" name="priceTo" class="filter-input"
+                                   placeholder="До">
+                            <div class="stepper-buttons">
+                                <button type="button" class="stepper-btn up"
+                                        onmousedown="startSteppingFilter('priceTo', 0.01, 0, null, 2, this)"
+                                        onmouseup="stopSteppingFilter(this)" onmouseleave="stopSteppingFilter(this)"
+                                        ontouchstart="startSteppingFilter('priceTo', 0.01, 0, null, 2, this)"
+                                        ontouchend="stopSteppingFilter(this)" title="Увеличить">▲
+                                </button>
+                                <button type="button" class="stepper-btn down"
+                                        onmousedown="startSteppingFilter('priceTo', -0.01, 0, null, 2, this)"
+                                        onmouseup="stopSteppingFilter(this)" onmouseleave="stopSteppingFilter(this)"
+                                        ontouchstart="startSteppingFilter('priceTo', -0.01, 0, null, 2, this)"
+                                        ontouchend="stopSteppingFilter(this)" title="Уменьшить">▼
+                                </button>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
                 <div class="filter-group">
                     <label for="ratingFrom">Рейтинг CinemaService</label>
                     <div class="filter-row">
-                        <input type="text"
-                               inputmode="decimal"
-                               id="ratingFrom"
-                               name="ratingFrom"
-                               class="filter-input"
-                               placeholder="От 0.0">
-
-                        <label for="ratingTo"></label>
-
-                        <input type="text"
-                               inputmode="decimal"
-                               id="ratingTo"
-                               name="ratingTo"
-                               class="filter-input"
-                               placeholder="До 10.0">
+                        <div class="amount-input-with-stepper">
+                            <input type="text" inputmode="decimal" id="ratingFrom" name="ratingFrom"
+                                   class="filter-input" placeholder="От 0.0">
+                            <div class="stepper-buttons">
+                                <button type="button" class="stepper-btn up"
+                                        onmousedown="startSteppingFilter('ratingFrom', 0.1, 0, 10, 1, this)"
+                                        onmouseup="stopSteppingFilter(this)" onmouseleave="stopSteppingFilter(this)"
+                                        ontouchstart="startSteppingFilter('ratingFrom', 0.1, 0, 10, 1, this)"
+                                        ontouchend="stopSteppingFilter(this)" title="Увеличить">▲
+                                </button>
+                                <button type="button" class="stepper-btn down"
+                                        onmousedown="startSteppingFilter('ratingFrom', -0.1, 0, 10, 1, this)"
+                                        onmouseup="stopSteppingFilter(this)" onmouseleave="stopSteppingFilter(this)"
+                                        ontouchstart="startSteppingFilter('ratingFrom', -0.1, 0, 10, 1, this)"
+                                        ontouchend="stopSteppingFilter(this)" title="Уменьшить">▼
+                                </button>
+                            </div>
+                        </div>
+                        <div class="amount-input-with-stepper">
+                            <input type="text" inputmode="decimal" id="ratingTo" name="ratingTo" class="filter-input"
+                                   placeholder="До 10.0">
+                            <div class="stepper-buttons">
+                                <button type="button" class="stepper-btn up"
+                                        onmousedown="startSteppingFilter('ratingTo', 0.1, 0, 10, 1, this)"
+                                        onmouseup="stopSteppingFilter(this)" onmouseleave="stopSteppingFilter(this)"
+                                        ontouchstart="startSteppingFilter('ratingTo', 0.1, 0, 10, 1, this)"
+                                        ontouchend="stopSteppingFilter(this)" title="Увеличить">▲
+                                </button>
+                                <button type="button" class="stepper-btn down"
+                                        onmousedown="startSteppingFilter('ratingTo', -0.1, 0, 10, 1, this)"
+                                        onmouseup="stopSteppingFilter(this)" onmouseleave="stopSteppingFilter(this)"
+                                        ontouchstart="startSteppingFilter('ratingTo', -0.1, 0, 10, 1, this)"
+                                        ontouchend="stopSteppingFilter(this)" title="Уменьшить">▼
+                                </button>
+                            </div>
+                        </div>
                     </div>
                     <div id="ratingFilterError" class="rating-error"></div>
                 </div>
@@ -551,8 +636,7 @@
                     <label for="releaseDateFrom">Дата выхода</label>
                     <div class="filter-row">
                         <input type="date" id="releaseDateFrom" name="releaseDateFrom" class="filter-input">
-                        <label for="releaseDateTo"></label><input type="date" id="releaseDateTo" name="releaseDateTo"
-                                                                  class="filter-input">
+                        <input type="date" id="releaseDateTo" name="releaseDateTo" class="filter-input">
                     </div>
                 </div>
 
@@ -563,59 +647,45 @@
                             <span class="range-prefix">от</span>
                             <div class="duration-picker">
                                 <div class="duration-field field-hours">
-                                    <label for="durationFromHours"></label><input type="text" id="durationFromHours"
-                                                                                  class="filter-input positive-int"
-                                                                                  placeholder="0" data-max="16"
-                                                                                  maxlength="2" inputmode="numeric"
-                                                                                  autocomplete="off">
+                                    <input type="text" id="durationFromHours" class="filter-input positive-int"
+                                           placeholder="0" data-max="16" maxlength="2" inputmode="numeric"
+                                           autocomplete="off">
                                     <span class="unit">ч.</span>
                                 </div>
                                 <div class="duration-field field-mins">
-                                    <label for="durationFromMinutes"></label><input type="text" id="durationFromMinutes"
-                                                                                    class="filter-input positive-int"
-                                                                                    placeholder="0" data-max="59"
-                                                                                    maxlength="2" inputmode="numeric"
-                                                                                    autocomplete="off">
+                                    <input type="text" id="durationFromMinutes" class="filter-input positive-int"
+                                           placeholder="0" data-max="59" maxlength="2" inputmode="numeric"
+                                           autocomplete="off">
                                     <span class="unit">мин.</span>
                                 </div>
                                 <div class="duration-field field-secs">
-                                    <label for="durationFromSeconds"></label><input type="text" id="durationFromSeconds"
-                                                                                    class="filter-input positive-int"
-                                                                                    placeholder="0" data-max="59"
-                                                                                    maxlength="2" inputmode="numeric"
-                                                                                    autocomplete="off">
+                                    <input type="text" id="durationFromSeconds" class="filter-input positive-int"
+                                           placeholder="0" data-max="59" maxlength="2" inputmode="numeric"
+                                           autocomplete="off">
                                     <span class="unit">сек.</span>
                                 </div>
                             </div>
                         </div>
-
                         <span class="range-separator">—</span>
-
                         <div class="duration-block">
                             <span class="range-prefix">до</span>
                             <div class="duration-picker">
                                 <div class="duration-field field-hours">
-                                    <label for="durationToHours"></label><input type="text" id="durationToHours"
-                                                                                class="filter-input positive-int"
-                                                                                placeholder="0" data-max="16"
-                                                                                maxlength="2" inputmode="numeric"
-                                                                                autocomplete="off">
+                                    <input type="text" id="durationToHours" class="filter-input positive-int"
+                                           placeholder="0" data-max="16" maxlength="2" inputmode="numeric"
+                                           autocomplete="off">
                                     <span class="unit">ч.</span>
                                 </div>
                                 <div class="duration-field field-mins">
-                                    <label for="durationToMinutes"></label><input type="text" id="durationToMinutes"
-                                                                                  class="filter-input positive-int"
-                                                                                  placeholder="0" data-max="59"
-                                                                                  maxlength="2" inputmode="numeric"
-                                                                                  autocomplete="off">
+                                    <input type="text" id="durationToMinutes" class="filter-input positive-int"
+                                           placeholder="0" data-max="59" maxlength="2" inputmode="numeric"
+                                           autocomplete="off">
                                     <span class="unit">мин.</span>
                                 </div>
                                 <div class="duration-field field-secs">
-                                    <label for="durationToSeconds"></label><input type="text" id="durationToSeconds"
-                                                                                  class="filter-input positive-int"
-                                                                                  placeholder="0" data-max="59"
-                                                                                  maxlength="2" inputmode="numeric"
-                                                                                  autocomplete="off">
+                                    <input type="text" id="durationToSeconds" class="filter-input positive-int"
+                                           placeholder="0" data-max="59" maxlength="2" inputmode="numeric"
+                                           autocomplete="off">
                                     <span class="unit">сек.</span>
                                 </div>
                             </div>
@@ -704,7 +774,6 @@
         function setupFilterPriceInput(inputId) {
             var input = document.getElementById(inputId);
             if (!input) return;
-
             input.addEventListener('input', function () {
                 var value = this.value;
                 if (value === '') return;
@@ -724,14 +793,12 @@
                 if (value === '.' || value === ',') newValue = '0.';
                 if (this.value !== newValue) this.value = newValue;
             });
-
             input.addEventListener('keydown', function (e) {
                 var allowedKeys = ['Backspace', 'Tab', 'ArrowLeft', 'ArrowRight', 'Delete', 'Enter', 'Escape', '.', ','];
                 if (allowedKeys.includes(e.key)) return;
                 if (e.key >= '0' && e.key <= '9') return;
                 e.preventDefault();
             });
-
             input.addEventListener('paste', function (e) {
                 e.preventDefault();
                 var pasted = (e.clipboardData || window.clipboardData).getData('text');
@@ -748,7 +815,6 @@
                 }
                 this.dispatchEvent(new Event('input', { bubbles: true }));
             });
-
             input.addEventListener('blur', function () {
                 if (this.value === '.' || this.value === '0.') {
                     this.value = '0';
@@ -762,7 +828,6 @@
         function setupFilterRatingInput(inputId) {
             var input = document.getElementById(inputId);
             if (!input) return;
-
             input.addEventListener('input', function () {
                 var value = this.value;
                 if (value === '') return;
@@ -792,14 +857,12 @@
                 if (value === '0.') newValue = '0.';
                 if (this.value !== newValue) this.value = newValue;
             });
-
             input.addEventListener('keydown', function (e) {
                 var allowedKeys = ['Backspace', 'Tab', 'ArrowLeft', 'ArrowRight', 'Delete', 'Enter', 'Escape', '.', ','];
                 if (allowedKeys.includes(e.key)) return;
                 if (e.key >= '0' && e.key <= '9') return;
                 e.preventDefault();
             });
-
             input.addEventListener('paste', function (e) {
                 e.preventDefault();
                 var pasted = (e.clipboardData || window.clipboardData).getData('text');
@@ -905,7 +968,6 @@
                     }
                 }
             });
-
             input.addEventListener('paste', function(e) {
                 e.preventDefault();
                 var pastedText = (e.clipboardData || window.clipboardData).getData('text');

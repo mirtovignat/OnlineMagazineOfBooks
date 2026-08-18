@@ -1,6 +1,6 @@
 package com.example.demo.web.interceptor;
 
-import com.example.demo.dto.user.UserForOwnerViewDTO;
+import com.example.demo.dto.user.SessionUser;
 import com.example.demo.exception.ErrorCode;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -31,10 +31,10 @@ public class SessionInterceptor implements HandlerInterceptor {
             return true;
         }
         HttpSession httpSession = httpServletRequest.getSession(false);
-        UserForOwnerViewDTO userForOwnerViewDTO = (httpSession != null)
-                ? (UserForOwnerViewDTO) httpSession.getAttribute("userForOwnerViewDTO")
+        SessionUser sessionUser = (httpSession != null)
+                ? (SessionUser) httpSession.getAttribute("sessionUser")
                 : null;
-        if (userForOwnerViewDTO == null) {
+        if (sessionUser == null) {
             if (isAjax(httpServletRequest)) {
                 httpServletResponse.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                 httpServletResponse.setContentType("application/json;charset=UTF-8");

@@ -4,10 +4,10 @@ import com.example.demo.dto.movie.MovieCardDetailsViewDTO;
 import com.example.demo.dto.movie.MovieCardViewDTO;
 import com.example.demo.dto.movie.MovieForUser;
 import com.example.demo.dto.movie.MovieSearchDTO;
-import com.example.demo.dto.user.UserForOwnerViewDTO;
+import com.example.demo.dto.response.MoviesPageResponse;
+import com.example.demo.dto.user.SessionUser;
 import com.example.demo.filter.MovieFilter;
 import com.example.demo.service.movie.MovieService;
-import com.example.demo.service.user.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -27,44 +27,49 @@ import java.util.Map;
 public class MovieController {
 
     private final MovieService movieService;
-    private final UserService userService;
 
     @GetMapping
     public String showCatalog(
-            @SessionAttribute(required = false) UserForOwnerViewDTO userForOwnerViewDTO,
+            @SessionAttribute(required = false) SessionUser sessionUser,
             @PageableDefault(size = 15, sort = "releaseDate", direction = Sort.Direction.DESC) Pageable pageable,
             Model model
     ) {
-        String username = userService.getUsername(userForOwnerViewDTO);
-        Page<MovieForUser<MovieCardViewDTO>> cardsPage = movieService.getCatalogPage(pageable, username);
-        model.addAttribute("cardsPage", cardsPage);
-        model.addAttribute("isSearch", false);
+        Long userId = sessionUser != null ? sessionUser.id() : null;
+        Page<MovieForUser<MovieCardViewDTO>> cardsPage =
+                movieService.getCatalogPage(pageable, userId);
+        MoviesPageResponse response = MoviesPageResponse.of(cardsPage);
+        model.addAttribute("response", response);
         return "index";
     }
 
     @GetMapping("/search")
     public String searchMovies(
             @Valid @ModelAttribute MovieFilter movieFilter,
-            @PageableDefault(size = 15, sort = "releaseDate", direction = Sort.Direction.DESC) Pageable pageable,
-            @SessionAttribute(required = false) UserForOwnerViewDTO userForOwnerViewDTO,
+            @PageableDefault(size = 15, sort = "releaseDate",
+                    direction = Sort.Direction.DESC) Pageable pageable,
+            @SessionAttribute(required = false) SessionUser sessionUser,
             Model model
     ) {
-        String username = userService.getUsername(userForOwnerViewDTO);
-        Page<MovieForUser<MovieCardViewDTO>> cardsPage = movieService.getMoviesByFilter(movieFilter, pageable, username);
-        model.addAttribute("cardsPage", cardsPage);
-        model.addAttribute("movieFilter", movieFilter);
-        model.addAttribute("isSearch", true);
+        Long userId = sessionUser != null ? sessionUser.id() : null;
+        Page<MovieForUser<MovieCardViewDTO>> cardsPage = movieService.getMoviesByFilter(
+                movieFilter, pageable, userId);
+        if (cardsPage.getTotalElements() == 1) {
+            Long movieId = cardsPage.getContent().get(0).movie().id();
+            return "redirect:/movies/" + movieId;
+        }
+        MoviesPageResponse response = MoviesPageResponse.of(cardsPage, movieFilter);
+        model.addAttribute("response", response);
         return "index";
     }
 
     @GetMapping("/movies/{id}")
     public String showMovie(
             @PathVariable Long id,
-            @SessionAttribute(required = false) UserForOwnerViewDTO userForOwnerViewDTO,
+            @SessionAttribute(required = false) SessionUser sessionUser,
             Model model
     ) {
-        String username = userService.getUsername(userForOwnerViewDTO);
-        MovieForUser<MovieCardDetailsViewDTO> card = movieService.getCard(id, username);
+        Long userId = sessionUser != null ? sessionUser.id() : null;
+        MovieForUser<MovieCardDetailsViewDTO> card = movieService.getCard(id, userId);
         model.addAttribute("card", card);
         return "show";
     }

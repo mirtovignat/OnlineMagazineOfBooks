@@ -1,6 +1,6 @@
 package com.example.demo.mapper;
 
-import com.example.demo.dto.joined_to_user.FavouriteMovieForOwnerViewDTO;
+import com.example.demo.dto.catalog.FavouriteMovieForOwnerViewDTO;
 import com.example.demo.model.FavouriteMovie;
 import com.example.demo.service.precence.FavouritePresenceService;
 import org.mapstruct.Context;
@@ -21,7 +21,7 @@ public interface FavouritesMapper {
     @Mapping(target = "formattedDuration", source = "movie.duration", qualifiedByName = "durationToString")
     @Mapping(target = "inFavourites", constant = "true")
     @Mapping(target = "inCart", expression =
-            "java(favouritePresenceService.isInLinkedCollection(favouriteMovie.getMovie().getId(), favouriteMovie.getUser().getUsername()))")
+            "java(favouritePresenceService.isInLinkedCollection(favouriteMovie.getMovie().getId(), favouriteMovie.getUser().getId()))")
     FavouriteMovieForOwnerViewDTO toOwnerView(
             FavouriteMovie favouriteMovie,
             @Context FavouritePresenceService favouritePresenceService

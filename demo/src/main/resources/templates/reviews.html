@@ -40,13 +40,13 @@
 <body>
 
 <div id="currentUserData"
-     th:data-username="${session.userForOwnerViewDTO != null ? session.userForOwnerViewDTO.username : ''}"></div>
+     th:data-username="${currentUsername != null ? currentUsername : ''}"></div>
 
 <header th:replace="~{fragments/header :: header}"></header>
 <th:block th:replace="~{fragments/flash-messages :: flashMessages}"></th:block>
 
 <div id="authStatus"
-     th:data-authenticated="${session.userForOwnerViewDTO != null}"
+     th:data-authenticated="${session.sessionUser != null}"
      style="display:none;"></div>
 
 <main>
@@ -63,12 +63,12 @@
             </div>
         </div>
 
-        <div th:if="${session.userForOwnerViewDTO == null}" class="login-prompt-block">
+        <div th:if="${session.sessionUser == null}" class="login-prompt-block">
             <p style="color: #94a3b8; font-size: 1.1rem;">💬 Хотите поделиться своим мнением о фильме?</p>
             <a th:href="@{/login}" class="login-prompt-btn">🔑 Войти и написать отзыв</a>
         </div>
 
-        <div id="addReviewBtnContainer" th:if="${session.userForOwnerViewDTO != null}"
+        <div id="addReviewBtnContainer" th:if="${session.sessionUser != null}"
              th:style="${response.hasOwnReview} ? 'display:none' : ''">
             <button class="add-review-btn"
                     th:attr="data-movie-id=${response.movieId}, data-movie-title=${response.movieTitle}"

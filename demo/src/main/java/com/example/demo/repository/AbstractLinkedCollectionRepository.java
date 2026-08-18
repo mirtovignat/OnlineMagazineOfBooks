@@ -1,6 +1,7 @@
 package com.example.demo.repository;
 
-import com.example.demo.model.AbstractLinkedCollectionItem;
+import com.example.demo.model.AbstractCatalogItem;
+import com.example.demo.model.AbstractCatalogItemId;
 import org.springframework.data.jpa.repository.*;
 import org.springframework.data.repository.NoRepositoryBean;
 import org.springframework.data.repository.query.Param;
@@ -11,65 +12,63 @@ import java.util.Optional;
 import static jakarta.persistence.LockModeType.PESSIMISTIC_WRITE;
 
 @NoRepositoryBean
-public interface AbstractLinkedCollectionRepository<T extends AbstractLinkedCollectionItem>
-        extends JpaRepository<T, Long> {
+public interface AbstractLinkedCollectionRepository<T extends AbstractCatalogItem>
+        extends JpaRepository<T, AbstractCatalogItemId> {
 
-    @EntityGraph(attributePaths = {
-            "movie",
-            "user"
-    })
+    @EntityGraph(attributePaths = {"movie", "user"})
     @Query("""
             SELECT DISTINCT item
             FROM #{#entityName} item
-            WHERE item.user.username = :username
+            WHERE item.id.userId = :userId
             """)
-    List<T> findAllByUsername(@Param("username")
-                              String username);
+    List<T> findAllByUserId(@Param("userId") Long userId);
 
-    boolean existsByMovieIdAndUserUsername(Long movieId, String userUsername);
+    @Query("""
+            SELECT COUNT(item) > 0
+            FROM #{#entityName} item
+            WHERE item.id.movieId = :movieId
+            AND item.id.userId = :userId
+            """)
+    boolean existsByMovieIdAndUserId(@Param("movieId") Long movieId,
+                                     @Param("userId") Long userId);
 
     @Modifying
     @Query("""
             DELETE FROM #{#entityName} item
-            WHERE item.movie.id = :movieId
-            AND item.user.username = :username
+            WHERE item.id.movieId = :movieId
+            AND item.id.userId = :userId
             """)
-    void deleteByMovieIdAndUserUsername(@Param("movieId")
-                                        Long movieId,
-                                        @Param("username")
-                                        String username);
+    void deleteByMovieIdAndUserId(@Param("movieId") Long movieId,
+                                  @Param("userId") Long userId);
 
     @Modifying
     @Query("""
             DELETE FROM #{#entityName} item
-            WHERE item.user.username = :username
+            WHERE item.id.userId = :userId
             """)
-    void deleteAllByUsername(@Param("username")
-                             String username);
+    void deleteAllByUserId(@Param("userId") Long userId);
 
     @Query("""
             SELECT COUNT(item)
             FROM #{#entityName} item
-            WHERE item.user.username = :username
+            WHERE item.id.userId = :userId
             """)
-    Long countByUsername(@Param("username")
-                         String username);
+    Long countByUserId(@Param("userId") Long userId);
 
     @Query("""
-            SELECT item.movie.id
+            SELECT item.id.movieId
             FROM #{#entityName} item
-            WHERE item.user.username = :username
+            WHERE item.id.userId = :userId
             """)
-    List<Long> findMovieIdsByUsername(@Param("username")
-                                      String username);
+    List<Long> findMovieIdsByUserId(@Param("userId") Long userId);
 
     @Lock(PESSIMISTIC_WRITE)
     @Query("""
             SELECT item
             FROM #{#entityName} item
-            WHERE item.movie.id = :movieId
-            AND item.user.username = :username
+            WHERE item.id.movieId = :movieId
+            AND item.id.userId = :userId
             """)
-    Optional<T> findByMovieIdAndUserUsernameWithLock(@Param("movieId") Long movieId,
-                                                     @Param("username") String username);
+    Optional<T> findByMovieIdAndUserIdWithLock(@Param("movieId") Long movieId,
+                                               @Param("userId") Long userId);
 }

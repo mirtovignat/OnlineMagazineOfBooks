@@ -6,8 +6,7 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class CartPresenceService extends PresenceService<CartItem> {
-    public CartPresenceService(CartItemRepository
-                                       cartItemRepository) {
+    public CartPresenceService(CartItemRepository cartItemRepository) {
         super(cartItemRepository);
     }
 }

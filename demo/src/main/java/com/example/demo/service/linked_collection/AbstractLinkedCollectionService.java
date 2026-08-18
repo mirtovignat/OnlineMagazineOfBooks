@@ -3,7 +3,7 @@ package com.example.demo.service.linked_collection;
 import com.example.demo.dto.badges.BadgeCountsDTO;
 import com.example.demo.exception.BusinessException;
 import com.example.demo.exception.ErrorCode;
-import com.example.demo.model.AbstractLinkedCollectionItem;
+import com.example.demo.model.AbstractCatalogItem;
 import com.example.demo.model.Movie;
 import com.example.demo.model.User;
 import com.example.demo.repository.AbstractLinkedCollectionRepository;
@@ -19,7 +19,7 @@ import java.util.Set;
 
 @AllArgsConstructor
 public abstract class AbstractLinkedCollectionService<
-        Entity extends AbstractLinkedCollectionItem, DTO> {
+        Entity extends AbstractCatalogItem, DTO> {
 
     protected final AbstractLinkedCollectionRepository<Entity> linkedCollectionRepository;
     protected final UserRepository userRepository;
@@ -27,32 +27,32 @@ public abstract class AbstractLinkedCollectionService<
     protected final PurchasedMovieRepository purchasedMovieRepository;
 
     @Transactional(readOnly = true)
-    public Long getCount(String username) {
-        return linkedCollectionRepository.countByUsername(username);
+    public Long getCount(Long userId) {
+        return linkedCollectionRepository.countByUserId(userId);
     }
 
     @Transactional(readOnly = true)
-    public Set<Long> getMovieIds(String username) {
+    public Set<Long> getMovieIds(Long userId) {
         return new LinkedHashSet<>(linkedCollectionRepository
-                .findMovieIdsByUsername(username));
+                .findMovieIdsByUserId(userId));
     }
 
     @Transactional(readOnly = true)
-    public List<DTO> getAllOfUser(String username) {
-        return linkedCollectionRepository.findAllByUsername(username).stream()
+    public List<DTO> getAllOfUser(Long userId) {
+        return linkedCollectionRepository.findAllByUserId(userId).stream()
                 .map(this::mapToDto)
                 .toList();
     }
 
     @Transactional
-    public void add(Long movieId, String username) {
-        User user = userRepository.findByUsernameOrThrow(username);
+    public void add(Long movieId, Long userId){
+        User user = userRepository.findByIdOrThrow(userId);
         Movie movie = movieRepository.findByIdOrThrow(movieId);
         if (shouldSkipIfPurchased() && purchasedMovieRepository
-                .existsByMovieIdAndUserUsername(movie.getId(), username)) {
+                .existsByMovieIdAndUserId(movie.getId(), userId)) {
             return;
         }
-        if (existsInCollection(movie.getId(), username)) {
+        if (existsInCollection(movie.getId(), userId)) {
             return;
         }
         Entity entity = createEntity(user, movie);
@@ -62,20 +62,20 @@ public abstract class AbstractLinkedCollectionService<
     }
 
     @Transactional
-    public void remove(Long movieId, String username) {
-        linkedCollectionRepository.deleteByMovieIdAndUserUsername(movieId, username);
+    public void remove(Long movieId, Long userId) {
+        linkedCollectionRepository.deleteByMovieIdAndUserId(movieId, userId);
     }
 
     @Transactional
-    public void removeAll(String username) {
-        if (linkedCollectionRepository.countByUsername(username) == 0) {
+    public void removeAll(Long userId) {
+        if (linkedCollectionRepository.countByUserId(userId) == 0) {
             throw BusinessException.of(getEmptyErrorCode());
         }
-        linkedCollectionRepository.deleteAllByUsername(username);
+        linkedCollectionRepository.deleteAllByUserId(userId);
     }
 
-    public void deleteAll(String username) {
-        linkedCollectionRepository.deleteAllByUsername(username);
+    public void deleteAll(Long userId) {
+        linkedCollectionRepository.deleteAllByUserId(userId);
     }
 
     protected abstract DTO mapToDto(Entity entity);
@@ -88,13 +88,13 @@ public abstract class AbstractLinkedCollectionService<
         return false;
     }
 
-    public boolean existsInCollection(Long movieId, String username) {
-        return linkedCollectionRepository.existsByMovieIdAndUserUsername(
-                movieId, username);
+    public boolean existsInCollection(Long movieId, Long userId) {
+        return linkedCollectionRepository.existsByMovieIdAndUserId(
+                movieId, userId);
     }
 
-    public List<Entity> findAll(String username) {
-        return linkedCollectionRepository.findAllByUsername(username);
+    public List<Entity> findAll(Long userId) {
+        return linkedCollectionRepository.findAllByUserId(userId);
     }
 
     public abstract BadgeCountsDTO updateBadge(BadgeCountsDTO current, Long newCount);

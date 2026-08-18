@@ -29,7 +29,6 @@ public class GlobalExceptionHandler {
                                           RedirectAttributes redirectAttributes) {
         String message = businessException.getMessage();
         ErrorCode errorCode = businessException.getErrorCode();
-
         if (RequestUtils.isAjaxRequest(httpServletRequest)) {
             HttpStatus httpStatus = switch (errorCode) {
                 case USER_NOT_FOUND, ENTITY_NOT_FOUND -> HttpStatus.NOT_FOUND;
@@ -40,7 +39,6 @@ public class GlobalExceptionHandler {
             };
             return ResponseEntity.status(httpStatus).body(Map.of("message", message));
         }
-
         if (errorCode == ErrorCode.PASSWORD_INVALID) {
             redirectAttributes.addFlashAttribute("invalidPasswordExceptionMessage", message);
         } else if (errorCode == ErrorCode.USER_NOT_FOUND) {

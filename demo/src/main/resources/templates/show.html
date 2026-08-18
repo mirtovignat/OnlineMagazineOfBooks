@@ -328,7 +328,7 @@
 <th:block th:replace="~{fragments/flash-messages :: flashMessages}"></th:block>
 
 <div id="authStatus"
-     th:data-authenticated="${session.userForOwnerViewDTO != null}"
+     th:data-authenticated="${session.sessionUser != null}"
      style="display:none;"></div>
 
 <main>
@@ -405,7 +405,7 @@
                         <span class="price-amount" th:text="${card.movie.price + ' ₽'}">0 ₽</span>
                     </div>
                     <div class="action-buttons">
-                        <th:block th:if="${session.userForOwnerViewDTO != null}">
+                        <th:block th:if="${session.sessionUser != null}">
                             <button type="button" th:if="${!card.status.bought and !card.status.inCart}"
                                     class="cart-button to-cart-btn-details"
                                     th:data-movie-id="${card.movie.id}" onclick="addToCart(this)">В корзину
@@ -421,7 +421,7 @@
                             </button>
                             <button th:if="${card.status.bought}" class="bought-btn" disabled>Куплено</button>
                         </th:block>
-                        <th:block th:unless="${session.userForOwnerViewDTO != null}">
+                        <th:block th:unless="${session.sessionUser != null}">
                             <a th:href="@{/login}" class="cart-button to-cart-btn-details"
                                onclick="return requireAuth(event, this.href)">В корзину</a>
                             <a th:href="@{/login}" class="buy-now-btn" onclick="return requireAuth(event, this.href)">Купить

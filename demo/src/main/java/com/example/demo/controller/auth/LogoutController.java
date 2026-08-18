@@ -14,7 +14,8 @@ public class LogoutController {
     public String logout(HttpServletRequest httpServletRequest) {
         HttpSession httpSession = httpServletRequest.getSession(false);
         if (httpSession != null) {
-            httpSession.removeAttribute("userForOwnerViewDTO");
+            httpSession.removeAttribute("sessionUser");
+            httpSession.removeAttribute("badges");
             httpSession.invalidate();
         }
         return "redirect:/";

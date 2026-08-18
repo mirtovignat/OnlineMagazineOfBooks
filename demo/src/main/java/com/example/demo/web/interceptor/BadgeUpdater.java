@@ -1,7 +1,7 @@
 package com.example.demo.web.interceptor;
 
 import com.example.demo.dto.badges.BadgeCountsDTO;
-import com.example.demo.dto.user.UserForOwnerViewDTO;
+import com.example.demo.dto.user.SessionUser;
 import com.example.demo.service.BadgeService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -36,12 +36,12 @@ public class BadgeUpdater implements HandlerInterceptor {
         HttpSession httpSession = httpServletRequest.getSession(false);
         BadgeCountsDTO badgeCountsDTO = BadgeCountsDTO.empty();
         if (httpSession != null) {
-            String username = getUsernameFromSession(httpSession);
-            if (username != null) {
+            Long userId = getUserIdFromSession(httpSession);
+            if (userId != null) {
                 try {
-                    badgeCountsDTO = badgeService.getBadgeCounts(username);
+                    badgeCountsDTO = badgeService.getBadgeCounts(userId);
                 } catch (Exception e) {
-                    log.error("Failed to fetch badge counts for user: {}", username, e);
+                    log.error("Failed to fetch badge counts for user: {}", userId, e);
                     badgeCountsDTO = BadgeCountsDTO.empty();
                 }
             }
@@ -61,9 +61,8 @@ public class BadgeUpdater implements HandlerInterceptor {
         return "XMLHttpRequest".equals(request.getHeader("X-Requested-With"));
     }
 
-    private String getUsernameFromSession(HttpSession httpSession) {
-        UserForOwnerViewDTO userForOwnerViewDTO = (UserForOwnerViewDTO)
-                httpSession.getAttribute("userForOwnerViewDTO");
-        return userForOwnerViewDTO != null ? userForOwnerViewDTO.username() : null;
+    private Long getUserIdFromSession(HttpSession httpSession) {
+        SessionUser sessionUser = (SessionUser) httpSession.getAttribute("sessionUser");
+        return sessionUser != null ? sessionUser.id() : null;
     }
 }

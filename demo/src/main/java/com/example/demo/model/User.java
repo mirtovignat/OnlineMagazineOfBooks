@@ -26,6 +26,7 @@ public class User extends AbstractEntity {
         super(id);
     }
 
+    @Builder.Default
     @Column(name = "deleted", nullable = false)
     private boolean deleted = false;
 
@@ -44,25 +45,31 @@ public class User extends AbstractEntity {
     @Column(name = "full_name", nullable = false)
     private String fullName;
 
+    @Builder.Default
     @Column(name = "balance", nullable = false)
     private BigDecimal balance = BigDecimal.ZERO;
 
+    @Builder.Default
     @Column(name = "currency_code", nullable = false)
     private String currencyCode = "RUB";
 
     @ToString.Exclude
+    @Builder.Default
     @OneToMany(mappedBy = "user", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<PurchasedMovie> purchases = new LinkedHashSet<>();
 
     @ToString.Exclude
+    @Builder.Default
     @OneToMany(mappedBy = "user", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<CartItem> cartItems = new LinkedHashSet<>();
 
     @ToString.Exclude
+    @Builder.Default
     @OneToMany(mappedBy = "user", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<FavouriteMovie> favourites = new LinkedHashSet<>();
 
     @ToString.Exclude
+    @Builder.Default
     @OneToMany(mappedBy = "user", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<RatedMovie> ratings = new LinkedHashSet<>();
 

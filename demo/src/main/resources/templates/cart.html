@@ -518,7 +518,7 @@
 <th:block th:replace="~{fragments/flash-messages :: flashMessages}"></th:block>
 
 <div id="authStatus"
-     th:data-authenticated="${session.userForOwnerViewDTO != null}"
+     th:data-authenticated="${session.sessionUser != null}"
      style="display:none;"></div>
 
 <main class="catalog-wrapper">

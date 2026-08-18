@@ -1,7 +1,7 @@
 package com.example.demo.controller.linked_collection;
 
-import com.example.demo.dto.joined_to_user.CartMovieForOwnerViewDTO;
-import com.example.demo.dto.user.UserForOwnerViewDTO;
+import com.example.demo.dto.catalog.CartMovieForOwnerViewDTO;
+import com.example.demo.dto.user.SessionUser;
 import com.example.demo.service.linked_collection.CartService;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -19,11 +19,10 @@ public class CartController extends AbstractLinkedCollectionController<CartMovie
 
     @GetMapping
     public String getCart(Model model,
-                          @SessionAttribute UserForOwnerViewDTO userForOwnerViewDTO) {
-        model.addAttribute("cart", linkedCollectionService
-                .getAllOfUser(userForOwnerViewDTO.username()));
-        model.addAttribute("cartCount", linkedCollectionService
-                .getCount(userForOwnerViewDTO.username()));
+                          @SessionAttribute SessionUser sessionUser) {
+        Long userId = sessionUser.id();
+        model.addAttribute("cart", linkedCollectionService.getAllOfUser(userId));
+        model.addAttribute("cartCount", linkedCollectionService.getCount(userId));
         return "cart";
     }
 }

@@ -1,6 +1,6 @@
 package com.example.demo.service.catalog;
 
-import com.example.demo.dto.joined_to_user.RatedMovieForOwnerViewDTO;
+import com.example.demo.dto.catalog.RatedMovieForOwnerViewDTO;
 import com.example.demo.mapper.RatedMapper;
 import com.example.demo.model.RatedMovie;
 import com.example.demo.repository.RatedMovieRepository;

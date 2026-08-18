@@ -6,22 +6,22 @@ import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 import jakarta.validation.constraints.DecimalMax;
 import jakarta.validation.constraints.DecimalMin;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.experimental.SuperBuilder;
 
 import java.math.BigDecimal;
 
 @Getter
 @Setter
 @NoArgsConstructor
+@AllArgsConstructor
+@SuperBuilder
 @Entity
-@Table(
-        name = "rated_movies",
-        uniqueConstraints = @UniqueConstraint(
-                columnNames = {"user_id", "movie_id"}
-        )
-)
+@Table(name = "rated_movies",
+        uniqueConstraints = @UniqueConstraint(columnNames = {"user_id", "movie_id"}))
 public class RatedMovie extends AbstractCatalogItem {
 
     @Column(name = "review")

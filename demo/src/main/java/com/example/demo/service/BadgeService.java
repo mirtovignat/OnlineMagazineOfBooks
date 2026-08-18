@@ -19,15 +19,15 @@ public class BadgeService {
     private final RatedMovieRepository ratedMovieRepository;
 
     @Transactional(readOnly = true)
-    public BadgeCountsDTO getBadgeCounts(String username) {
-        if (username == null) {
+    public BadgeCountsDTO getBadgeCounts(Long id) {
+        if (id == null) {
             return BadgeCountsDTO.empty();
         }
         return new BadgeCountsDTO(
-                cartItemRepository.countByUsername(username),
-                favouriteMovieRepository.countByUsername(username),
-                purchasedMovieRepository.countByUserUsername(username),
-                ratedMovieRepository.countByUserUsername(username)
+                cartItemRepository.countByUserId(id),
+                favouriteMovieRepository.countByUserId(id),
+                purchasedMovieRepository.countByUserId(id),
+                ratedMovieRepository.countByUserId(id)
         );
     }
 }

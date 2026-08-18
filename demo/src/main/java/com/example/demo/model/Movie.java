@@ -3,9 +3,8 @@ package com.example.demo.model;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.DecimalMax;
 import jakarta.validation.constraints.DecimalMin;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
+import lombok.experimental.SuperBuilder;
 import org.hibernate.annotations.BatchSize;
 
 import java.math.BigDecimal;
@@ -17,6 +16,8 @@ import java.util.Set;
 @Getter
 @Setter
 @NoArgsConstructor
+@AllArgsConstructor
+@SuperBuilder
 @Entity
 @Table(name = "movies")
 public class Movie extends AbstractEntity {
@@ -43,6 +44,7 @@ public class Movie extends AbstractEntity {
     @Column(name = "rating", precision = 4, scale = 2)
     private BigDecimal rating;
 
+    @Builder.Default
     @Column(name = "ratings_count")
     private Integer ratingsCount = 0;
 
@@ -52,21 +54,23 @@ public class Movie extends AbstractEntity {
     @Column(name = "director", columnDefinition = "text")
     private String director;
 
+    @Builder.Default
     @BatchSize(size = 20)
     @OneToMany(mappedBy = "movie", fetch = FetchType.LAZY)
     private Set<CartItem> cartItems = new LinkedHashSet<>();
 
+    @Builder.Default
     @BatchSize(size = 20)
     @OneToMany(mappedBy = "movie", fetch = FetchType.LAZY)
     private Set<PurchasedMovie> purchases = new LinkedHashSet<>();
 
+    @Builder.Default
     @BatchSize(size = 20)
     @OneToMany(mappedBy = "movie", fetch = FetchType.LAZY)
     private Set<FavouriteMovie> favourites = new LinkedHashSet<>();
 
+    @Builder.Default
     @BatchSize(size = 20)
     @OneToMany(mappedBy = "movie", fetch = FetchType.LAZY)
     private Set<RatedMovie> ratings = new LinkedHashSet<>();
-
 }
-

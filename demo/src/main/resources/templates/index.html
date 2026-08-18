@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" lang="ru">
 <head>
-    <title>Каталог — Cinema Service</title>
+    <title th:text="${response.isSearch()} ? 'Результаты поиска — Cinema Service' : 'Каталог — Cinema Service'">Каталог — Cinema Service</title>
     <th:block th:replace="~{fragments/head :: head}"></th:block>
     <style>
         html, body {
@@ -255,19 +255,18 @@
 <th:block th:replace="~{fragments/header :: header}"></th:block>
 <th:block th:replace="~{fragments/flash-messages :: flashMessages}"></th:block>
 
-<!-- ===== ДОБАВЛЕНО: скрытый элемент для проверки авторизации ===== -->
 <div id="authStatus"
-     th:data-authenticated="${session.userForOwnerViewDTO != null}"
+     th:data-authenticated="${session.sessionUser != null}"
      style="display:none;"></div>
 
 <main class="catalog-wrapper">
     <div class="catalog-header">
-        <h1 th:if="${isSearch}" style="color: #a78bfa;">🔎 Результаты поиска</h1>
-        <h1 th:unless="${isSearch}">Каталог фильмов</h1>
+        <h1 th:if="${response.isSearch()}" style="color: #a78bfa;">🔎 Результаты поиска</h1>
+        <h1 th:unless="${response.isSearch()}">Каталог фильмов</h1>
     </div>
 
-    <div class="movies-grid" th:if="${cardsPage != null and !cardsPage.empty}">
-        <div class="movie-card" th:each="card : ${cardsPage.content}" th:data-movie-id="${card.movie.id}">
+    <div class="movies-grid" th:if="${response.cardsPage() != null and !response.cardsPage().empty}">
+        <div class="movie-card" th:each="card : ${response.cardsPage().content}" th:data-movie-id="${card.movie.id}">
             <a class="movie-poster-link" th:href="@{/movies/{id}(id=${card.movie.id})}">
 
                 <span class="poster-rating-badge js-rating-badge"
@@ -293,9 +292,9 @@
                 </h3>
 
                 <div class="badges">
-            <span class="badge year"
-                  th:if="${card.movie.releaseYear != null}"
-                  th:text="'📅 Год: ' + ${card.movie.releaseYear}">📅 Год: 2024</span>
+                    <span class="badge year"
+                          th:if="${card.movie.releaseYear != null}"
+                          th:text="'📅 Год: ' + ${card.movie.releaseYear}">📅 Год: 2024</span>
 
                     <span class="badge genre"
                           th:if="${card.movie.genre != null and !card.movie.genre.isEmpty()}"
@@ -337,12 +336,12 @@
                               th:data-movie-id="${card.movie.id}"
                               th:text="${card.movie.ratingsCount}"
                               th:style="${card.movie.ratingsCount > 0} ? '' : 'display:none'">
-                </span>
+                        </span>
                     </a>
                 </div>
 
                 <div class="purchase-buttons">
-                    <th:block th:if="${session.userForOwnerViewDTO != null}">
+                    <th:block th:if="${session.sessionUser != null}">
                         <button type="button"
                                 th:if="${!card.status.bought and !card.status.inCart}"
                                 class="cart-button to-cart-btn-details"
@@ -364,7 +363,7 @@
                            class="bought-btn">Куплено → В библиотеку</a>
                     </th:block>
 
-                    <th:block th:unless="${session.userForOwnerViewDTO != null}">
+                    <th:block th:unless="${session.sessionUser != null}">
                         <button class="cart-button to-cart-btn-details"
                                 onclick="addToCart(this)"
                                 th:data-movie-id="${card.movie.id}">
@@ -383,15 +382,15 @@
         </div>
     </div>
 
-    <div class="empty-catalog" th:unless="${cardsPage != null and !cardsPage.empty}">
-        <h2 th:if="${isSearch}" style="color: #a78bfa; text-align: center;">По вашему запросу ничего не найдено</h2>
-        <h2 th:unless="${isSearch}" style="color: #94a3b8; text-align: center;">Фильмы не найдены</h2>
-        <p class="text-muted text-center" th:if="${isSearch}">Попробуйте изменить параметры поиска.</p>
-        <a th:if="${isSearch}" href="/" class="browse-movies-btn"
+    <div class="empty-catalog" th:unless="${response.cardsPage() != null and !response.cardsPage().empty}">
+        <h2 th:if="${response.isSearch()}" style="color: #a78bfa; text-align: center;">По вашему запросу ничего не найдено</h2>
+        <h2 th:unless="${response.isSearch()}" style="color: #94a3b8; text-align: center;">Фильмы не найдены</h2>
+        <p class="text-muted text-center" th:if="${response.isSearch()}">Попробуйте изменить параметры поиска.</p>
+        <a th:if="${response.isSearch()}" href="/" class="browse-movies-btn"
            style="display: block; width: fit-content; margin: 1.5rem auto;">Вернуться в каталог</a>
     </div>
 
-    <th:block th:replace="~{fragments/pagination :: pager(page=${cardsPage}, url='/search')}"></th:block>
+    <th:block th:replace="~{fragments/pagination :: pager(page=${response.cardsPage()}, url='/search')}"></th:block>
 </main>
 
 <th:block th:replace="~{fragments/modals :: buyModal}"></th:block>

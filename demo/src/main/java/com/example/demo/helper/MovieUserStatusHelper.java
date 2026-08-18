@@ -1,7 +1,7 @@
 package com.example.demo.helper;
 
-import com.example.demo.dto.joined_to_user.CartMovieForOwnerViewDTO;
-import com.example.demo.dto.joined_to_user.FavouriteMovieForOwnerViewDTO;
+import com.example.demo.dto.catalog.CartMovieForOwnerViewDTO;
+import com.example.demo.dto.catalog.FavouriteMovieForOwnerViewDTO;
 import com.example.demo.dto.movie.MovieCardViewDTO;
 import com.example.demo.dto.movie.MovieForUser;
 import com.example.demo.dto.movie.MovieUserStatus;
@@ -30,20 +30,20 @@ public class MovieUserStatusHelper {
     private record UserStatuses(Set<Long> bought, Set<Long> cart, Set<Long> favourites) {
     }
 
-    private UserStatuses getUserStatuses(String username) {
+    private UserStatuses getUserStatuses(Long userId) {
         return new UserStatuses(
-                safeSet(purchasedService.getPurchasedMovieIds(username)),
-                safeSet(cartService.getMovieIds(username)),
-                safeSet(favouritesService.getMovieIds(username))
+                safeSet(purchasedService.getPurchasedMovieIds(userId)),
+                safeSet(cartService.getMovieIds(userId)),
+                safeSet(favouritesService.getMovieIds(userId))
         );
     }
 
     public Page<MovieForUser<MovieCardViewDTO>> enrichWithUserStatuses(
             Page<Movie> moviePage,
-            String username,
+            Long userId,
             Function<Movie, MovieCardViewDTO> toCardMapper) {
 
-        UserStatuses statuses = getUserStatuses(username);
+        UserStatuses statuses = getUserStatuses(userId);
         return moviePage.map(movie -> {
             boolean isBought = statuses.bought.contains(movie.getId());
             boolean isInCart = !isBought && statuses.cart.contains(movie.getId());

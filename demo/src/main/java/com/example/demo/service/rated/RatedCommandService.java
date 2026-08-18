@@ -1,8 +1,9 @@
 package com.example.demo.service.rated;
 
-import com.example.demo.dto.joined_to_user.RatedMovieForOwnerFormDTO;
+import com.example.demo.dto.catalog.RatedMovieForOwnerFormDTO;
 import com.example.demo.exception.BusinessException;
 import com.example.demo.exception.ErrorCode;
+import com.example.demo.model.AbstractCatalogItem;
 import com.example.demo.model.Movie;
 import com.example.demo.model.RatedMovie;
 import com.example.demo.model.User;
@@ -26,20 +27,20 @@ public class RatedCommandService {
     private final RatedQueryService ratedQueryService;
 
     @Transactional
-    public void addOrUpdateRating(Long movieId, String username,
+    public void addOrUpdateRating(Long movieId, Long userId,
                                   RatedMovieForOwnerFormDTO ratedMovieForOwnerFormDTO) {
         Movie movie = movieService.getMovie(movieId);
-        User user = userService.getUser(username);
+        User user = userService.getUser(userId);
+
         RatedMovie ratedMovie = ratedMovieRepository
-                .findByMovieIdAndUserUsernameWithLock(movieId, username)
-                .orElseGet(() -> {
-                    RatedMovie created = new RatedMovie();
-                    created.setMovie(movie);
-                    created.setUser(user);
-                    return created;
-                });
-        if (ratedMovie.getId() != null && ratedQueryService.isUnchanged(
-                ratedMovieForOwnerFormDTO, ratedMovie)) {
+                .findByMovieIdAndUserIdWithLock(movieId, userId)
+                .orElseGet(() -> AbstractCatalogItem.init(
+                        RatedMovie.builder().build(),
+                        user,
+                        movie
+                ));
+
+        if (ratedQueryService.isUnchanged(ratedMovieForOwnerFormDTO, ratedMovie)) {
             throw BusinessException.of(ErrorCode.DATA_COINCIDENCE);
         }
         ratedMovie.setRatingValue(ratedMovieForOwnerFormDTO.rating());
@@ -49,9 +50,9 @@ public class RatedCommandService {
     }
 
     @Transactional
-    public void deleteRating(Long movieId, String username) {
+    public void deleteRating(Long movieId, Long userId) {
         Movie movie = movieService.getMovie(movieId);
-        int deleted = ratedMovieRepository.deleteByMovieIdAndUserUsername(movieId, username);
+        int deleted = ratedMovieRepository.deleteByMovieIdAndUserId(movieId, userId);
         if (deleted == 0) {
             throw BusinessException.of(ErrorCode.ENTITY_NOT_FOUND);
         }

@@ -3,6 +3,7 @@ package com.example.demo.controller;
 import com.example.demo.dto.response.ApiResponse;
 import com.example.demo.dto.user.PasswordChangingDTO;
 import com.example.demo.dto.user.ProfileSettingsDTO;
+import com.example.demo.dto.user.SessionUser;
 import com.example.demo.dto.user.UserForOwnerViewDTO;
 import com.example.demo.exception.SuccessCode;
 import com.example.demo.service.user.UserService;
@@ -25,130 +26,106 @@ public class PersonalAccountController {
     private final UserService userService;
 
     @GetMapping("/personal-account")
-    public String getPersonalAccount(@SessionAttribute(required = false)
-                                     UserForOwnerViewDTO userForOwnerViewDTO,
-                                     Model model) {
-        if (userForOwnerViewDTO == null) {
-            return "redirect:/login";
-        }
-        UserForOwnerViewDTO updatedUser = userService
-                .getUserForOwner(userForOwnerViewDTO.username());
+    public String getPersonalAccount(@SessionAttribute SessionUser sessionUser, Model model) {
+        Long userId = sessionUser.id();
+        UserForOwnerViewDTO updatedUser = userService.getUserForOwner(userId);
         model.addAttribute("userForOwner", updatedUser);
-        model.addAttribute("purchasesCount",
-                userService.getPurchasesCount(updatedUser.username()));
-        model.addAttribute("ratingsCount",
-                userService.getRatingsCount(updatedUser.username()));
+        model.addAttribute("purchasesCount", userService.getPurchasesCount(userId));
+        model.addAttribute("ratingsCount", userService.getRatingsCount(userId));
         return "personal-account";
     }
 
     @GetMapping("/profile/settings")
-    public String getSettingsForm(@SessionAttribute
-                                  UserForOwnerViewDTO userForOwnerViewDTO,
-                                  Model model) {
+    public String getSettingsForm(@SessionAttribute SessionUser sessionUser, Model model) {
+        Long userId = sessionUser.id();
         if (!model.containsAttribute("profileSettingsDTO")) {
-            model.addAttribute("profileSettingsDTO",
-                    userService.getProfileSettings(userForOwnerViewDTO.username()));
+            model.addAttribute("profileSettingsDTO", userService.getProfileSettings(userId));
         }
-        model.addAttribute("wallet",
-                userService.getWalletForOwner(userForOwnerViewDTO.username()));
+        model.addAttribute("wallet", userService.getWalletForOwner(userId));
         return "settings";
     }
 
     @PostMapping("/profile/settings/change")
-    public String changeProfileForm(@Valid @ModelAttribute("profileSettingsDTO")
-                                    ProfileSettingsDTO profileSettingsDTO,
+    public String changeProfileForm(@Valid @ModelAttribute("profileSettingsDTO") ProfileSettingsDTO profileSettingsDTO,
                                     BindingResult bindingResult,
                                     RedirectAttributes redirectAttributes,
-                                    @SessionAttribute UserForOwnerViewDTO userForOwnerViewDTO,
+                                    @SessionAttribute SessionUser sessionUser,
                                     HttpSession httpSession) {
+        Long userId = sessionUser.id();
         if (bindingResult.hasErrors()) {
             return "settings";
         }
-        ProfileSettingsDTO normalizedDto = userService
-                .prepareAndValidateProfile(profileSettingsDTO,
-                        userForOwnerViewDTO.username());
-        userService.saveProfile(normalizedDto, userForOwnerViewDTO.username());
-        UserForOwnerViewDTO updatedUser = syncUserInSession(normalizedDto.username(), httpSession);
+        ProfileSettingsDTO normalizedDto = userService.prepareAndValidateProfile(profileSettingsDTO, userId);
+        userService.saveProfile(normalizedDto, sessionUser.id());
+        SessionUser updatedSessionUser = sessionUser.withFirstLetter(normalizedDto.username());
+        httpSession.setAttribute("sessionUser", updatedSessionUser);
         redirectAttributes.addFlashAttribute("successMessage",
-                SuccessCode.PROFILE_HAS_BEEN_CHANGED_SUCCESSFULLY.format(updatedUser.username()));
-        return "redirect:/personal-account";
+                SuccessCode.PROFILE_HAS_BEEN_CHANGED_SUCCESSFULLY.format());
+        return "redirect:/profile/settings";
     }
 
     @PostMapping(value = "/profile/settings/change-ajax", consumes = "application/json")
     @ResponseBody
-    public ResponseEntity<ApiResponse> changeProfileAjax(@Valid @RequestBody
-                                                         ProfileSettingsDTO profileSettingsDTO,
-                                                         @SessionAttribute
-                                                         UserForOwnerViewDTO userForOwnerViewDTO,
+    public ResponseEntity<ApiResponse> changeProfileAjax(@Valid @RequestBody ProfileSettingsDTO profileSettingsDTO,
+                                                         @SessionAttribute SessionUser sessionUser,
                                                          HttpSession httpSession) {
-        ProfileSettingsDTO normalizedDto = userService.prepareAndValidateProfile(profileSettingsDTO,
-                userForOwnerViewDTO.username());
-        userService.saveProfile(normalizedDto, userForOwnerViewDTO.username());
-        syncUserInSession(normalizedDto.username(), httpSession);
+        Long userId = sessionUser.id();
+        ProfileSettingsDTO normalizedDto = userService.prepareAndValidateProfile(profileSettingsDTO, userId);
+        userService.saveProfile(normalizedDto, userId);
+        SessionUser updatedSessionUser = sessionUser.withFirstLetter(normalizedDto.username());
+        httpSession.setAttribute("sessionUser", updatedSessionUser);
         return ResponseEntity.ok(ApiResponse.successWithData(
                 SuccessCode.PROFILE_HAS_BEEN_CHANGED_SUCCESSFULLY,
                 Map.of(
-                        "newUsername", normalizedDto.username(),
-                        "newEmail", normalizedDto.email(),
-                        "newPhone", normalizedDto.phone() == null ? "" : normalizedDto.phone()
+                        "newUsername", profileSettingsDTO.username(),
+                        "newEmail", profileSettingsDTO.email(),
+                        "newPhone", profileSettingsDTO.phone() == null ? "" : profileSettingsDTO.phone()
                 ),
-                normalizedDto.username()
+                profileSettingsDTO.username()
         ));
     }
 
     @GetMapping("/profile/settings/delete/phone")
     @ResponseBody
-    public ResponseEntity<ApiResponse> deletePhone(@SessionAttribute
-                                                   UserForOwnerViewDTO userForOwnerViewDTO,
-                                                   HttpSession httpSession) {
-        userService.deletePhone(userForOwnerViewDTO.username());
-        syncUserInSession(userForOwnerViewDTO.username(), httpSession);
+    public ResponseEntity<ApiResponse> deletePhone(@SessionAttribute SessionUser sessionUser) {
+        Long userId = sessionUser.id();
+        userService.deletePhone(userId);
         return ResponseEntity.ok(ApiResponse.success(
-                SuccessCode.PHONE_HAS_BEEN_REMOVED_SUCCESSFULLY, ""));
+                SuccessCode.PHONE_HAS_BEEN_REMOVED_SUCCESSFULLY));
     }
 
     @GetMapping("/profile/settings/change/pwd")
     public String getChangePasswordForm(Model model) {
         if (!model.containsAttribute("passwordChangingDTO")) {
-            model.addAttribute("passwordChangingDTO",
-                    PasswordChangingDTO.builder().build());
+            model.addAttribute("passwordChangingDTO", PasswordChangingDTO.builder().build());
         }
         return "change-password";
     }
 
     @PostMapping("/profile/settings/change/pwd")
-    public String changePassword(@Valid @ModelAttribute("passwordChangingDTO")
-                                 PasswordChangingDTO passwordChangingDTO,
+    public String changePassword(@Valid @ModelAttribute("passwordChangingDTO") PasswordChangingDTO passwordChangingDTO,
                                  BindingResult bindingResult,
-                                 @SessionAttribute UserForOwnerViewDTO userForOwnerViewDTO,
+                                 @SessionAttribute SessionUser sessionUser,
                                  RedirectAttributes redirectAttributes) {
+        Long userId = sessionUser.id();
         if (bindingResult.hasErrors()) {
             return "change-password";
         }
-        String newPasswordHash = userService.prepareAndValidatePassword(
-                passwordChangingDTO, userForOwnerViewDTO.username());
-        userService.savePassword(newPasswordHash, userForOwnerViewDTO.username());
+        String newPasswordHash = userService.prepareAndValidatePassword(passwordChangingDTO, userId);
+        userService.updatePassword(newPasswordHash, userId);
         redirectAttributes.addFlashAttribute("successMessage",
                 SuccessCode.PASSWORD_HAS_BEEN_CHANGED_SUCCESSFULLY.format(""));
-        return "redirect:/personal-account";
+        return "redirect:/profile/settings/change/pwd";
     }
 
     @PostMapping("/profile/delete")
-    public String deleteAccount(@SessionAttribute
-                                UserForOwnerViewDTO userForOwnerViewDTO,
+    public String deleteAccount(@SessionAttribute SessionUser sessionUser,
                                 HttpSession httpSession,
                                 RedirectAttributes redirectAttributes) {
-        userService.deleteAccount(userForOwnerViewDTO.username());
+        Long userId = sessionUser.id();
+        userService.deleteAccount(userId);
         httpSession.invalidate();
-        redirectAttributes.addFlashAttribute("successMessage",
-                "Аккаунт успешно удален");
+        redirectAttributes.addFlashAttribute("successMessage", "Аккаунт успешно удален");
         return "redirect:/login";
-    }
-
-    private UserForOwnerViewDTO syncUserInSession(String username,
-                                                  HttpSession httpSession) {
-        UserForOwnerViewDTO freshData = userService.getUserForOwner(username);
-        httpSession.setAttribute("userForOwnerViewDTO", freshData);
-        return freshData;
     }
 }

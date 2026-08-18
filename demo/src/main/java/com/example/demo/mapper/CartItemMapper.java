@@ -1,6 +1,6 @@
 package com.example.demo.mapper;
 
-import com.example.demo.dto.joined_to_user.CartMovieForOwnerViewDTO;
+import com.example.demo.dto.catalog.CartMovieForOwnerViewDTO;
 import com.example.demo.model.CartItem;
 import com.example.demo.service.precence.CartPresenceService;
 import org.mapstruct.Context;
@@ -21,9 +21,9 @@ public interface CartItemMapper {
     @Mapping(target = "formattedDuration", source = "movie.duration", qualifiedByName = "durationToString")
     @Mapping(target = "inCart", constant = "true")
     @Mapping(target = "inFavourites", expression =
-            "java(cartPresenceService.isInLinkedCollection(cartItem.getMovie().getId(), cartItem.getUser().getUsername()))")
+            "java(cartPresenceService.isInLinkedCollection(cartItem.getMovie().getId(), cartItem.getUser().getId()))")
     CartMovieForOwnerViewDTO toOwnerView(
             CartItem cartItem,
             @Context CartPresenceService cartPresenceService
-            );
+    );
 }

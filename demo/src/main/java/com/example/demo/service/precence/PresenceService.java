@@ -1,17 +1,16 @@
 package com.example.demo.service.precence;
 
-import com.example.demo.model.AbstractLinkedCollectionItem;
+import com.example.demo.model.AbstractCatalogItem;
 import com.example.demo.repository.AbstractLinkedCollectionRepository;
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
-public class PresenceService<Entity extends AbstractLinkedCollectionItem> {
+public class PresenceService<Entity extends AbstractCatalogItem> {
 
     private final AbstractLinkedCollectionRepository<Entity> linkedCollectionRepository;
 
-    public boolean isInLinkedCollection(Long id, String username) {
+    public boolean isInLinkedCollection(Long movieId, Long userId) {
         return linkedCollectionRepository
-                .existsByMovieIdAndUserUsername(id, username);
+                .existsByMovieIdAndUserId(movieId, userId);
     }
-
 }

@@ -1,4 +1,4 @@
-package com.example.demo.dto.joined_to_user;
+package com.example.demo.dto.catalog;
 
 import jakarta.validation.constraints.*;
 

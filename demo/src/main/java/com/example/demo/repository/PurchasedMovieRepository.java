@@ -14,17 +14,17 @@ public interface PurchasedMovieRepository extends AbstractCatalogRepository<Purc
             SELECT COUNT(purchasedMovie) > 0
             FROM PurchasedMovie purchasedMovie
             WHERE purchasedMovie.movie.id = :movieId
-            AND purchasedMovie.user.username = :username
+            AND purchasedMovie.user.id = :userId
             """)
-    boolean existsByMovieIdAndUserUsername(@Param("movieId") Long movieId,
-                                           @Param("username") String username);
+    boolean existsByMovieIdAndUserId(@Param("movieId") Long movieId,
+                                     @Param("userId") Long userId);
 
     @Query("""
             SELECT purchasedMovie.movie.id
             FROM PurchasedMovie purchasedMovie
-            WHERE purchasedMovie.user.username = :username
+            WHERE purchasedMovie.user.id = :userId
             """)
-    List<Long> findMovieIdsByUsername(@Param("username")
-                                      String username);
+    List<Long> findMovieIdsByUserId(@Param("userId")
+                                    Long userId);
 
 }

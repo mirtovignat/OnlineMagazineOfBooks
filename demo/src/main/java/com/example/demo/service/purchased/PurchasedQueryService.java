@@ -15,17 +15,17 @@ public class PurchasedQueryService {
     private final PurchasedMovieRepository purchasedMovieRepository;
 
     @Transactional(readOnly = true)
-    public boolean isMoviePurchasedByUser(Long movieId, String username) {
-        if (movieId == null || username == null || username.isBlank()) {
+    public boolean isMoviePurchasedByUser(Long movieId, Long userId) {
+        if (movieId == null || userId == null) {
             return false;
         }
-        return purchasedMovieRepository.existsByMovieIdAndUserUsername(
-                movieId, username);
+        return purchasedMovieRepository.existsByMovieIdAndUserId(
+                movieId, userId);
     }
 
     @Transactional(readOnly = true)
-    public Set<Long> getPurchasedMovieIds(String username) {
+    public Set<Long> getPurchasedMovieIds(Long userId) {
         return new LinkedHashSet<>(purchasedMovieRepository
-                .findMovieIdsByUsername(username));
+                .findMovieIdsByUserId(userId));
     }
 }

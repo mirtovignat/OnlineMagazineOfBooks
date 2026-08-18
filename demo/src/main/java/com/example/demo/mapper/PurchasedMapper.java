@@ -1,7 +1,7 @@
 package com.example.demo.mapper;
 
-import com.example.demo.dto.joined_to_user.HistoricalMovieForOwnerViewDTO;
-import com.example.demo.dto.joined_to_user.LibrarianMovieForOwnerViewDTO;
+import com.example.demo.dto.catalog.HistoricalMovieForOwnerViewDTO;
+import com.example.demo.dto.catalog.LibrarianMovieForOwnerViewDTO;
 import com.example.demo.model.PurchasedMovie;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;

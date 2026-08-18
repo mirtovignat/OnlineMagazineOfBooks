@@ -1,9 +1,10 @@
 package com.example.demo.service.linked_collection;
 
 import com.example.demo.dto.badges.BadgeCountsDTO;
-import com.example.demo.dto.joined_to_user.FavouriteMovieForOwnerViewDTO;
+import com.example.demo.dto.catalog.FavouriteMovieForOwnerViewDTO;
 import com.example.demo.exception.ErrorCode;
 import com.example.demo.mapper.FavouritesMapper;
+import com.example.demo.model.AbstractCatalogItem;
 import com.example.demo.model.FavouriteMovie;
 import com.example.demo.model.Movie;
 import com.example.demo.model.User;
@@ -40,7 +41,8 @@ public class FavouritesService extends AbstractLinkedCollectionService<Favourite
 
     @Override
     protected FavouriteMovie createEntity(User user, Movie movie) {
-        return new FavouriteMovie();
+        return AbstractCatalogItem.init(FavouriteMovie.builder()
+                .build(), user, movie);
     }
 
     @Override

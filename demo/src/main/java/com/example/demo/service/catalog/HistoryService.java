@@ -1,6 +1,6 @@
 package com.example.demo.service.catalog;
 
-import com.example.demo.dto.joined_to_user.HistoricalMovieForOwnerViewDTO;
+import com.example.demo.dto.catalog.HistoricalMovieForOwnerViewDTO;
 import com.example.demo.mapper.PurchasedMapper;
 import com.example.demo.model.PurchasedMovie;
 import com.example.demo.repository.PurchasedMovieRepository;

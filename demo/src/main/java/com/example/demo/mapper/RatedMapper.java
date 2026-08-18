@@ -1,8 +1,8 @@
 package com.example.demo.mapper;
 
-import com.example.demo.dto.joined_to_user.RatedMovieForOwnerFormDTO;
-import com.example.demo.dto.joined_to_user.RatedMovieForOwnerViewDTO;
-import com.example.demo.dto.joined_to_user.ReviewViewDTO;
+import com.example.demo.dto.catalog.RatedMovieForOwnerFormDTO;
+import com.example.demo.dto.catalog.RatedMovieForOwnerViewDTO;
+import com.example.demo.dto.catalog.ReviewViewDTO;
 import com.example.demo.model.RatedMovie;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -38,7 +38,7 @@ public interface RatedMapper {
     @Mapping(target = "ratingValue", source = "ratingValue")
     RatedMovieForOwnerViewDTO toOwnerView(RatedMovie ratedMovie);
 
-    @Mapping(target = "id", source = "id")
+    @Mapping(target = "id", source = "movie.id")
     @Mapping(target = "rating", source = "ratingValue")
     @Mapping(target = "review", source = "review")
     RatedMovieForOwnerFormDTO toFormView(RatedMovie ratedMovie);

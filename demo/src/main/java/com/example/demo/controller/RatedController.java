@@ -1,13 +1,14 @@
 package com.example.demo.controller;
 
-import com.example.demo.dto.joined_to_user.RatedMovieForOwnerFormDTO;
+import com.example.demo.dto.catalog.RatedMovieForOwnerFormDTO;
 import com.example.demo.dto.response.ApiResponse;
 import com.example.demo.dto.response.ReviewsPageResponse;
-import com.example.demo.dto.user.UserForOwnerViewDTO;
+import com.example.demo.dto.user.SessionUser;
 import com.example.demo.exception.SuccessCode;
 import com.example.demo.service.rated.RatedCommandService;
 import com.example.demo.service.rated.RatedQueryService;
 import com.example.demo.service.rated.ReviewsQueryService;
+import com.example.demo.service.user.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -27,24 +28,30 @@ public class RatedController {
     private final RatedCommandService ratedCommandService;
     private final RatedQueryService ratedQueryService;
     private final ReviewsQueryService reviewsPageService;
+    private final UserService userService;
 
     @GetMapping("/{id}/reviews")
     public String getReviews(
             @PathVariable Long id,
-            @SessionAttribute(required = false) UserForOwnerViewDTO userForOwnerViewDTO,
+            @SessionAttribute(required = false) SessionUser sessionUser,
             Model model
     ) {
-        String currentUsername = userForOwnerViewDTO != null ? userForOwnerViewDTO.username() : null;
-        ReviewsPageResponse response = reviewsPageService.buildReviewsPage(id, currentUsername);
+        Long userId = sessionUser != null ? sessionUser.id() : null;
+        ReviewsPageResponse response = reviewsPageService.buildReviewsPage(id, userId);
         model.addAttribute("response", response);
+        if (userId != null) {
+            String username = userService.getUsername(userId);
+            model.addAttribute("currentUsername", username);
+        }
         return "reviews";
     }
 
     @PostMapping("/{id}/reviews/delete")
     public String deleteReview(@PathVariable("id") Long movieId,
-                               @SessionAttribute UserForOwnerViewDTO userForOwnerViewDTO,
+                               @SessionAttribute SessionUser sessionUser,
                                RedirectAttributes redirectAttributes) {
-        ratedCommandService.deleteRating(movieId, userForOwnerViewDTO.username());
+        Long userId = sessionUser.id();
+        ratedCommandService.deleteRating(movieId, userId);
         redirectAttributes.addFlashAttribute("successMessage",
                 SuccessCode.REVIEW_HAS_BEEN_DELETED_SUCCESSFULLY.format(movieId));
         return "redirect:/rated/" + movieId + "/reviews";
@@ -54,21 +61,21 @@ public class RatedController {
     @ResponseBody
     public ResponseEntity<RatedMovieForOwnerFormDTO> getMyReviewForm(
             @PathVariable Long movieId,
-            @SessionAttribute UserForOwnerViewDTO userForOwnerViewDTO
+            @SessionAttribute SessionUser sessionUser
     ) {
-        return ResponseEntity.ok(ratedQueryService.getPreFilledForm(movieId, userForOwnerViewDTO.username()));
+        Long userId = sessionUser.id();
+        return ResponseEntity.ok(ratedQueryService.getPreFilledForm(movieId, userId));
     }
 
     @PostMapping("/add")
     @ResponseBody
     public ResponseEntity<ApiResponse> addRating(@Valid @ModelAttribute RatedMovieForOwnerFormDTO ratedMovieForOwnerFormDTO,
-                                                 @SessionAttribute UserForOwnerViewDTO userForOwnerViewDTO) {
+                                                 @SessionAttribute SessionUser sessionUser) {
+        Long userId = sessionUser.id();
         ratedCommandService.addOrUpdateRating(ratedMovieForOwnerFormDTO.id(),
-                userForOwnerViewDTO.username(), ratedMovieForOwnerFormDTO);
-
+                userId, ratedMovieForOwnerFormDTO);
         BigDecimal newRating = ratedQueryService.getMovieRating(ratedMovieForOwnerFormDTO.id());
         long reviewsCount = ratedQueryService.getReviewsCountForMovie(ratedMovieForOwnerFormDTO.id());
-
         return ResponseEntity.ok(ApiResponse.success(
                 SuccessCode.REVIEW_HAS_BEEN_SAVED_SUCCESSFULLY,
                 Map.of(
@@ -82,8 +89,9 @@ public class RatedController {
     @PostMapping("/edit")
     @ResponseBody
     public ResponseEntity<ApiResponse> editRating(@Valid @ModelAttribute RatedMovieForOwnerFormDTO ratedMovieForOwnerFormDTO,
-                                                  @SessionAttribute UserForOwnerViewDTO userForOwnerViewDTO) {
-        ratedCommandService.addOrUpdateRating(ratedMovieForOwnerFormDTO.id(), userForOwnerViewDTO.username(),
+                                                  @SessionAttribute SessionUser sessionUser) {
+        Long userId = sessionUser.id();
+        ratedCommandService.addOrUpdateRating(ratedMovieForOwnerFormDTO.id(), userId,
                 ratedMovieForOwnerFormDTO);
         BigDecimal newRating = ratedQueryService.getMovieRating(ratedMovieForOwnerFormDTO.id());
         long reviewsCount = ratedQueryService.getReviewsCountForMovie(ratedMovieForOwnerFormDTO.id());
@@ -100,8 +108,9 @@ public class RatedController {
     @PostMapping("/remove/{id}")
     @ResponseBody
     public ResponseEntity<ApiResponse> removeRating(@PathVariable("id") Long movieId,
-                                                    @SessionAttribute("userForOwnerViewDTO") UserForOwnerViewDTO userForOwnerViewDTO) {
-        ratedCommandService.deleteRating(movieId, userForOwnerViewDTO.username());
+                                                    @SessionAttribute SessionUser sessionUser) {
+        Long userId = sessionUser.id();
+        ratedCommandService.deleteRating(movieId, userId);
         BigDecimal newRating = ratedQueryService.getMovieRating(movieId);
         long reviewsCount = ratedQueryService.getReviewsCountForMovie(movieId);
         return ResponseEntity.ok(ApiResponse.success(

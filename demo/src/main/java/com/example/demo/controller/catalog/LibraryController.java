@@ -1,7 +1,7 @@
 package com.example.demo.controller.catalog;
 
-import com.example.demo.dto.joined_to_user.LibrarianMovieForOwnerViewDTO;
-import com.example.demo.dto.user.UserForOwnerViewDTO;
+import com.example.demo.dto.catalog.LibrarianMovieForOwnerViewDTO;
+import com.example.demo.dto.user.SessionUser;
 import com.example.demo.service.catalog.LibraryService;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Controller;
@@ -22,9 +22,10 @@ public class LibraryController {
     @GetMapping
     public String getLibrary(
             Model model,
-            @SessionAttribute UserForOwnerViewDTO userForOwnerViewDTO
+            @SessionAttribute SessionUser sessionUser
     ) {
-        List<LibrarianMovieForOwnerViewDTO> items = libraryService.getCatalog(userForOwnerViewDTO.username());
+        Long userId = sessionUser.id();
+        List<LibrarianMovieForOwnerViewDTO> items = libraryService.getCatalog(userId);
         model.addAttribute("items", items);
         return "catalog/library";
     }

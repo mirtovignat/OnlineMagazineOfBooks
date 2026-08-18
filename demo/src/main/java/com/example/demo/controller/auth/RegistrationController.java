@@ -2,6 +2,7 @@ package com.example.demo.controller.auth;
 
 import com.example.demo.dto.authorize.RegisterFormDTO;
 import com.example.demo.dto.badges.BadgeCountsDTO;
+import com.example.demo.dto.user.SessionUser;
 import com.example.demo.dto.user.UserForOwnerViewDTO;
 import com.example.demo.service.user.AuthorizeService;
 import jakarta.servlet.http.HttpSession;
@@ -23,18 +24,16 @@ public class RegistrationController {
 
     @GetMapping
     public String getRegisterForm(Model model) {
-        model.addAttribute("registerForm",
-                RegisterFormDTO.initial());
+        model.addAttribute("registerForm", RegisterFormDTO.initial());
         return "register";
     }
-
     @PostMapping
-    public String register(@Valid @ModelAttribute("registerForm")
-                           RegisterFormDTO registerFormDTO,
+    public String register(@Valid @ModelAttribute("registerForm") RegisterFormDTO registerFormDTO,
                            HttpSession httpSession) {
         authorizeService.validateRegister(registerFormDTO);
-        UserForOwnerViewDTO userForOwnerViewDTO = authorizeService.register(registerFormDTO);
-        httpSession.setAttribute("userForOwnerViewDTO", userForOwnerViewDTO);
+        UserForOwnerViewDTO fullUser = authorizeService.register(registerFormDTO);
+        SessionUser sessionUser = SessionUser.from(fullUser);
+        httpSession.setAttribute("sessionUser", sessionUser);
         httpSession.setAttribute("badges", BadgeCountsDTO.empty());
         return "redirect:/";
     }

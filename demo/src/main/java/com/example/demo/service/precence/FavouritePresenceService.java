@@ -5,8 +5,7 @@ import com.example.demo.repository.FavouriteMovieRepository;
 import org.springframework.stereotype.Service;
 
 @Service
-public class FavouritePresenceService extends
-        PresenceService<FavouriteMovie> {
+public class FavouritePresenceService extends PresenceService<FavouriteMovie> {
     public FavouritePresenceService(FavouriteMovieRepository favouriteMovieRepository) {
         super(favouriteMovieRepository);
     }

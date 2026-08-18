@@ -20,7 +20,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.util.Objects;
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -34,8 +33,8 @@ public class UserService {
     private final FavouriteMovieRepository favouriteMovieRepository;
 
     public ProfileSettingsDTO prepareAndValidateProfile(ProfileSettingsDTO profileSettingsDTO,
-                                                        String currentUsername) {
-        User user = getUser(currentUsername);
+                                                        Long currentUserId) {
+        User user = getUser(currentUserId);
         String normalizedPhone = PhoneNormalizer.normalizePhone(profileSettingsDTO);
         ProfileSettingsDTO normalizedDto = userMapper.toSettingsForm(
                 User.builder()
@@ -52,11 +51,12 @@ public class UserService {
     }
 
     public String prepareAndValidatePassword(PasswordChangingDTO passwordChangingDTO,
-                                             String username) {
-        User user = getUser(username);
+                                             Long userId) {
+        User user = getUser(userId);
         passwordChangingDTO.isMismatch();
         passwordChangingDTO.isCoincidence();
-        if (!passwordEncoder.matches(passwordChangingDTO.currentPassword(), user.getPasswordHash())) {
+        if (!passwordEncoder.matches(passwordChangingDTO.currentPassword(),
+                user.getPasswordHash())) {
             throw BusinessException.of(ErrorCode.PASSWORD_INVALID);
         }
         return encodePassword(passwordChangingDTO.rawPassword());
@@ -67,7 +67,8 @@ public class UserService {
     }
 
     public void validateTopUp(TopUpFormDTO topUpFormDTO, User user) {
-        if (topUpFormDTO.amount() == null || topUpFormDTO.amount().compareTo(BigDecimal.ZERO) <= 0) {
+        if (topUpFormDTO.amount() == null || topUpFormDTO.amount()
+                .compareTo(BigDecimal.ZERO) <= 0) {
             throw new IllegalArgumentException("Сумма пополнения должна быть положительной");
         }
         BigDecimal current = user.getBalance() == null ? BigDecimal.ZERO : user.getBalance();
@@ -78,15 +79,15 @@ public class UserService {
     }
 
     @Transactional
-    public void saveProfile(ProfileSettingsDTO normalizedDto, String currentUsername) {
-        User user = getUser(currentUsername);
+    public void saveProfile(ProfileSettingsDTO normalizedDto, Long currentUserId) {
+        User user = getUser(currentUserId);
         userMapper.updateUserFromDto(normalizedDto, user);
         userRepository.save(user);
     }
 
     @Transactional
-    public void savePassword(String encodedPassword, String username) {
-        User user = getUser(username);
+    public void updatePassword(String encodedPassword, Long userId) {
+        User user = getUser(userId);
         user.setPasswordHash(encodedPassword);
         userRepository.save(user);
     }
@@ -98,15 +99,15 @@ public class UserService {
     }
 
     @Transactional
-    public void deleteAccount(String username) {
-        favouriteMovieRepository.deleteAllByUsername(username);
-        cartItemRepository.deleteAllByUsername(username);
-        userRepository.softDeleteByUsername(username);
+    public void deleteAccount(Long userId) {
+        favouriteMovieRepository.deleteAllByUserId(userId);
+        cartItemRepository.deleteAllByUserId(userId);
+        userRepository.deleteById(userId);
     }
 
     @Transactional
-    public void deletePhone(String username) {
-        User user = getUser(username);
+    public void deletePhone(Long userId) {
+        User user = getUser(userId);
         ProfileSettingsDTO dtoWithNullPhone = new ProfileSettingsDTO(
                 user.getUsername(),
                 user.getEmail(),
@@ -121,36 +122,38 @@ public class UserService {
         userRepository.save(user);
     }
 
-    public User getUser(String username) {
-        return userRepository.findByUsernameOrThrow(username);
+    public String getUsername(Long userId){
+        return getUser(userId).getUsername();
     }
 
-    public String getUsername(UserForOwnerViewDTO userForOwnerViewDTO) {
-        return Optional.ofNullable(userForOwnerViewDTO)
-                .map(UserForOwnerViewDTO::username)
-                .orElse(null);
+    public User getUser(Long userId) {
+        return userRepository.findByIdOrThrow(userId);
     }
 
-    @Transactional(readOnly = true)
-    public long getPurchasesCount(String username) {
-        return userRepository.countPurchasesByUsername(username);
+    public BigDecimal getBalance(Long userId) {
+        return getUser(userId).getBalance();
     }
 
     @Transactional(readOnly = true)
-    public long getRatingsCount(String username) {
-        return userRepository.countRatingsByUsername(username);
+    public long getPurchasesCount(Long userId) {
+        return userRepository.countPurchasesByUserId(userId);
     }
 
-    public WalletForOwnerViewDTO getWalletForOwner(String username) {
-        return userMapper.toWalletView(getUser(username));
+    @Transactional(readOnly = true)
+    public long getRatingsCount(Long userId) {
+        return userRepository.countRatingsByUserId(userId);
     }
 
-    public UserForOwnerViewDTO getUserForOwner(String username) {
-        return userMapper.toOwnerView(getUser(username));
+    public WalletForOwnerViewDTO getWalletForOwner(Long userId) {
+        return userMapper.toWalletView(getUser(userId));
     }
 
-    public ProfileSettingsDTO getProfileSettings(String username) {
-        return userMapper.toSettingsForm(getUser(username));
+    public UserForOwnerViewDTO getUserForOwner(Long userId) {
+        return userMapper.toOwnerView(getUser(userId));
+    }
+
+    public ProfileSettingsDTO getProfileSettings(Long userId) {
+        return userMapper.toSettingsForm(getUser(userId));
     }
 
     private void validateUniqueness(String username, String email, String phone, User user) {

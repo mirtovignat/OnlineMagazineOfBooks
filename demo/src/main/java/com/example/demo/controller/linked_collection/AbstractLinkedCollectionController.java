@@ -1,7 +1,7 @@
 package com.example.demo.controller.linked_collection;
 
 import com.example.demo.dto.badges.BadgeCountsDTO;
-import com.example.demo.dto.user.UserForOwnerViewDTO;
+import com.example.demo.dto.user.SessionUser;
 import com.example.demo.exception.SuccessCode;
 import com.example.demo.service.linked_collection.AbstractLinkedCollectionService;
 import jakarta.servlet.http.HttpSession;
@@ -19,17 +19,19 @@ public abstract class AbstractLinkedCollectionController<DTO> {
 
     @GetMapping("/count")
     @ResponseBody
-    public Long getCount(@SessionAttribute(required = false) UserForOwnerViewDTO userForOwnerViewDTO) {
-        return userForOwnerViewDTO == null ? 0 : linkedCollectionService.getCount(userForOwnerViewDTO.username());
+    public Long getCount(@SessionAttribute(required = false) SessionUser sessionUser) {
+        Long userId = sessionUser.id();
+        return userId == null ? 0 : linkedCollectionService.getCount(userId);
     }
 
     @PostMapping("/add/{id}")
     @ResponseBody
     public Map<String, Object> add(@PathVariable Long id,
-                                   @SessionAttribute UserForOwnerViewDTO userForOwnerViewDTO,
+                                   @SessionAttribute SessionUser sessionUser,
                                    HttpSession httpSession) {
-        linkedCollectionService.add(id, userForOwnerViewDTO.username());
-        Long newCount = linkedCollectionService.getCount(userForOwnerViewDTO.username());
+        Long userId = sessionUser.id();
+        linkedCollectionService.add(id, userId);
+        Long newCount = linkedCollectionService.getCount(userId);
         updateBadgeInSession(httpSession, newCount);
         return Map.of(
                 "count", newCount,
@@ -40,11 +42,11 @@ public abstract class AbstractLinkedCollectionController<DTO> {
     @PostMapping("/remove/{id}")
     @ResponseBody
     public Map<String, Object> remove(@PathVariable Long id,
-                                      @SessionAttribute
-                                      UserForOwnerViewDTO userForOwnerViewDTO,
+                                      @SessionAttribute SessionUser sessionUser,
                                       HttpSession httpSession) {
-        linkedCollectionService.remove(id, userForOwnerViewDTO.username());
-        Long newCount = linkedCollectionService.getCount(userForOwnerViewDTO.username());
+        Long userId = sessionUser.id();
+        linkedCollectionService.remove(id, userId);
+        Long newCount = linkedCollectionService.getCount(userId);
         updateBadgeInSession(httpSession, newCount);
         return Map.of(
                 "count", newCount,
@@ -54,9 +56,10 @@ public abstract class AbstractLinkedCollectionController<DTO> {
 
     @PostMapping("/clear")
     @ResponseBody
-    public Map<String, Object> clear(@SessionAttribute UserForOwnerViewDTO userForOwnerViewDTO,
+    public Map<String, Object> clear(@SessionAttribute SessionUser sessionUser,
                                      HttpSession httpSession) {
-        linkedCollectionService.removeAll(userForOwnerViewDTO.username());
+        Long userId = sessionUser.id();
+        linkedCollectionService.removeAll(userId);
         updateBadgeInSession(httpSession, 0L);
         return Map.of(
                 "count", 0,

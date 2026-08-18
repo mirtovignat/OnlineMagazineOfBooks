@@ -1,9 +1,10 @@
 package com.example.demo.service.linked_collection;
 
 import com.example.demo.dto.badges.BadgeCountsDTO;
-import com.example.demo.dto.joined_to_user.CartMovieForOwnerViewDTO;
+import com.example.demo.dto.catalog.CartMovieForOwnerViewDTO;
 import com.example.demo.exception.ErrorCode;
 import com.example.demo.mapper.CartItemMapper;
+import com.example.demo.model.AbstractCatalogItem;
 import com.example.demo.model.CartItem;
 import com.example.demo.model.Movie;
 import com.example.demo.model.User;
@@ -39,14 +40,16 @@ public class CartService extends AbstractLinkedCollectionService<CartItem,
     }
 
     @Override
-    public boolean existsInCollection(Long movieId, String username) {
+    public boolean existsInCollection(Long movieId, Long userId) {
         return linkedCollectionRepository
-                .findByMovieIdAndUserUsernameWithLock(movieId, username).isPresent();
+                .findByMovieIdAndUserIdWithLock(movieId, userId).isPresent();
     }
 
     @Override
     protected CartItem createEntity(User user, Movie movie) {
-        return new CartItem();
+        return AbstractCatalogItem.init(CartItem.builder()
+                .quantity((short) 1)
+                .build(), user, movie);
     }
 
     @Override

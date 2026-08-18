@@ -1,6 +1,6 @@
 package com.example.demo.sorter;
 
-import com.example.demo.dto.joined_to_user.OwnableDTO;
+import com.example.demo.dto.catalog.OwnableDTO;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 

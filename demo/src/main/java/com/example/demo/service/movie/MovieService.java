@@ -1,7 +1,7 @@
 package com.example.demo.service.movie;
 
-import com.example.demo.dto.joined_to_user.CartMovieForOwnerViewDTO;
-import com.example.demo.dto.joined_to_user.FavouriteMovieForOwnerViewDTO;
+import com.example.demo.dto.catalog.CartMovieForOwnerViewDTO;
+import com.example.demo.dto.catalog.FavouriteMovieForOwnerViewDTO;
 import com.example.demo.dto.movie.*;
 import com.example.demo.exception.BusinessException;
 import com.example.demo.exception.ErrorCode;
@@ -36,24 +36,27 @@ public class MovieService {
     private final MovieUserStatusHelper userStatusHelper;
     private final MovieSearchHelper movieSearchHelper;
 
-    public Page<MovieForUser<MovieCardViewDTO>> getCatalogPage(Pageable pageable, String username) {
+    public Page<MovieForUser<MovieCardViewDTO>> getCatalogPage(
+            Pageable pageable, Long userId) {
         Page<Movie> moviePage = movieRepository.findAll(pageable);
-        return enrichWithStatuses(moviePage, username);
+        return enrichWithStatuses(moviePage, userId);
     }
 
     public Page<MovieForUser<MovieCardViewDTO>> getMoviesByFilter(MovieFilter movieFilter,
-                                                                  Pageable pageable, String username) {
+                                                                  Pageable pageable,
+                                                                  Long userId) {
         MovieFilter normalizedFilter = movieFilter.normalize();
-        Page<Movie> moviePage = movieSearchHelper.findMoviesByMovieFilter(normalizedFilter, pageable);
-        return enrichWithStatuses(moviePage, username);
+        Page<Movie> moviePage = movieSearchHelper.findMoviesByMovieFilter(
+                normalizedFilter, pageable);
+        return enrichWithStatuses(moviePage, userId);
     }
 
     @Transactional
-    public MovieForUser<MovieCardDetailsViewDTO> getCard(Long movieId, String username) {
+    public MovieForUser<MovieCardDetailsViewDTO> getCard(Long movieId, Long userId) {
         Movie movie = movieRepository.findByIdOrThrow(movieId);
         MovieCardDetailsViewDTO movieCardDetailsViewDTO = movieMapper.toDetails(movie);
-        MovieUserStatus status = (username != null)
-                ? calculateUserStatus(movieId, username)
+        MovieUserStatus status = (userId != null)
+                ? calculateUserStatus(movieId, userId)
                 : MovieUserStatus.builder().build();
         return new MovieForUser<>(movieCardDetailsViewDTO, status);
     }
@@ -75,23 +78,25 @@ public class MovieService {
         return movieRepository.findAllDistinctGenres();
     }
 
-    public Page<MovieForUser<MovieCardViewDTO>> enrichWithStatuses(Page<Movie> moviePage, String username) {
+    public Page<MovieForUser<MovieCardViewDTO>> enrichWithStatuses(
+            Page<Movie> moviePage, Long userId) {
         if (moviePage.isEmpty()) {
             return Page.empty(moviePage.getPageable());
         }
 
-        if (username != null && !username.isBlank()) {
-            return userStatusHelper.enrichWithUserStatuses(moviePage, username, movieMapper::toCard);
+        if (userId != null) {
+            return userStatusHelper.enrichWithUserStatuses(moviePage, userId,
+                    movieMapper::toCard);
         }
 
         return moviePage.map(movie -> new MovieForUser<>(movieMapper.toCard(movie),
                 MovieUserStatus.builder().build()));
     }
 
-    private MovieUserStatus calculateUserStatus(Long movieId, String username) {
-        boolean isBought = purchasedQueryService.isMoviePurchasedByUser(movieId, username);
-        boolean isInCart = !isBought && cartService.existsInCollection(movieId, username);
-        boolean isInFavourites = favouritesService.existsInCollection(movieId, username);
+    private MovieUserStatus calculateUserStatus(Long movieId, Long userId) {
+        boolean isBought = purchasedQueryService.isMoviePurchasedByUser(movieId, userId);
+        boolean isInCart = !isBought && cartService.existsInCollection(movieId, userId);
+        boolean isInFavourites = favouritesService.existsInCollection(movieId, userId);
         return new MovieUserStatus(isBought, isInCart, isInFavourites);
     }
 

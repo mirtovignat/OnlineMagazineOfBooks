@@ -1,7 +1,7 @@
 package com.example.demo.controller.catalog;
 
-import com.example.demo.dto.joined_to_user.HistoricalMovieForOwnerViewDTO;
-import com.example.demo.dto.user.UserForOwnerViewDTO;
+import com.example.demo.dto.catalog.HistoricalMovieForOwnerViewDTO;
+import com.example.demo.dto.user.SessionUser;
 import com.example.demo.service.catalog.HistoryService;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Controller;
@@ -22,10 +22,10 @@ public class HistoryController {
     @GetMapping
     public String getHistory(
             Model model,
-            @SessionAttribute UserForOwnerViewDTO userForOwnerViewDTO
+            @SessionAttribute SessionUser sessionUser
     ) {
-        List<HistoricalMovieForOwnerViewDTO> items =
-                historyService.getCatalog(userForOwnerViewDTO.username());
+        Long userId = sessionUser.id();
+        List<HistoricalMovieForOwnerViewDTO> items = historyService.getCatalog(userId);
         model.addAttribute("items", items);
         return "catalog/history";
     }

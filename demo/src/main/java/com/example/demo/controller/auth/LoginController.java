@@ -3,6 +3,7 @@ package com.example.demo.controller.auth;
 import com.example.demo.dto.authorize.Identifier;
 import com.example.demo.dto.authorize.LoginFormDTO;
 import com.example.demo.dto.badges.BadgeCountsDTO;
+import com.example.demo.dto.user.SessionUser;
 import com.example.demo.dto.user.UserForOwnerViewDTO;
 import com.example.demo.model.User;
 import com.example.demo.service.BadgeService;
@@ -27,14 +28,12 @@ public class LoginController {
 
     @GetMapping
     public String loginPage(HttpSession httpSession, Model model) {
-        if (httpSession.getAttribute("userForOwnerViewDTO") != null) {
+        if (httpSession.getAttribute("sessionUser") != null) {
             return "redirect:/";
         }
         if (!model.containsAttribute("loginForm")) {
             LoginFormDTO loginForm = LoginFormDTO.builder()
                     .identifier(Identifier.USERNAME)
-                    .identifierValue("")
-                    .rawPassword("")
                     .build();
             model.addAttribute("loginForm", loginForm);
         }
@@ -42,16 +41,16 @@ public class LoginController {
     }
 
     @PostMapping
-    public String login(@Valid @ModelAttribute("loginForm")
-                        LoginFormDTO loginFormDTO,
+    public String login(@Valid @ModelAttribute("loginForm") LoginFormDTO loginFormDTO,
                         HttpSession httpSession) {
         User user = authorizeService.validateLogin(loginFormDTO);
-        UserForOwnerViewDTO userForOwnerViewDTO = authorizeService.login(user);
-        httpSession.setAttribute("userForOwnerViewDTO", userForOwnerViewDTO);
+        UserForOwnerViewDTO fullUser = authorizeService.login(user);
+        SessionUser sessionUser = SessionUser.from(fullUser);
+        httpSession.setAttribute("sessionUser", sessionUser);
         try {
-            BadgeCountsDTO badges = badgeService.getBadgeCounts(userForOwnerViewDTO.username());
+            BadgeCountsDTO badges = badgeService.getBadgeCounts(fullUser.id());
             httpSession.setAttribute("badges", badges);
-        } catch (Exception e) {
+        } catch (Exception exception) {
             httpSession.setAttribute("badges", BadgeCountsDTO.empty());
         }
         return "redirect:/";

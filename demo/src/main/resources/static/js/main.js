@@ -1414,6 +1414,7 @@ function normalizeDurationFilters() {
 }
 function validateFilter() {
     normalizeDurationFilters();
+
     const errorEl = document.getElementById('ratingFilterError');
 
     function showError(message, input) {
@@ -1447,9 +1448,7 @@ function validateFilter() {
         priceFrom.value = normalized;
         if (normalized !== '') {
             const value = parseFloat(normalized);
-            if (value > 0) {
-                hasMeaningfulFilter = true;
-            }
+            if (value > 0) hasMeaningfulFilter = true;
         }
     }
 
@@ -1466,9 +1465,15 @@ function validateFilter() {
         priceTo.value = normalized;
         if (normalized !== '') {
             const value = parseFloat(normalized);
-            if (value > 0) {
-                hasMeaningfulFilter = true;
-            }
+            if (value > 0) hasMeaningfulFilter = true;
+        }
+    }
+
+    if (priceFrom && priceFrom.value && priceTo && priceTo.value) {
+        const from = parseFloat(priceFrom.value);
+        const to = parseFloat(priceTo.value);
+        if (!isNaN(from) && !isNaN(to) && from > to) {
+            return showError('Цена "от" не может быть больше цены "до"', priceFrom);
         }
     }
 
@@ -1488,9 +1493,7 @@ function validateFilter() {
                 return showError('Рейтинг "от" должен быть от 0.1 до 10.0', ratingFrom);
             }
             ratingFrom.value = normalized;
-            if (normalized !== '') {
-                hasMeaningfulFilter = true;
-            }
+            if (normalized !== '') hasMeaningfulFilter = true;
         }
     }
 
@@ -1512,42 +1515,26 @@ function validateFilter() {
                 return showError('Рейтинг "до" должен быть от 0.1 до 10.0', ratingTo);
             }
             ratingTo.value = normalized;
-            if (normalized !== '') {
-                hasMeaningfulFilter = true;
-            }
+            if (normalized !== '') hasMeaningfulFilter = true;
         }
     }
 
-    const durationFromHours = document.getElementById('durationFromHours');
-    const durationFromMinutes = document.getElementById('durationFromMinutes');
-    const durationFromSeconds = document.getElementById('durationFromSeconds');
-
-    const fromH = parseInt(durationFromHours?.value, 10) || 0;
-    const fromM = parseInt(durationFromMinutes?.value, 10) || 0;
-    const fromS = parseInt(durationFromSeconds?.value, 10) || 0;
-
-    if (fromH !== 0 || fromM !== 0 || fromS !== 0) {
-        hasMeaningfulFilter = true;
-    } else {
-        if (durationFromHours) durationFromHours.value = '';
-        if (durationFromMinutes) durationFromMinutes.value = '';
-        if (durationFromSeconds) durationFromSeconds.value = '';
+    if (ratingFrom && ratingFrom.value && ratingTo && ratingTo.value) {
+        const from = parseFloat(ratingFrom.value);
+        const to = parseFloat(ratingTo.value);
+        if (!isNaN(from) && !isNaN(to) && from > to) {
+            return showError('Рейтинг "от" не может быть больше рейтинга "до"', ratingFrom);
+        }
     }
 
-    const durationToHours = document.getElementById('durationToHours');
-    const durationToMinutes = document.getElementById('durationToMinutes');
-    const durationToSeconds = document.getElementById('durationToSeconds');
-
-    const toH = parseInt(durationToHours?.value, 10) || 0;
-    const toM = parseInt(durationToMinutes?.value, 10) || 0;
-    const toS = parseInt(durationToSeconds?.value, 10) || 0;
-
-    if (toH === 16 && toM === 59 && toS === 59) {
-        if (durationToHours) durationToHours.value = '';
-        if (durationToMinutes) durationToMinutes.value = '';
-        if (durationToSeconds) durationToSeconds.value = '';
-    } else if (toH !== 0 || toM !== 0 || toS !== 0) {
-        hasMeaningfulFilter = true;
+    const minDuration = document.getElementById('minDuration');
+    const maxDuration = document.getElementById('maxDuration');
+    if (minDuration && minDuration.value && maxDuration && maxDuration.value) {
+        const min = parseInt(minDuration.value, 10);
+        const max = parseInt(maxDuration.value, 10);
+        if (!isNaN(min) && !isNaN(max) && min > max) {
+            return showError('Длительность "от" не может быть больше длительности "до"', null);
+        }
     }
 
     const dateFrom = document.getElementById('releaseDateFrom');
@@ -1850,5 +1837,46 @@ function stopSteppingAmount(button) {
     if (_amountStepInterval) {
         clearInterval(_amountStepInterval);
         _amountStepInterval = null;
+    }
+}
+let _filterStepInterval = null;
+let _filterStepTimeout = null;
+
+function stepFilterValue(inputId, delta, min, max, decimals) {
+    const input = document.getElementById(inputId);
+    if (!input) return;
+    let current = parseFloat(input.value.replace(',', '.'));
+    if (isNaN(current)) current = 0;
+    let newValue = current + delta;
+    const factor = Math.pow(10, decimals);
+    newValue = Math.round(newValue * factor) / factor;
+    if (min !== null && newValue < min) newValue = min;
+    if (max !== null && newValue > max) newValue = max;
+    input.value = newValue.toFixed(decimals);
+    const event = new Event('input', { bubbles: true });
+    input.dispatchEvent(event);
+    document.querySelectorAll('.quick-amount-btn').forEach(b => b.classList.remove('active'));
+}
+
+function startSteppingFilter(inputId, delta, min, max, decimals, button) {
+    stopSteppingFilter(button);
+    if (button) button.classList.add('holding');
+    stepFilterValue(inputId, delta, min, max, decimals);
+    _filterStepTimeout = setTimeout(function() {
+        _filterStepInterval = setInterval(function() {
+            stepFilterValue(inputId, delta, min, max, decimals);
+        }, 10);
+    }, 250);
+}
+
+function stopSteppingFilter(button) {
+    if (button) button.classList.remove('holding');
+    if (_filterStepTimeout) {
+        clearTimeout(_filterStepTimeout);
+        _filterStepTimeout = null;
+    }
+    if (_filterStepInterval) {
+        clearInterval(_filterStepInterval);
+        _filterStepInterval = null;
     }
 }
