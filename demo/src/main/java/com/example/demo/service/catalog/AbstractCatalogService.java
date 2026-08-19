@@ -1,7 +1,7 @@
 package com.example.demo.service.catalog;
 
-import com.example.demo.model.AbstractCatalogItem;
-import com.example.demo.repository.AbstractCatalogRepository;
+import com.example.demo.model.base.AbstractCatalogItem;
+import com.example.demo.repository.base.AbstractCatalogRepository;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;

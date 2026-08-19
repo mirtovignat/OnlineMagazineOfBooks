@@ -2,9 +2,9 @@ package com.example.demo.helper;
 
 import com.example.demo.dto.movie.MovieSearchDTO;
 import com.example.demo.filter.MovieFilter;
-import com.example.demo.mapper.MovieMapper;
-import com.example.demo.model.Movie;
-import com.example.demo.repository.MovieRepository;
+import com.example.demo.mapper.entity.MovieMapper;
+import com.example.demo.model.entity.Movie;
+import com.example.demo.repository.entity.MovieRepository;
 import com.example.demo.repository.specification.MovieSpecifications;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;

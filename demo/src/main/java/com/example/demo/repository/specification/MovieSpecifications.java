@@ -1,7 +1,7 @@
 package com.example.demo.repository.specification;
 
 import com.example.demo.filter.MovieFilter;
-import com.example.demo.model.Movie;
+import com.example.demo.model.entity.Movie;
 import jakarta.persistence.criteria.Expression;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Component;

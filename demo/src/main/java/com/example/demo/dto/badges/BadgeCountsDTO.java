@@ -9,7 +9,4 @@ public record BadgeCountsDTO(
         Long purchasesCount,
         Long ratingsCount
 ) {
-    public static BadgeCountsDTO empty() {
-        return builder().build();
-    }
 }

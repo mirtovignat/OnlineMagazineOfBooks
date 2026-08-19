@@ -8,7 +8,7 @@ import com.example.demo.exception.SuccessCode;
 import com.example.demo.service.rated.RatedCommandService;
 import com.example.demo.service.rated.RatedQueryService;
 import com.example.demo.service.rated.ReviewsQueryService;
-import com.example.demo.service.user.UserService;
+import com.example.demo.service.user.UserQueryService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -28,7 +28,7 @@ public class RatedController {
     private final RatedCommandService ratedCommandService;
     private final RatedQueryService ratedQueryService;
     private final ReviewsQueryService reviewsPageService;
-    private final UserService userService;
+    private final UserQueryService userQueryService;
 
     @GetMapping("/{id}/reviews")
     public String getReviews(
@@ -40,7 +40,7 @@ public class RatedController {
         ReviewsPageResponse response = reviewsPageService.buildReviewsPage(id, userId);
         model.addAttribute("response", response);
         if (userId != null) {
-            String username = userService.getUsername(userId);
+            String username = userQueryService.getUsername(userId);
             model.addAttribute("currentUsername", username);
         }
         return "reviews";
@@ -53,7 +53,7 @@ public class RatedController {
         Long userId = sessionUser.id();
         ratedCommandService.deleteRating(movieId, userId);
         redirectAttributes.addFlashAttribute("successMessage",
-                SuccessCode.REVIEW_HAS_BEEN_DELETED_SUCCESSFULLY.format(movieId));
+                SuccessCode.REVIEW_HAS_BEEN_DELETED);
         return "redirect:/rated/" + movieId + "/reviews";
     }
 
@@ -74,15 +74,8 @@ public class RatedController {
         Long userId = sessionUser.id();
         ratedCommandService.addOrUpdateRating(ratedMovieForOwnerFormDTO.id(),
                 userId, ratedMovieForOwnerFormDTO);
-        BigDecimal newRating = ratedQueryService.getMovieRating(ratedMovieForOwnerFormDTO.id());
-        long reviewsCount = ratedQueryService.getReviewsCountForMovie(ratedMovieForOwnerFormDTO.id());
-        return ResponseEntity.ok(ApiResponse.success(
-                SuccessCode.REVIEW_HAS_BEEN_SAVED_SUCCESSFULLY,
-                Map.of(
-                        "movieId", ratedMovieForOwnerFormDTO.id(),
-                        "rating", newRating != null ? newRating : "-",
-                        "reviewsCount", reviewsCount
-                )
+        return ResponseEntity.ok(ApiResponse.response(
+                SuccessCode.REVIEW_HAS_BEEN_SAVED
         ));
     }
 
@@ -93,15 +86,8 @@ public class RatedController {
         Long userId = sessionUser.id();
         ratedCommandService.addOrUpdateRating(ratedMovieForOwnerFormDTO.id(), userId,
                 ratedMovieForOwnerFormDTO);
-        BigDecimal newRating = ratedQueryService.getMovieRating(ratedMovieForOwnerFormDTO.id());
-        long reviewsCount = ratedQueryService.getReviewsCountForMovie(ratedMovieForOwnerFormDTO.id());
-        return ResponseEntity.ok(ApiResponse.success(
-                SuccessCode.REVIEW_HAS_BEEN_UPDATED_SUCCESSFULLY,
-                Map.of(
-                        "movieId", ratedMovieForOwnerFormDTO.id(),
-                        "rating", newRating != null ? newRating : "-",
-                        "reviewsCount", reviewsCount
-                )
+        return ResponseEntity.ok(ApiResponse.response(
+                SuccessCode.REVIEW_HAS_BEEN_UPDATED
         ));
     }
 
@@ -111,15 +97,8 @@ public class RatedController {
                                                     @SessionAttribute SessionUser sessionUser) {
         Long userId = sessionUser.id();
         ratedCommandService.deleteRating(movieId, userId);
-        BigDecimal newRating = ratedQueryService.getMovieRating(movieId);
-        long reviewsCount = ratedQueryService.getReviewsCountForMovie(movieId);
-        return ResponseEntity.ok(ApiResponse.success(
-                SuccessCode.REVIEW_HAS_BEEN_DELETED_SUCCESSFULLY,
-                Map.of(
-                        "movieId", movieId,
-                        "rating", newRating != null ? newRating : "-",
-                        "reviewsCount", reviewsCount
-                )
+        return ResponseEntity.ok(ApiResponse.response(
+                SuccessCode.REVIEW_HAS_BEEN_DELETED
         ));
     }
 

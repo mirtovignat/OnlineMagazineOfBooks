@@ -1,7 +1,7 @@
 package com.example.demo.service.precence;
 
-import com.example.demo.model.FavouriteMovie;
-import com.example.demo.repository.FavouriteMovieRepository;
+import com.example.demo.model.entity.FavouriteMovie;
+import com.example.demo.repository.entity.FavouriteMovieRepository;
 import org.springframework.stereotype.Service;
 
 @Service

@@ -5,7 +5,7 @@ import com.example.demo.dto.authorize.LoginFormDTO;
 import com.example.demo.dto.badges.BadgeCountsDTO;
 import com.example.demo.dto.user.SessionUser;
 import com.example.demo.dto.user.UserForOwnerViewDTO;
-import com.example.demo.model.User;
+import com.example.demo.model.entity.User;
 import com.example.demo.service.BadgeService;
 import com.example.demo.service.user.AuthorizeService;
 import jakarta.servlet.http.HttpSession;
@@ -51,7 +51,7 @@ public class LoginController {
             BadgeCountsDTO badges = badgeService.getBadgeCounts(fullUser.id());
             httpSession.setAttribute("badges", badges);
         } catch (Exception exception) {
-            httpSession.setAttribute("badges", BadgeCountsDTO.empty());
+            httpSession.setAttribute("badges", BadgeCountsDTO.builder().build());
         }
         return "redirect:/";
     }

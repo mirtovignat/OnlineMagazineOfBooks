@@ -525,7 +525,12 @@ function updateReviewsCount(movieId) {
 }
 
 function updateRatingBadge(movieId, rating) {
-    const hasRating = rating !== null && rating !== '-' && rating !== undefined && !isNaN(parseFloat(rating));
+    const hasRating = rating !== null
+        && rating !== '-'
+        && rating !== '—'
+        && rating !== 'undefined'
+        && !isNaN(parseFloat(rating));
+
     const numericRating = hasRating ? parseFloat(rating).toFixed(1) : null;
 
     document.querySelectorAll(`.js-rating-badge[data-movie-id="${movieId}"]`).forEach(el => {
@@ -570,7 +575,10 @@ function updateMovieRating(movieId) {
             return r.json();
         })
         .then(data => {
-            updateRatingBadge(movieId, data.rating);
+            const rating = (data.rating === '-' || data.rating === '—' || data.rating === null)
+                ? null
+                : data.rating;
+            updateRatingBadge(movieId, rating);
         })
         .catch(console.warn);
 }
@@ -579,7 +587,10 @@ function applyRatingResponse(data, movieId) {
     const payload = data?.data ?? data;
 
     if (payload?.rating !== undefined) {
-        updateRatingBadge(movieId, payload.rating);
+        const rating = (payload.rating === '-' || payload.rating === '—' || payload.rating === null)
+            ? null
+            : payload.rating;
+        updateRatingBadge(movieId, rating);
     }
 
     if (payload?.reviewsCount !== undefined) {
@@ -827,7 +838,6 @@ function hideConfirmDeleteModal() {
 function executeDelete() {
     if (!_deleteMovieId) return;
     const movieId = _deleteMovieId;
-
     fetch('/rated/remove/' + encodeURIComponent(movieId), {
         method: 'POST',
         headers: { 'X-Requested-With': 'XMLHttpRequest' }
@@ -836,13 +846,20 @@ function executeDelete() {
     .then(data => {
         hideConfirmDeleteModal();
         showFlashMessage(data.message, 'success');
-
-        updateMovieRating(movieId);
-        updateReviewsCount(movieId);
-
-        const rating = data.rating !== undefined ? data.rating : null;
+        let rating = data.rating;
+        if (rating === '-' || rating === '—' || rating === null || rating === undefined) {
+            rating = null;
+        }
+        updateRatingBadge(movieId, rating);
         const reviewsCount = data.reviewsCount !== undefined ? data.reviewsCount : 0;
-
+        document.querySelectorAll(`.js-reviews-count[data-movie-id="${movieId}"]`).forEach(badge => {
+            badge.textContent = reviewsCount;
+            badge.style.display = reviewsCount > 0 ? '' : 'none';
+        });
+        const reviewsCounter = document.getElementById('reviewsCount');
+        if (reviewsCounter) {
+            reviewsCounter.textContent = reviewsCount + ' ' + getDeclension(reviewsCount);
+        }
         const ownCard = document.querySelector(`.review-card[data-movie-id="${movieId}"][data-own="true"]`);
         if (ownCard) {
             ownCard.style.transition = 'all 0.3s ease';
@@ -859,6 +876,7 @@ function executeDelete() {
                 }
             }, 300);
         }
+        updateMovieRating(movieId);
     })
     .catch(err => {
         hideConfirmDeleteModal();
@@ -1561,10 +1579,6 @@ function validateFilter() {
     const titleInput = document.getElementById('headerSearchInput');
     if (titleInput && titleInput.value && titleInput.value.trim() !== '') {
         hasMeaningfulFilter = true;
-    }
-
-    if (!hasMeaningfulFilter) {
-        return showError('Заполните хотя бы один фильтр для поиска', null);
     }
 
     return true;

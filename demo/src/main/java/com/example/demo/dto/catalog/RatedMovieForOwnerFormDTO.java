@@ -1,5 +1,6 @@
 package com.example.demo.dto.catalog;
 
+import com.example.demo.dto.base.Identifiable;
 import jakarta.validation.constraints.*;
 
 import java.math.BigDecimal;
@@ -15,5 +16,5 @@ public record RatedMovieForOwnerFormDTO(
 
         @Size(max = 2000, message = "Отзыв не может превышать 2000 символов")
         String review
-) {
+) implements Identifiable {
 }

@@ -1,9 +1,9 @@
 package com.example.demo.service.catalog;
 
 import com.example.demo.dto.catalog.RatedMovieForOwnerViewDTO;
-import com.example.demo.mapper.RatedMapper;
-import com.example.demo.model.RatedMovie;
-import com.example.demo.repository.RatedMovieRepository;
+import com.example.demo.mapper.entity.RatedMapper;
+import com.example.demo.model.entity.RatedMovie;
+import com.example.demo.repository.entity.RatedMovieRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.function.Function;

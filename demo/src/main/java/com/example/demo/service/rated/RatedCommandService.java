@@ -3,13 +3,13 @@ package com.example.demo.service.rated;
 import com.example.demo.dto.catalog.RatedMovieForOwnerFormDTO;
 import com.example.demo.exception.BusinessException;
 import com.example.demo.exception.ErrorCode;
-import com.example.demo.model.AbstractCatalogItem;
-import com.example.demo.model.Movie;
-import com.example.demo.model.RatedMovie;
-import com.example.demo.model.User;
-import com.example.demo.repository.RatedMovieRepository;
+import com.example.demo.model.base.AbstractCatalogItem;
+import com.example.demo.model.entity.Movie;
+import com.example.demo.model.entity.RatedMovie;
+import com.example.demo.model.entity.User;
+import com.example.demo.repository.entity.RatedMovieRepository;
 import com.example.demo.service.movie.MovieService;
-import com.example.demo.service.user.UserService;
+import com.example.demo.service.user.UserQueryService;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,7 +22,7 @@ import java.math.RoundingMode;
 public class RatedCommandService {
 
     private final MovieService movieService;
-    private final UserService userService;
+    private final UserQueryService userQueryService;
     private final RatedMovieRepository ratedMovieRepository;
     private final RatedQueryService ratedQueryService;
 
@@ -30,8 +30,7 @@ public class RatedCommandService {
     public void addOrUpdateRating(Long movieId, Long userId,
                                   RatedMovieForOwnerFormDTO ratedMovieForOwnerFormDTO) {
         Movie movie = movieService.getMovie(movieId);
-        User user = userService.getUser(userId);
-
+        User user = userQueryService.getUser(userId);
         RatedMovie ratedMovie = ratedMovieRepository
                 .findByMovieIdAndUserIdWithLock(movieId, userId)
                 .orElseGet(() -> AbstractCatalogItem.init(
@@ -39,7 +38,6 @@ public class RatedCommandService {
                         user,
                         movie
                 ));
-
         if (ratedQueryService.isUnchanged(ratedMovieForOwnerFormDTO, ratedMovie)) {
             throw BusinessException.of(ErrorCode.DATA_COINCIDENCE);
         }

@@ -1,7 +1,7 @@
 package com.example.demo.service.precence;
 
-import com.example.demo.model.CartItem;
-import com.example.demo.repository.CartItemRepository;
+import com.example.demo.model.entity.CartItem;
+import com.example.demo.repository.entity.CartItemRepository;
 import org.springframework.stereotype.Service;
 
 @Service

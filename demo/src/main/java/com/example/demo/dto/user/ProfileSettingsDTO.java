@@ -5,7 +5,9 @@ import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
+import lombok.Builder;
 
+@Builder
 public record ProfileSettingsDTO(
         @NotBlank(message = "Никнейм не может быть пустым")
         @Size(min = 6, max = 20, message = "Никнейм должен содержать от 6 до 20 символов")

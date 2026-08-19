@@ -57,20 +57,23 @@
 
         <div id="generalError" class="general-error"></div>
 
-        <form id="settingsForm" th:object="${profileSettingsDTO}">
+        <form th:action="@{/profile/settings/change}" th:object="${profileSettingsDTO}" method="post" id="settingsForm">
             <div class="form-group">
                 <label for="username">Имя пользователя</label>
-                <input type="text" id="username" class="form-control" th:field="*{username}"/>
+                <input type="text" id="username" class="form-control" th:field="*{username}" th:classappend="${#fields.hasErrors('username')} ? 'is-invalid' : ''"/>
+                <div th:if="${#fields.hasErrors('username')}" th:errors="*{username}" class="field-error show"></div>
                 <div id="usernameError" class="field-error"></div>
             </div>
             <div class="form-group">
                 <label for="email">Электронная почта</label>
-                <input type="email" id="email" class="form-control" th:field="*{email}"/>
+                <input type="email" id="email" class="form-control" th:field="*{email}" th:classappend="${#fields.hasErrors('email')} ? 'is-invalid' : ''"/>
+                <div th:if="${#fields.hasErrors('email')}" th:errors="*{email}" class="field-error show"></div>
                 <div id="emailError" class="field-error"></div>
             </div>
             <div class="form-group">
                 <label for="phone">Номер телефона</label>
-                <input type="tel" id="phone" class="form-control" th:field="*{phone}" placeholder="+7 (999) 123-45-67"/>
+                <input type="tel" id="phone" class="form-control" th:field="*{phone}" placeholder="+7 (999) 123-45-67" th:classappend="${#fields.hasErrors('phone')} ? 'is-invalid' : ''"/>
+                <div th:if="${#fields.hasErrors('phone')}" th:errors="*{phone}" class="field-error show"></div>
                 <div id="phoneError" class="field-error"></div>
             </div>
             <div class="form-actions">
@@ -81,7 +84,8 @@
     </div>
 </main>
 
-<script th:src="@{/js/main.js}" defer></script><script>
+<script th:src="@{/js/main.js}" defer></script>
+<script>
     function formatPhone(input) {
         let digits = input.value.replace(/\D/g, '');
         if (digits.startsWith('8') || digits.startsWith('7')) {
@@ -100,123 +104,12 @@
         input.value = formatted;
     }
 
-    function clearFieldErrors() {
-        document.querySelectorAll('.field-error').forEach(el => {
-            el.textContent = '';
-            el.classList.remove('show');
-        });
-        document.querySelectorAll('.form-control').forEach(el => el.classList.remove('is-invalid'));
-        const general = document.getElementById('generalError');
-        if (general) {
-            general.textContent = '';
-            general.classList.remove('show');
-        }
-    }
-
-    function showFieldError(fieldId, message) {
-        const errorEl = document.getElementById(fieldId + 'Error');
-        const inputEl = document.getElementById(fieldId);
-        if (errorEl) {
-            errorEl.textContent = message;
-            errorEl.classList.add('show');
-        }
-        if (inputEl) {
-            inputEl.classList.add('is-invalid');
-        }
-    }
-
-    function showGeneralError(message) {
-        const el = document.getElementById('generalError');
-        if (el) {
-            el.textContent = message;
-            el.classList.add('show');
-        }
-    }
-
     document.addEventListener('DOMContentLoaded', function () {
-        const form = document.getElementById('settingsForm');
-        if (!form) return;
-
         const phone = document.getElementById('phone');
         if (phone) {
             phone.addEventListener('input', function () { formatPhone(this); });
             if (phone.value) formatPhone(phone);
         }
-
-        form.addEventListener('submit', function (e) {
-            e.preventDefault();
-
-            const formData = new FormData(form);
-            const data = {
-                username: formData.get('username'),
-                email: formData.get('email'),
-                phone: formData.get('phone')
-            };
-
-            clearFieldErrors();
-
-            const submitBtn = form.querySelector('button[type="submit"]');
-            if (submitBtn) submitBtn.disabled = true;
-
-            fetch('/profile/settings/change-ajax', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
-                body: JSON.stringify(data)
-            })
-            .then(res => res.json().then(json => ({ status: res.status, json })))
-            .then(({ status, json }) => {
-                if (status === 200) {
-                    if (typeof showFlashMessage === 'function') {
-                        showFlashMessage(json.message || 'Изменения сохранены', 'success');
-                    }
-                    if (json.data) {
-                        if (json.data.newUsername) {
-                            document.getElementById('username').value = json.data.newUsername;
-                        }
-                        if (json.data.newEmail) {
-                            document.getElementById('email').value = json.data.newEmail;
-                        }
-                        if (json.data.newPhone) {
-                            document.getElementById('phone').value = json.data.newPhone;
-                        }
-                    }
-                } else {
-                    if (json.errors && Array.isArray(json.errors) && json.errors.length > 0) {
-                        json.errors.forEach(err => {
-                            const field = err.field;
-                            const msg = err.defaultMessage || 'Некорректное значение';
-                            if (field === 'username' || field === 'email' || field === 'phone') {
-                                showFieldError(field, msg);
-                            } else {
-                                showGeneralError(msg);
-                            }
-                        });
-                    } else if (json.message) {
-                        const msg = json.message;
-                        const lowerMsg = msg.toLowerCase();
-                        if (lowerMsg.includes('email') || lowerMsg.includes('почт')) {
-                            showFieldError('email', msg);
-                        } else if (lowerMsg.includes('логин') || lowerMsg.includes('username')) {
-                            showFieldError('username', msg);
-                        } else if (lowerMsg.includes('телефон') || lowerMsg.includes('phone')) {
-                            showFieldError('phone', msg);
-                        } else {
-                            showGeneralError(msg);
-                        }
-                    } else {
-                        showGeneralError('Ошибка сохранения');
-                    }
-                }
-            })
-            .catch(() => {
-                if (typeof showFlashMessage === 'function') {
-                    showFlashMessage('Ошибка сети', 'error');
-                }
-            })
-            .finally(() => {
-                if (submitBtn) submitBtn.disabled = false;
-            });
-        });
     });
 </script>
 

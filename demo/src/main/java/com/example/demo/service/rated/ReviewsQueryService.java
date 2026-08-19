@@ -4,7 +4,7 @@ import com.example.demo.dto.catalog.ReviewViewDTO;
 import com.example.demo.dto.response.ReviewsPageResponse;
 import com.example.demo.service.catalog.RatedCatalogService;
 import com.example.demo.service.movie.MovieService;
-import com.example.demo.sorter.Sorter;
+import com.example.demo.util.Sorter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -29,13 +29,13 @@ public class ReviewsQueryService {
         boolean hasOwnReview = userId != null &&
                 ratedCatalogService.existsByMovieIdAndUserId(movieId, userId);
         String movieTitle = movieService.getMovie(movieId).getTitle();
-        return ReviewsPageResponse.of(
-                sortedReviews,
-                averageRating,
-                totalReviews,
-                hasOwnReview,
-                movieTitle,
-                movieId
-        );
+        return ReviewsPageResponse.builder()
+                .reviews(sortedReviews)
+                .avgRating(averageRating)
+                .totalReviews(totalReviews)
+                .hasOwnReview(hasOwnReview)
+                .movieTitle(movieTitle != null ? movieTitle : "Фильм")
+                .movieId(movieId != 0 ? movieId : 0)
+                .build();
     }
 }

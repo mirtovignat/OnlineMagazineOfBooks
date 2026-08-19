@@ -29,7 +29,7 @@ public class PurchasedController {
         SessionUser updated = sessionUser.withBalance(newBalance);
         httpSession.setAttribute("sessionUser", updated);
         return ResponseEntity.ok(Map.of(
-                "message", SuccessCode.PURCHASED_SUCCESSFULLY.format()
+                "message", SuccessCode.PURCHASED.getMessage()
         ));
     }
 
@@ -42,6 +42,6 @@ public class PurchasedController {
         BigDecimal newBalance = purchasedCommandService.purchase(id, userId);
         SessionUser updated = sessionUser.withBalance(newBalance);
         httpSession.setAttribute("sessionUser", updated);
-        return Map.of("message", SuccessCode.PURCHASED_SUCCESSFULLY.format());
+        return Map.of("message", SuccessCode.PURCHASED.getMessage());
     }
 }

@@ -51,12 +51,6 @@ public record RegisterFormDTO(
         String currencyCode
 ) {
 
-    public static RegisterFormDTO initial() {
-        return builder()
-                .currencyCode("RUB")
-                .build();
-    }
-
     public void ifMismatch() {
         if (!Objects.equals(rawPassword(), repeatRawPassword())) {
             throw BusinessException.of(ErrorCode.PASSWORDS_MISMATCH);

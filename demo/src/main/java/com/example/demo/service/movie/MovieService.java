@@ -8,11 +8,11 @@ import com.example.demo.exception.ErrorCode;
 import com.example.demo.filter.MovieFilter;
 import com.example.demo.helper.MovieSearchHelper;
 import com.example.demo.helper.MovieUserStatusHelper;
-import com.example.demo.mapper.MovieMapper;
-import com.example.demo.model.CartItem;
-import com.example.demo.model.FavouriteMovie;
-import com.example.demo.model.Movie;
-import com.example.demo.repository.MovieRepository;
+import com.example.demo.mapper.entity.MovieMapper;
+import com.example.demo.model.entity.CartItem;
+import com.example.demo.model.entity.FavouriteMovie;
+import com.example.demo.model.entity.Movie;
+import com.example.demo.repository.entity.MovieRepository;
 import com.example.demo.service.linked_collection.AbstractLinkedCollectionService;
 import com.example.demo.service.purchased.PurchasedQueryService;
 import lombok.AllArgsConstructor;
@@ -45,9 +45,8 @@ public class MovieService {
     public Page<MovieForUser<MovieCardViewDTO>> getMoviesByFilter(MovieFilter movieFilter,
                                                                   Pageable pageable,
                                                                   Long userId) {
-        MovieFilter normalizedFilter = movieFilter.normalize();
         Page<Movie> moviePage = movieSearchHelper.findMoviesByMovieFilter(
-                normalizedFilter, pageable);
+                movieFilter, pageable);
         return enrichWithStatuses(moviePage, userId);
     }
 

@@ -1,7 +1,7 @@
 package com.example.demo.service.precence;
 
-import com.example.demo.model.AbstractCatalogItem;
-import com.example.demo.repository.AbstractLinkedCollectionRepository;
+import com.example.demo.model.base.AbstractCatalogItem;
+import com.example.demo.repository.base.AbstractLinkedCollectionRepository;
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor

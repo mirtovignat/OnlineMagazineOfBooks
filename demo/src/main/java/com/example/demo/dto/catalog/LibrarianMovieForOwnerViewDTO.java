@@ -1,5 +1,9 @@
 package com.example.demo.dto.catalog;
 
+import com.example.demo.dto.base.Identifiable;
+import com.example.demo.dto.base.Ratable;
+import com.example.demo.dto.base.Titled;
+
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
@@ -11,5 +15,5 @@ public record LibrarianMovieForOwnerViewDTO(
         BigDecimal rating,
         LocalDate releaseDate,
         String director
-) implements CatalogMovieData {
+) implements Identifiable, Titled, Ratable {
 }

@@ -35,7 +35,7 @@ public abstract class AbstractLinkedCollectionController<DTO> {
         updateBadgeInSession(httpSession, newCount);
         return Map.of(
                 "count", newCount,
-                "message", SuccessCode.ADDED_SUCCESSFULLY.format(id)
+                "message", SuccessCode.ADDED.getMessage()
         );
     }
 
@@ -50,7 +50,7 @@ public abstract class AbstractLinkedCollectionController<DTO> {
         updateBadgeInSession(httpSession, newCount);
         return Map.of(
                 "count", newCount,
-                "message", SuccessCode.REMOVED_SUCCESSFULLY.format(id)
+                "message", SuccessCode.REMOVED.getMessage()
         );
     }
 
@@ -63,14 +63,14 @@ public abstract class AbstractLinkedCollectionController<DTO> {
         updateBadgeInSession(httpSession, 0L);
         return Map.of(
                 "count", 0,
-                "message", SuccessCode.CLEARED_SUCCESSFULLY.format()
+                "message", SuccessCode.CLEARED.getMessage()
         );
     }
 
     private void updateBadgeInSession(HttpSession httpSession, Long newCount) {
         BadgeCountsDTO current = (BadgeCountsDTO) httpSession.getAttribute("badges");
         if (current == null) {
-            current = BadgeCountsDTO.empty();
+            current = BadgeCountsDTO.builder().build();
         }
         BadgeCountsDTO updated = linkedCollectionService.updateBadge(current, newCount);
         httpSession.setAttribute("badges", updated);

@@ -34,7 +34,7 @@ public class BadgeUpdater implements HandlerInterceptor {
             return;
         }
         HttpSession httpSession = httpServletRequest.getSession(false);
-        BadgeCountsDTO badgeCountsDTO = BadgeCountsDTO.empty();
+        BadgeCountsDTO badgeCountsDTO = BadgeCountsDTO.builder().build();
         if (httpSession != null) {
             Long userId = getUserIdFromSession(httpSession);
             if (userId != null) {
@@ -42,7 +42,7 @@ public class BadgeUpdater implements HandlerInterceptor {
                     badgeCountsDTO = badgeService.getBadgeCounts(userId);
                 } catch (Exception e) {
                     log.error("Failed to fetch badge counts for user: {}", userId, e);
-                    badgeCountsDTO = BadgeCountsDTO.empty();
+                    badgeCountsDTO = BadgeCountsDTO.builder().build();
                 }
             }
         }

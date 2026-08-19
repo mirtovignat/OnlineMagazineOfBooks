@@ -3,11 +3,16 @@ package com.example.demo.service.purchased;
 import com.example.demo.dto.catalog.CartMovieForOwnerViewDTO;
 import com.example.demo.exception.BusinessException;
 import com.example.demo.exception.ErrorCode;
-import com.example.demo.model.*;
-import com.example.demo.repository.MovieRepository;
-import com.example.demo.repository.PurchasedMovieRepository;
+import com.example.demo.model.base.AbstractCatalogItem;
+import com.example.demo.model.entity.CartItem;
+import com.example.demo.model.entity.Movie;
+import com.example.demo.model.entity.PurchasedMovie;
+import com.example.demo.model.entity.User;
+import com.example.demo.repository.entity.MovieRepository;
+import com.example.demo.repository.entity.PurchasedMovieRepository;
 import com.example.demo.service.linked_collection.AbstractLinkedCollectionService;
-import com.example.demo.service.user.UserService;
+import com.example.demo.service.user.UserCommandService;
+import com.example.demo.service.user.UserQueryService;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,7 +28,8 @@ public class PurchasedCommandService {
     private final PurchasedMovieRepository purchasedMovieRepository;
     protected final AbstractLinkedCollectionService<CartItem, CartMovieForOwnerViewDTO> cartService;
     private final MovieRepository movieRepository;
-    private final UserService userService;
+    private final UserCommandService userCommandService;
+    private final UserQueryService userQueryService;
     private final PurchasedQueryService purchasedQueryService;
 
     @Transactional
@@ -35,7 +41,7 @@ public class PurchasedCommandService {
     public BigDecimal purchaseBulk(Long userId) {
         List<CartItem> cartItems = cartService.findAll(userId);
         if (cartItems.isEmpty()) {
-            return userService.getBalance(userId);
+            return userQueryService.getBalance(userId);
         }
         List<Long> movieIds = cartItems.stream()
                 .map(item -> item.getMovie().getId())
@@ -45,7 +51,7 @@ public class PurchasedCommandService {
 
     private BigDecimal purchaseMovies(List<Long> requestedMovieIds, Long userId,
                                       boolean isSinglePurchase) {
-        User user = userService.getUser(userId);
+        User user = userQueryService.getUser(userId);
         Set<Long> alreadyPurchasedIds = purchasedQueryService.getPurchasedMovieIds(userId);
         List<Long> idsToBuy = requestedMovieIds.stream()
                 .filter(id -> !alreadyPurchasedIds.contains(id))
@@ -64,7 +70,7 @@ public class PurchasedCommandService {
             throw BusinessException.of(ErrorCode.INSUFFICIENT_FUNDS, totalPrice, user.getBalance());
         }
         user.spendMoney(totalPrice);
-        userService.createUser(user);
+        userCommandService.createUser(user);
         List<PurchasedMovie> purchases = moviesToBuy.stream()
                 .map(movie -> {
                     PurchasedMovie purchased = new PurchasedMovie();

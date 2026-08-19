@@ -37,7 +37,11 @@ public class MovieController {
         Long userId = sessionUser != null ? sessionUser.id() : null;
         Page<MovieForUser<MovieCardViewDTO>> cardsPage =
                 movieService.getCatalogPage(pageable, userId);
-        MoviesPageResponse response = MoviesPageResponse.of(cardsPage);
+        MoviesPageResponse response = MoviesPageResponse.builder()
+                .cardsPage(cardsPage)
+                .filter(null)
+                .isSearch(false)
+                .build();
         model.addAttribute("response", response);
         return "index";
     }
@@ -57,7 +61,11 @@ public class MovieController {
             Long movieId = cardsPage.getContent().get(0).movie().id();
             return "redirect:/movies/" + movieId;
         }
-        MoviesPageResponse response = MoviesPageResponse.of(cardsPage, movieFilter);
+        MoviesPageResponse response = MoviesPageResponse.builder()
+                .cardsPage(cardsPage)
+                .filter(movieFilter)
+                .isSearch(true)
+                .build();
         model.addAttribute("response", response);
         return "index";
     }

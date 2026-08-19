@@ -1,10 +1,10 @@
 package com.example.demo.service;
 
 import com.example.demo.dto.badges.BadgeCountsDTO;
-import com.example.demo.repository.CartItemRepository;
-import com.example.demo.repository.FavouriteMovieRepository;
-import com.example.demo.repository.PurchasedMovieRepository;
-import com.example.demo.repository.RatedMovieRepository;
+import com.example.demo.repository.entity.CartItemRepository;
+import com.example.demo.repository.entity.FavouriteMovieRepository;
+import com.example.demo.repository.entity.PurchasedMovieRepository;
+import com.example.demo.repository.entity.RatedMovieRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,7 +21,7 @@ public class BadgeService {
     @Transactional(readOnly = true)
     public BadgeCountsDTO getBadgeCounts(Long id) {
         if (id == null) {
-            return BadgeCountsDTO.empty();
+            return BadgeCountsDTO.builder().build();
         }
         return new BadgeCountsDTO(
                 cartItemRepository.countByUserId(id),

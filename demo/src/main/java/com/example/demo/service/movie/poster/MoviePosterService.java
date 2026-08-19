@@ -1,8 +1,8 @@
 package com.example.demo.service.movie.poster;
 
 import com.example.demo.dto.movie.TMDBMovieDTO;
-import com.example.demo.model.Movie;
-import com.example.demo.repository.MovieRepository;
+import com.example.demo.model.entity.Movie;
+import com.example.demo.repository.entity.MovieRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

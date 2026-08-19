@@ -23,10 +23,16 @@ public class RegistrationController {
     private final AuthorizeService authorizeService;
 
     @GetMapping
-    public String getRegisterForm(Model model) {
-        model.addAttribute("registerForm", RegisterFormDTO.initial());
+    public String getRegisterForm(HttpSession httpSession, Model model) {
+        if (httpSession.getAttribute("sessionUser") != null) {
+            return "redirect:/";
+        }
+        model.addAttribute("registerForm", RegisterFormDTO.builder()
+                .currencyCode("RUB")
+                .build());
         return "register";
     }
+
     @PostMapping
     public String register(@Valid @ModelAttribute("registerForm") RegisterFormDTO registerFormDTO,
                            HttpSession httpSession) {
@@ -34,7 +40,7 @@ public class RegistrationController {
         UserForOwnerViewDTO fullUser = authorizeService.register(registerFormDTO);
         SessionUser sessionUser = SessionUser.from(fullUser);
         httpSession.setAttribute("sessionUser", sessionUser);
-        httpSession.setAttribute("badges", BadgeCountsDTO.empty());
+        httpSession.setAttribute("badges", BadgeCountsDTO.builder().build());
         return "redirect:/";
     }
 }

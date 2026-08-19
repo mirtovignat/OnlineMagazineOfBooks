@@ -44,31 +44,4 @@ public record MovieFilter(
         List<String> genres,
         List<String> directors
 ) {
-    public MovieFilter normalize() {
-        return MovieFilter.builder()
-                .title(title)
-                .genres(genres)
-                .directors(directors)
-                .priceFrom(min(priceFrom, priceTo))
-                .priceTo(max(priceFrom, priceTo))
-                .releaseDateFrom(min(releaseDateFrom, releaseDateTo))
-                .releaseDateTo(max(releaseDateFrom, releaseDateTo))
-                .durationFrom(min(durationFrom, durationTo))
-                .durationTo(max(durationFrom, durationTo))
-                .ratingFrom(min(ratingFrom, ratingTo))
-                .ratingTo(max(ratingFrom, ratingTo))
-                .build();
-    }
-
-    private static <T extends Comparable<? super T>> T min(T a, T b) {
-        if (a == null) return b;
-        if (b == null) return a;
-        return a.compareTo(b) <= 0 ? a : b;
-    }
-
-    private static <T extends Comparable<? super T>> T max(T a, T b) {
-        if (a == null) return b;
-        if (b == null) return a;
-        return a.compareTo(b) >= 0 ? a : b;
-    }
 }

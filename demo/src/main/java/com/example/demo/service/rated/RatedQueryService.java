@@ -2,9 +2,9 @@ package com.example.demo.service.rated;
 
 import com.example.demo.dto.catalog.RatedMovieForOwnerFormDTO;
 import com.example.demo.dto.catalog.ReviewViewDTO;
-import com.example.demo.mapper.RatedMapper;
-import com.example.demo.model.RatedMovie;
-import com.example.demo.repository.AbstractCatalogRepository;
+import com.example.demo.mapper.entity.RatedMapper;
+import com.example.demo.model.entity.RatedMovie;
+import com.example.demo.repository.base.AbstractCatalogRepository;
 import com.example.demo.service.movie.MovieService;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -24,17 +24,9 @@ public class RatedQueryService {
 
     public List<ReviewViewDTO> getReviewsByMovieId(Long movieId, Long currentUserId) {
         List<RatedMovie> ratedMovies = catalogRepository.findAllByMovieId(movieId);
-        return ratedMovies.stream().map(ratedMovie -> {
-            ReviewViewDTO reviewViewDTO = ratedMapper.toReviewView(ratedMovie, null);
-            boolean isOwn = ratedMovie.getUser().getId().equals(currentUserId);
-            return new ReviewViewDTO(
-                    reviewViewDTO.username(),
-                    reviewViewDTO.addedAt(),
-                    reviewViewDTO.ratingValue(),
-                    reviewViewDTO.reviewText(),
-                    isOwn
-            );
-        }).toList();
+        return ratedMovies.stream()
+                .map(ratedMovie -> ratedMapper.toReviewViewWithOwn(ratedMovie, currentUserId))
+                .toList();
     }
 
     public RatedMovieForOwnerFormDTO getPreFilledForm(Long movieId, Long userId) {

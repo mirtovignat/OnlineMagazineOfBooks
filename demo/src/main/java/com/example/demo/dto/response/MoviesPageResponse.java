@@ -12,19 +12,4 @@ public record MoviesPageResponse(
         MovieFilter filter,
         boolean isSearch
 ) {
-    public static MoviesPageResponse of(Page<MovieForUser<MovieCardViewDTO>> cardsPage) {
-        return MoviesPageResponse.builder()
-                .cardsPage(cardsPage)
-                .filter(null)
-                .isSearch(false)
-                .build();
-    }
-
-    public static MoviesPageResponse of(Page<MovieForUser<MovieCardViewDTO>> cardsPage, MovieFilter filter) {
-        return MoviesPageResponse.builder()
-                .cardsPage(cardsPage)
-                .filter(filter)
-                .isSearch(true)
-                .build();
-    }
 }
