@@ -24,13 +24,11 @@ public interface AbstractCatalogRepository<T extends AbstractCatalogItem> extend
             """)
     List<T> findAllByUserId(@Param("userId") Long userId);
 
-    @EntityGraph(attributePaths = {
-            "movie",
-            "user"
-    })
     @Query("""
             SELECT item
             FROM #{#entityName} item
+            JOIN FETCH item.user
+            JOIN FETCH item.movie
             WHERE item.movie.id = :movieId
             """)
     List<T> findAllByMovieId(@Param("movieId") Long movieId);

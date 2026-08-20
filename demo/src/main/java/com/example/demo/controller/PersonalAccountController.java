@@ -21,6 +21,8 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import java.util.Map;
+
 @Controller
 @RequiredArgsConstructor
 public class PersonalAccountController {
@@ -76,6 +78,26 @@ public class PersonalAccountController {
 
         String redirectUrl = returnUrlHelper.getReturnUrlOrDefault(httpSession, "/profile/settings");
         return "redirect:" + redirectUrl;
+    }
+
+    @PostMapping(value = "/profile/settings/change-ajax", consumes = "application/json")
+    @ResponseBody
+    public ResponseEntity<ApiResponse> changeProfileAjax(@Valid @RequestBody ProfileSettingsDTO profileSettingsDTO,
+                                                         @SessionAttribute SessionUser sessionUser,
+                                                         HttpSession httpSession) {
+        Long userId = sessionUser.id();
+        ProfileSettingsDTO normalizedDto = userCommandService.prepareAndValidateProfile(profileSettingsDTO, userId);
+        userCommandService.saveProfile(normalizedDto, userId);
+        SessionUser updatedSessionUser = sessionUser.withFirstLetter(normalizedDto.username());
+        httpSession.setAttribute("sessionUser", updatedSessionUser);
+        return ResponseEntity.ok(ApiResponse.builder()
+                .message(SuccessCode.PROFILE_HAS_BEEN_CHANGED.getMessage())
+                .data(Map.of(
+                        "newUsername", profileSettingsDTO.username(),
+                        "newEmail", profileSettingsDTO.email(),
+                        "newPhone", profileSettingsDTO.phone() == null ? "" : profileSettingsDTO.phone()
+                ))
+                .build());
     }
 
     @GetMapping("/profile/settings/delete/phone")

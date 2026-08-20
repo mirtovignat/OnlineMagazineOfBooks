@@ -1430,6 +1430,7 @@ function normalizeDurationFilters() {
 
     calculateRangeMinutes();
 }
+
 function validateFilter() {
     normalizeDurationFilters();
 
@@ -1442,143 +1443,290 @@ function validateFilter() {
         }
         if (input) {
             input.focus();
+            input.style.borderColor = '#f87171';
+            input.style.boxShadow = '0 0 0 3px rgba(248, 113, 113, 0.3)';
+            setTimeout(function() {
+                input.style.borderColor = '';
+                input.style.boxShadow = '';
+            }, 3000);
         }
         return false;
     }
 
-    if (errorEl) {
-        errorEl.style.display = 'none';
-        errorEl.innerText = '';
+    function clearError() {
+        if (errorEl) {
+            errorEl.style.display = 'none';
+            errorEl.innerText = '';
+        }
+        document.querySelectorAll('.filter-input').forEach(function(el) {
+            el.style.borderColor = '';
+            el.style.boxShadow = '';
+        });
     }
 
+    clearError();
+
     let hasMeaningfulFilter = false;
+    let hasRestrictiveFilter = false;
+    let hasPriceFilter = false;
+    let hasRatingFilter = false;
+    let hasDurationFilter = false;
+    let hasDateFilter = false;
 
     const priceFrom = document.getElementById('priceFrom');
     if (priceFrom && priceFrom.value.trim() !== '') {
-        const normalized = normalizeNumberInput(priceFrom.value, {
-            min: 0,
-            decimals: 2,
-            emptyValues: [0]
-        });
-        if (typeof normalized === 'object') {
-            return showError('Цена "от" должна быть неотрицательным числом', priceFrom);
+        const val = parseFloat(priceFrom.value.replace(',', '.'));
+        if (isNaN(val) || val < 0) {
+            return showError('Цена "от" должна быть ≥ 0', priceFrom);
         }
-        priceFrom.value = normalized;
-        if (normalized !== '') {
-            const value = parseFloat(normalized);
-            if (value > 0) hasMeaningfulFilter = true;
+        if (val >= 100000) {
+            return showError('Цена "от" не может быть ≥ 100 000 ₽. Максимум 99 999.99', priceFrom);
         }
+        if (val > 99999.99) {
+            return showError('Цена "от" не может быть больше 99 999.99 ₽', priceFrom);
+        }
+        priceFrom.value = val.toFixed(2);
+        hasMeaningfulFilter = true;
+        hasPriceFilter = true;
+        if (val > 0) hasRestrictiveFilter = true;
     }
 
     const priceTo = document.getElementById('priceTo');
     if (priceTo && priceTo.value.trim() !== '') {
-        const normalized = normalizeNumberInput(priceTo.value, {
-            min: 0,
-            decimals: 2,
-            emptyValues: [0]
-        });
-        if (typeof normalized === 'object') {
-            return showError('Цена "до" должна быть неотрицательным числом', priceTo);
+        const val = parseFloat(priceTo.value.replace(',', '.'));
+        if (isNaN(val) || val < 0) {
+            return showError('Цена "до" должна быть ≥ 0', priceTo);
         }
-        priceTo.value = normalized;
-        if (normalized !== '') {
-            const value = parseFloat(normalized);
-            if (value > 0) hasMeaningfulFilter = true;
+        if (val >= 100000) {
+            return showError('Цена "до" не может быть ≥ 100 000 ₽. Максимум 99 999.99', priceTo);
         }
+        if (val > 99999.99) {
+            return showError('Цена "до" не может быть больше 99 999.99 ₽', priceTo);
+        }
+        priceTo.value = val.toFixed(2);
+        hasMeaningfulFilter = true;
+        hasPriceFilter = true;
+        if (val < 99999.99) hasRestrictiveFilter = true;
     }
 
     if (priceFrom && priceFrom.value && priceTo && priceTo.value) {
         const from = parseFloat(priceFrom.value);
         const to = parseFloat(priceTo.value);
-        if (!isNaN(from) && !isNaN(to) && from > to) {
+        if (from > to) {
             return showError('Цена "от" не может быть больше цены "до"', priceFrom);
+        }
+        if (from === 0 && to === 99999.99) {
+            priceFrom.value = '';
+            priceTo.value = '';
+            hasPriceFilter = false;
+            hasMeaningfulFilter = false;
+            return showError('Диапазон цен 0 - 99 999.99 эквивалентен "все фильмы". Укажите конкретные границы', null);
         }
     }
 
     const ratingFrom = document.getElementById('ratingFrom');
     if (ratingFrom && ratingFrom.value.trim() !== '') {
-        const rawRatingFrom = parseFloat(ratingFrom.value.replace(',', '.'));
-        if (rawRatingFrom === 0 || rawRatingFrom === 0.1) {
-            ratingFrom.value = '';
-        } else {
-            const normalized = normalizeNumberInput(ratingFrom.value, {
-                min: 0.1,
-                max: 10,
-                decimals: 1,
-                emptyValues: [0, 0.1]
-            });
-            if (typeof normalized === 'object') {
-                return showError('Рейтинг "от" должен быть от 0.1 до 10.0', ratingFrom);
-            }
-            ratingFrom.value = normalized;
-            if (normalized !== '') hasMeaningfulFilter = true;
+        const val = parseFloat(ratingFrom.value.replace(',', '.'));
+        if (isNaN(val)) {
+            return showError('Рейтинг "от" должен быть числом', ratingFrom);
         }
+        if (val < 0.1) {
+            return showError('Рейтинг "от" не может быть меньше 0.1', ratingFrom);
+        }
+        if (val > 10) {
+            return showError('Рейтинг "от" не может быть больше 10', ratingFrom);
+        }
+        ratingFrom.value = val.toFixed(1);
+        hasMeaningfulFilter = true;
+        hasRatingFilter = true;
+        if (val > 0.1) hasRestrictiveFilter = true;
     }
 
     const ratingTo = document.getElementById('ratingTo');
     if (ratingTo && ratingTo.value.trim() !== '') {
-        const rawRatingTo = parseFloat(ratingTo.value.replace(',', '.'));
-        if (isNaN(rawRatingTo)) {
-            return showError('Рейтинг "до" должен быть от 0.1 до 10.0', ratingTo);
+        const val = parseFloat(ratingTo.value.replace(',', '.'));
+        if (isNaN(val)) {
+            return showError('Рейтинг "до" должен быть числом', ratingTo);
         }
-        if (rawRatingTo === 10) {
-            ratingTo.value = '';
-        } else {
-            const normalized = normalizeNumberInput(ratingTo.value, {
-                min: 0.1,
-                max: 10,
-                decimals: 1
-            });
-            if (typeof normalized === 'object') {
-                return showError('Рейтинг "до" должен быть от 0.1 до 10.0', ratingTo);
-            }
-            ratingTo.value = normalized;
-            if (normalized !== '') hasMeaningfulFilter = true;
+        if (val < 0.1) {
+            return showError('Рейтинг "до" не может быть меньше 0.1', ratingTo);
         }
+        if (val > 10) {
+            return showError('Рейтинг "до" не может быть больше 10', ratingTo);
+        }
+        ratingTo.value = val.toFixed(1);
+        hasMeaningfulFilter = true;
+        hasRatingFilter = true;
+        if (val < 10) hasRestrictiveFilter = true;
     }
 
     if (ratingFrom && ratingFrom.value && ratingTo && ratingTo.value) {
         const from = parseFloat(ratingFrom.value);
         const to = parseFloat(ratingTo.value);
-        if (!isNaN(from) && !isNaN(to) && from > to) {
+        if (from > to) {
             return showError('Рейтинг "от" не может быть больше рейтинга "до"', ratingFrom);
+        }
+        if (from === 0.1 && to === 10) {
+            ratingFrom.value = '';
+            ratingTo.value = '';
+            hasRatingFilter = false;
+            hasMeaningfulFilter = false;
+            return showError('Диапазон рейтинга 0.1 - 10 эквивалентен "все фильмы". Укажите конкретные границы', null);
         }
     }
 
-    const minDuration = document.getElementById('minDuration');
-    const maxDuration = document.getElementById('maxDuration');
-    if (minDuration && minDuration.value && maxDuration && maxDuration.value) {
-        const min = parseInt(minDuration.value, 10);
-        const max = parseInt(maxDuration.value, 10);
-        if (!isNaN(min) && !isNaN(max) && min > max) {
-            return showError('Длительность "от" не может быть больше длительности "до"', null);
+    const fromH = parseInt(document.getElementById('durationFromHours')?.value || '0', 10);
+    const fromM = parseInt(document.getElementById('durationFromMinutes')?.value || '0', 10);
+    const fromS = parseInt(document.getElementById('durationFromSeconds')?.value || '0', 10);
+    const toH = parseInt(document.getElementById('durationToHours')?.value || '0', 10);
+    const toM = parseInt(document.getElementById('durationToMinutes')?.value || '0', 10);
+    const toS = parseInt(document.getElementById('durationToSeconds')?.value || '0', 10);
+
+    const fromTotal = fromH * 3600 + fromM * 60 + fromS;
+    const toTotal = toH * 3600 + toM * 60 + toS;
+
+    if (fromTotal > 0) {
+        if (fromTotal < 39) {
+            return showError('Длительность "от" не может быть меньше 39 секунд (минимальная длительность фильма)', document.getElementById('durationFromHours'));
         }
+        if (fromH > 16 || (fromH === 16 && (fromM > 0 || fromS > 0))) {
+            return showError('Длительность "от" не может быть больше 16:00:00', document.getElementById('durationFromHours'));
+        }
+        hasMeaningfulFilter = true;
+        hasDurationFilter = true;
+        if (fromTotal > 39) hasRestrictiveFilter = true;
+    }
+
+    if (toTotal > 0) {
+        if (toTotal < 39) {
+            return showError('Длительность "до" не может быть меньше 39 секунд (минимальная длительность фильма)', document.getElementById('durationToHours'));
+        }
+        if (toH > 16 || (toH === 16 && toM > 58) || (toH === 16 && toM === 58 && toS > 58)) {
+            return showError('Длительность "до" не может быть больше 16:58:58', document.getElementById('durationToHours'));
+        }
+        hasMeaningfulFilter = true;
+        hasDurationFilter = true;
+        if (toTotal < 61198) hasRestrictiveFilter = true;
+    }
+
+    if (fromTotal > 0 && toTotal > 0 && fromTotal > toTotal) {
+        return showError('Длительность "от" не может быть больше длительности "до"', document.getElementById('durationFromHours'));
+    }
+
+    if (fromTotal === 39 && toTotal === 61198) {
+        document.getElementById('durationFromHours').value = '';
+        document.getElementById('durationFromMinutes').value = '';
+        document.getElementById('durationFromSeconds').value = '';
+        document.getElementById('durationToHours').value = '';
+        document.getElementById('durationToMinutes').value = '';
+        document.getElementById('durationToSeconds').value = '';
+        hasDurationFilter = false;
+        hasMeaningfulFilter = false;
+        return showError('Диапазон длительности 39 сек - 16:58:58 эквивалентен "все фильмы". Укажите конкретные границы', null);
     }
 
     const dateFrom = document.getElementById('releaseDateFrom');
     const dateTo = document.getElementById('releaseDateTo');
+    if (dateFrom && dateFrom.value) {
+        const d = new Date(dateFrom.value);
+        if (d.getFullYear() < 1895) {
+            return showError('Год не может быть раньше 1895 (первые фильмы)', dateFrom);
+        }
+        if (d > new Date()) {
+            return showError('Дата "от" не может быть в будущем', dateFrom);
+        }
+        hasMeaningfulFilter = true;
+        hasDateFilter = true;
+        hasRestrictiveFilter = true;
+    }
+    if (dateTo && dateTo.value) {
+        const d = new Date(dateTo.value);
+        if (d.getFullYear() < 1895) {
+            return showError('Год не может быть раньше 1895 (первые фильмы)', dateTo);
+        }
+        if (d > new Date()) {
+            return showError('Дата "до" не может быть в будущем', dateTo);
+        }
+        hasMeaningfulFilter = true;
+        hasDateFilter = true;
+        hasRestrictiveFilter = true;
+    }
     if (dateFrom && dateFrom.value && dateTo && dateTo.value) {
         const from = new Date(dateFrom.value);
         const to = new Date(dateTo.value);
         if (from > to) {
             return showError('Дата "от" не может быть позже даты "до"', dateFrom);
         }
-        hasMeaningfulFilter = true;
-    } else if (dateFrom && dateFrom.value) {
-        hasMeaningfulFilter = true;
-    } else if (dateTo && dateTo.value) {
-        hasMeaningfulFilter = true;
+        if (from.getFullYear() === 1895 && to.getFullYear() === new Date().getFullYear()) {
+            dateFrom.value = '';
+            dateTo.value = '';
+            hasDateFilter = false;
+            hasMeaningfulFilter = false;
+            return showError('Диапазон дат 1895 - ' + new Date().getFullYear() + ' эквивалентен "все фильмы". Укажите конкретные границы', null);
+        }
     }
 
     const genresCheckboxes = document.querySelectorAll('input[name="genres"]:checked');
     const directorsCheckboxes = document.querySelectorAll('input[name="directors"]:checked');
-    if (genresCheckboxes.length > 0 || directorsCheckboxes.length > 0) {
+    if (genresCheckboxes.length > 0) {
         hasMeaningfulFilter = true;
+        hasRestrictiveFilter = true;
+    }
+    if (directorsCheckboxes.length > 0) {
+        hasMeaningfulFilter = true;
+        hasRestrictiveFilter = true;
     }
 
     const titleInput = document.getElementById('headerSearchInput');
     if (titleInput && titleInput.value && titleInput.value.trim() !== '') {
+        const title = titleInput.value.trim();
+        if (title.length < 2) {
+            return showError('Поисковый запрос должен содержать минимум 2 символа', titleInput);
+        }
         hasMeaningfulFilter = true;
+        hasRestrictiveFilter = true;
+    }
+
+    if (!hasMeaningfulFilter) {
+        return showError('❌ Укажите хотя бы один параметр поиска (название, жанр, режиссёр, цену, рейтинг, дату или длительность)', null);
+    }
+
+    if (!hasRestrictiveFilter) {
+        let wideFilters = [];
+
+        if (hasPriceFilter) {
+            const from = priceFrom?.value ? parseFloat(priceFrom.value) : 0;
+            const to = priceTo?.value ? parseFloat(priceTo.value) : 99999.99;
+            if (from === 0 && to === 99999.99) {
+                wideFilters.push('цена 0 - 99 999.99');
+            }
+        }
+
+        if (hasRatingFilter) {
+            const from = ratingFrom?.value ? parseFloat(ratingFrom.value) : 0.1;
+            const to = ratingTo?.value ? parseFloat(ratingTo.value) : 10;
+            if (from === 0.1 && to === 10) {
+                wideFilters.push('рейтинг 0.1 - 10');
+            }
+        }
+
+        if (hasDurationFilter) {
+            if (fromTotal === 39 && toTotal === 61198) {
+                wideFilters.push('длительность 39 сек - 16:58:58');
+            }
+        }
+
+        if (hasDateFilter) {
+            const from = dateFrom?.value ? new Date(dateFrom.value).getFullYear() : 1895;
+            const to = dateTo?.value ? new Date(dateTo.value).getFullYear() : new Date().getFullYear();
+            if (from === 1895 && to === new Date().getFullYear()) {
+                wideFilters.push('даты 1895 - ' + new Date().getFullYear());
+            }
+        }
+
+        if (wideFilters.length > 0) {
+            return showError('❌ Вы указали только широкие фильтры (' + wideFilters.join(', ') + '), которые эквивалентны "показать все фильмы". Добавьте конкретный фильтр: название, жанр, режиссёра, цену > 0, узкий диапазон рейтинга/длительности/дат.', null);
+        }
     }
 
     return true;

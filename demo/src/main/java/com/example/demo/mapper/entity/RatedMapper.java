@@ -4,9 +4,9 @@ import com.example.demo.dto.catalog.RatedMovieForOwnerFormDTO;
 import com.example.demo.dto.catalog.RatedMovieForOwnerViewDTO;
 import com.example.demo.dto.catalog.ReviewViewDTO;
 import com.example.demo.model.entity.RatedMovie;
+import com.example.demo.model.entity.User;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
-import org.mapstruct.Named;
 
 @Mapper(componentModel = "spring")
 public interface RatedMapper {
@@ -16,26 +16,27 @@ public interface RatedMapper {
     @Mapping(target = "username", ignore = true)
     ReviewViewDTO toReviewView(RatedMovie ratedMovie);
 
-    @Named("getUsername")
     default String getUsername(RatedMovie ratedMovie) {
-        if (ratedMovie.getUser() == null || ratedMovie.getUser().isDeleted()) {
+        User user = ratedMovie.getUser();
+        if (user == null || user.isDeleted()) {
             return "Удалённый аккаунт";
         }
-        return ratedMovie.getUser().getUsername();
+        return user.getUsername();
     }
 
     default ReviewViewDTO toReviewViewWithOwn(RatedMovie ratedMovie, Long currentUserId) {
-        ReviewViewDTO dto = toReviewView(ratedMovie);
+        ReviewViewDTO reviewViewDTO = toReviewView(ratedMovie);
         String username = getUsername(ratedMovie);
-        boolean isOwn = ratedMovie.getUser().getId().equals(currentUserId);
+        boolean isOwn = ratedMovie.getUser() != null && ratedMovie.getUser().getId().equals(currentUserId);
         return ReviewViewDTO.builder()
                 .username(username)
-                .addedAt(dto.addedAt())
-                .ratingValue(dto.ratingValue())
-                .reviewText(dto.reviewText())
+                .addedAt(reviewViewDTO.addedAt())
+                .ratingValue(reviewViewDTO.ratingValue())
+                .reviewText(reviewViewDTO.reviewText())
                 .own(isOwn)
                 .build();
     }
+
 
     @Mapping(target = "id", source = "movie.id")
     @Mapping(target = "title", source = "movie.title")

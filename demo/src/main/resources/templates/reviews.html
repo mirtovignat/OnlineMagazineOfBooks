@@ -17,7 +17,22 @@
         @keyframes fadeSlideUp{to{opacity:1;transform:translateY(0);}}
         .review-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:0.8rem;}
         .review-user{display:flex;align-items:center;gap:0.8rem;}
-        .avatar{width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,#4f46e5,#7c3aed);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:1.2rem;color:white;text-transform:uppercase;flex-shrink:0;box-shadow:0 4px 12px rgba(79,70,229,0.3);}
+        .avatar {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #4f46e5, #7c3aed);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 1.2rem;
+            color: white;
+            line-height: 1;
+            text-transform: none;
+            flex-shrink: 0;
+            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
+        }
         .review-username{font-weight:600;color:#e2e8f0;font-size:1.05rem;}
         .review-meta{display:flex;align-items:center;gap:1rem;}
         .review-rating{background:rgba(251,191,36,0.2);color:#fbbf24;padding:0.2rem 0.8rem;border-radius:40px;font-weight:700;font-size:0.9rem;display:inline-flex;align-items:center;gap:0.3rem;}
@@ -86,8 +101,23 @@
                  th:data-own="${review.own}">
                 <div class="review-header">
                     <div class="review-user">
-                        <div class="avatar" th:text="${#strings.substring(review.username, 0, 1)}">U</div>
-                        <span class="review-username" th:text="${review.username}">Пользователь</span>
+                        <th:block th:if="${review.username == 'Удалённый аккаунт'}">
+                            <img src="/images/deleted-account.png" alt="Deleted user"
+                                 class="avatar avatar-deleted">
+                        </th:block>
+
+                        <th:block th:unless="${review.username == 'Удалённый аккаунт'}">
+                            <div class="avatar" th:text="${#strings.substring(review.username, 0, 1)}"
+                                 style="display:flex; align-items:center; justify-content:center; width:44px; height:44px; border-radius:50%; background:linear-gradient(135deg, #4f46e5, #7c3aed); font-weight:700; font-size:1.2rem; color:white; line-height:0; text-align:center; flex-shrink:0; box-shadow:0 4px 12px rgba(79,70,229,0.3); padding:0; margin:0;">
+                                u
+                            </div>
+                        </th:block>
+
+                        <span class="review-username"
+                              th:classappend="${review.username == 'Удалённый аккаунт'} ? 'deleted' : ''"
+                              th:text="${review.username}">
+                            Пользователь
+                        </span>
                     </div>
                     <div class="review-meta">
                         <span class="review-rating">

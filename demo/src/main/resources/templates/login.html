@@ -154,7 +154,6 @@
     <div class="logo-link"><a href="/"><img src="/favicon.ico" alt="">Cinema Service</a></div>
     <h1>Вход</h1>
 
-    <!-- FLASH-СООБЩЕНИЯ -->
     <div class="flash-messages-container" id="flash-messages-container">
         <div th:if="${successMessage}" class="flash-message success" th:text="${successMessage}"></div>
         <div th:if="${errorMessage}" class="flash-message error" th:text="${errorMessage}"></div>
@@ -165,7 +164,6 @@
     </div>
 
     <form th:action="@{/login}" th:object="${loginForm}" method="post" id="loginForm">
-        <!-- Скрытое поле - система сама определит тип -->
         <input type="hidden" id="identifierType" th:field="*{identifier}" value="USERNAME"/>
 
         <label for="identifierValue">Username, email или phone</label>
@@ -205,46 +203,36 @@
         }
     }
 
-    // Автоматическое определение типа идентификатора
     function detectIdentifierType(value) {
         if (!value || value.trim() === '') {
             return 'USERNAME';
         }
         const trimmed = value.trim();
 
-        // Если есть @ - это email
         if (trimmed.includes('@')) {
             return 'EMAIL';
         }
 
-        // Если похоже на телефон (начинается с + или содержит только цифры, пробелы, тире, скобки)
         if (trimmed.match(/^\+?[\d\s\-()]{7,15}$/)) {
             return 'PHONE';
         }
-
-        // Во всех остальных случаях - username
         return 'USERNAME';
     }
 
-    // Обновление скрытого поля при вводе
     document.addEventListener('DOMContentLoaded', function() {
         const identifierValue = document.getElementById('identifierValue');
         const identifierType = document.getElementById('identifierType');
 
         if (identifierValue && identifierType) {
-            // Определяем тип при загрузке, если есть значение
             if (identifierValue.value) {
                 identifierType.value = detectIdentifierType(identifierValue.value);
             }
-
-            // Обновляем при вводе
             identifierValue.addEventListener('input', function() {
                 identifierType.value = detectIdentifierType(this.value);
             });
         }
     });
 
-    // Автоматическое исчезновение flash-сообщений через 5 секунд
     setTimeout(() => {
         document.querySelectorAll('#flash-messages-container .flash-message').forEach(msg => {
             setTimeout(() => {

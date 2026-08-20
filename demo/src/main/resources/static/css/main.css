@@ -398,9 +398,24 @@ header {
     font-size: 0.75rem;
     font-weight: 700;
     color: #818cf8;
-    text-transform: uppercase;
     letter-spacing: 0.06em;
 }
+
+.avatar-deleted {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    object-fit: cover;
+    flex-shrink: 0;
+    background: #1e293b;
+    border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+.review-username.deleted {
+    color: #94a3b8;
+    font-style: italic;
+}
+
 
 .filter-row {
     display: flex;
@@ -1799,4 +1814,14 @@ input {
 
 .amount-input-with-stepper .stepper-btn.up {
     margin-bottom: 1px !important;
+}
+
+.avatar,
+.profile-avatar-letter,
+.user-avatar-letter {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    line-height: 1 !important;
+    text-align: center !important;
 }

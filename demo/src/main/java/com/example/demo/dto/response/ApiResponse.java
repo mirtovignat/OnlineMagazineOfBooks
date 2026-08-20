@@ -14,7 +14,7 @@ public record ApiResponse(
         this(message, Map.of());
     }
 
-    public static ApiResponse response(SuccessCode successCode) {
-        return new ApiResponse(successCode.getMessage());
+    public static ApiResponse response(SuccessCode code) {
+        return new ApiResponse(code.getMessage());
     }
 }

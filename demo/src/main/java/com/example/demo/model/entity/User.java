@@ -6,7 +6,6 @@ import com.example.demo.model.base.AbstractEntity;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
-import org.hibernate.annotations.SQLRestriction;
 
 import java.math.BigDecimal;
 import java.util.LinkedHashSet;
@@ -20,7 +19,6 @@ import java.util.Set;
 @ToString(callSuper = true)
 @Entity
 @Table(name = "users")
-@SQLRestriction("deleted = false")
 public class User extends AbstractEntity {
 
     public User(Long id) {

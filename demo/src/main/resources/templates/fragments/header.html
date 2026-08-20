@@ -467,6 +467,25 @@
             background: rgba(99,102,241,0.3);
             border-color: #6366f1;
         }
+        .user-avatar-letter {
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            line-height: 1 !important;
+            text-align: center !important;
+            vertical-align: middle !important;
+            padding: 0 !important;
+            margin: 0 !important;
+            flex-shrink: 0 !important;
+            width: 32px !important;
+            height: 32px !important;
+            border-radius: 50% !important;
+            background: linear-gradient(135deg, #4f46e5, #7c3aed) !important;
+            color: white !important;
+            font-weight: 700 !important;
+            font-size: 1.2rem !important;
+            border: 2px solid #6366f1 !important;
+        }
     </style>
 
     <div class="logo-link" style="display: flex; align-items: center; gap: 8px;">
@@ -507,8 +526,7 @@
         <div th:if="${session.sessionUser != null}" class="user-menu" id="userMenu">
             <div class="user-menu-toggle" onclick="toggleUserMenu()">
                 <div class="user-avatar-letter"
-                     th:text="${session.sessionUser != null ? session.sessionUser.firstUsernameLetter() : 'U'}"
-                     style="display:inline-flex; align-items:center; justify-content:center; width:32px; height:32px; border-radius:50%; background:linear-gradient(135deg, #4f46e5, #7c3aed); color:white; font-weight:700; font-size:1.2rem; text-transform:uppercase; flex-shrink:0; border:2px solid var(--glow-primary, #6366f1);">
+                     th:text="${session.sessionUser != null ? session.sessionUser.firstUsernameLetter() : 'u'}">
                 </div>
                 <span class="toggle-icon">▼</span>
             </div>
